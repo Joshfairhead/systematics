@@ -5,10 +5,11 @@ use crate::modules::dyad::Dyad;
 use crate::modules::triad::Triad;
 use crate::modules::tetrad::Tetrad;
 use crate::modules::pentad::Pentad;
+use crate::modules::hexad::Hexad;
 use std::io::{self, Write}; // Import for input/output
 
 fn main() {
-    println!("Create a new entity: Monad (m), Dyad (d), Triad (t), Tetrad (e), or Pentad (p)?");
+    println!("Create a new entity: Monad (m), Dyad (d), Triad (t), Tetrad (e), Pentad (p), or Hexad (h)?");
     let mut choice = String::new();
     io::stdin().read_line(&mut choice).expect("Failed to read choice");
 
@@ -27,6 +28,9 @@ fn main() {
         }
         "p" | "pentad" => {
             create_pentad();
+        }
+        "h" | "hexad" => {
+            create_hexad();
         }
         _ => {
             println!("Invalid choice. Exiting.");
@@ -256,5 +260,71 @@ fn create_pentad() {
     println!("Inner Lower Limit: {}", my_pentad.innerlowerlimit);
     println!("Outer Upper Limit: {}", my_pentad.outerupperlimit);
     println!("Outer Lower Limit: {}", my_pentad.outerlowerlimit);
+    println!("---------------------");
+}
+
+fn create_hexad() {
+    println!("\n--- Creating a Hexad ---");
+    let mut name_input = String::new();
+    print!("Enter a name for your Hexad: ");
+    io::stdout().flush().unwrap();
+    io::stdin().read_line(&mut name_input).expect("Failed to read Hexad name");
+    let name = name_input.trim();
+
+    let mut resources_input = String::new();
+    print!("Enter the Hexad's resources: ");
+    io::stdout().flush().unwrap();
+    io::stdin().read_line(&mut resources_input).expect("Failed to read resources");
+    let resources = resources_input.trim();
+
+    let mut values_input = String::new();
+    print!("Enter the Hexad's values: ");
+    io::stdout().flush().unwrap();
+    io::stdin().read_line(&mut values_input).expect("Failed to read values");
+    let values = values_input.trim();
+
+    let mut options_input = String::new();
+    print!("Enter the Hexad's options: ");
+    io::stdout().flush().unwrap();
+    io::stdin().read_line(&mut options_input).expect("Failed to read options");
+    let options = options_input.trim();
+
+    let mut criteria_input = String::new();
+    print!("Enter the Hexad's criteria: ");
+    io::stdout().flush().unwrap();
+    io::stdin().read_line(&mut criteria_input).expect("Failed to read criteria");
+    let criteria = criteria_input.trim();
+
+    let mut facts_input = String::new();
+    print!("Enter the Hexad's facts: ");
+    io::stdout().flush().unwrap();
+    io::stdin().read_line(&mut facts_input).expect("Failed to read facts");
+    let facts = facts_input.trim();
+
+    let mut priorities_input = String::new();
+    print!("Enter the Hexad's priorities: ");
+    io::stdout().flush().unwrap();
+    io::stdin().read_line(&mut priorities_input).expect("Failed to read priorities");
+    let priorities = priorities_input.trim();
+
+    let my_hexad = Hexad::new(
+        if name.is_empty() { "Unnamed Hexad" } else { name },
+        if resources.is_empty() { "Default Resources" } else { resources },
+        if values.is_empty() { "Default Values" } else { values },
+        if options.is_empty() { "Default Options" } else { options },
+        if criteria.is_empty() { "Default Criteria" } else { criteria },
+        if facts.is_empty() { "Default Facts" } else { facts },
+        if priorities.is_empty() { "Default Priorities" } else { priorities },
+    );
+
+    println!("\n--- Hexad Details ---");
+    println!("Hexad Name: {}", my_hexad.name);
+    println!("Core Attribute: {}", Hexad::TERM_ATTRIBUTE_DESCRIPTION);
+    println!("Resources: {}", my_hexad.resources);
+    println!("Values: {}", my_hexad.values);
+    println!("Options: {}", my_hexad.options);
+    println!("Criteria: {}", my_hexad.criteria);
+    println!("Facts: {}", my_hexad.facts);
+    println!("Priorities: {}", my_hexad.priorities);
     println!("---------------------");
 }

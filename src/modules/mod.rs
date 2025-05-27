@@ -3,6 +3,7 @@ pub mod dyad;
 pub mod triad;
 pub mod tetrad;
 pub mod pentad;
+pub mod hexad;
 
 // You can add other modules like tetrad here in the future
 // e.g.:
