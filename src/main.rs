@@ -4,10 +4,11 @@ use crate::modules::monad::Monad;
 use crate::modules::dyad::Dyad;
 use crate::modules::triad::Triad;
 use crate::modules::tetrad::Tetrad;
+use crate::modules::pentad::Pentad;
 use std::io::{self, Write}; // Import for input/output
 
 fn main() {
-    println!("Create a new entity: Monad (m), Dyad (d), Triad (t), or Tetrad (e)?");
+    println!("Create a new entity: Monad (m), Dyad (d), Triad (t), Tetrad (e), or Pentad (p)?");
     let mut choice = String::new();
     io::stdin().read_line(&mut choice).expect("Failed to read choice");
 
@@ -23,6 +24,9 @@ fn main() {
         }
         "e" | "tetrad" => {
             create_tetrad();
+        }
+        "p" | "pentad" => {
+            create_pentad();
         }
         _ => {
             println!("Invalid choice. Exiting.");
@@ -194,5 +198,63 @@ fn create_tetrad() {
     println!("Ideal Term: {}", my_tetrad.ideal);
     println!("Instrumental Term: {}", my_tetrad.instrumental);
     println!("Directive Term: {}", my_tetrad.directive);
+    println!("---------------------");
+}
+
+fn create_pentad() {
+    println!("\n--- Creating a Pentad ---");
+    let mut name_input = String::new();
+    print!("Enter a name for your Pentad: ");
+    io::stdout().flush().unwrap();
+    io::stdin().read_line(&mut name_input).expect("Failed to read Pentad name");
+    let name = name_input.trim();
+
+    let mut intrinsic_input = String::new();
+    print!("Enter the Pentad's intrinsic limit: ");
+    io::stdout().flush().unwrap();
+    io::stdin().read_line(&mut intrinsic_input).expect("Failed to read intrinsic limit");
+    let intrinsiclimit = intrinsic_input.trim();
+
+    let mut innerupper_input = String::new();
+    print!("Enter the Pentad's inner upper limit: ");
+    io::stdout().flush().unwrap();
+    io::stdin().read_line(&mut innerupper_input).expect("Failed to read inner upper limit");
+    let innerupperlimit = innerupper_input.trim();
+
+    let mut innerlower_input = String::new();
+    print!("Enter the Pentad's inner lower limit: ");
+    io::stdout().flush().unwrap();
+    io::stdin().read_line(&mut innerlower_input).expect("Failed to read inner lower limit");
+    let innerlowerlimit = innerlower_input.trim();
+
+    let mut outerupper_input = String::new();
+    print!("Enter the Pentad's outer upper limit: ");
+    io::stdout().flush().unwrap();
+    io::stdin().read_line(&mut outerupper_input).expect("Failed to read outer upper limit");
+    let outerupperlimit = outerupper_input.trim();
+
+    let mut outerlower_input = String::new();
+    print!("Enter the Pentad's outer lower limit: ");
+    io::stdout().flush().unwrap();
+    io::stdin().read_line(&mut outerlower_input).expect("Failed to read outer lower limit");
+    let outerlowerlimit = outerlower_input.trim();
+
+    let my_pentad = Pentad::new(
+        if name.is_empty() { "Unnamed Pentad" } else { name },
+        if intrinsiclimit.is_empty() { "Default Intrinsic Limit" } else { intrinsiclimit },
+        if innerupperlimit.is_empty() { "Default Inner Upper Limit" } else { innerupperlimit },
+        if innerlowerlimit.is_empty() { "Default Inner Lower Limit" } else { innerlowerlimit },
+        if outerupperlimit.is_empty() { "Default Outer Upper Limit" } else { outerupperlimit },
+        if outerlowerlimit.is_empty() { "Default Outer Lower Limit" } else { outerlowerlimit },
+    );
+
+    println!("\n--- Pentad Details ---");
+    println!("Pentad Name: {}", my_pentad.name);
+    println!("Core Attribute: {}", Pentad::TERM_ATTRIBUTE_DESCRIPTION);
+    println!("Intrinsic Limit: {}", my_pentad.intrinsiclimit);
+    println!("Inner Upper Limit: {}", my_pentad.innerupperlimit);
+    println!("Inner Lower Limit: {}", my_pentad.innerlowerlimit);
+    println!("Outer Upper Limit: {}", my_pentad.outerupperlimit);
+    println!("Outer Lower Limit: {}", my_pentad.outerlowerlimit);
     println!("---------------------");
 }
