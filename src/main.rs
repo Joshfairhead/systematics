@@ -1,4 +1,3 @@
-
 mod modules; 
 
 use crate::modules::monad::Monad;
@@ -91,6 +90,7 @@ fn create_dyad() {
 
     println!("\n--- Dyad Details ---");
     println!("Dyad Name: {}", my_dyad.name);
+    println!("Core Attribute: {}", Dyad::TERM_ATTRIBUTE_DESCRIPTION);
     println!("Essence: {}", my_dyad.essence);
     println!("Existence: {}", my_dyad.existence);
     println!("--------------------");
