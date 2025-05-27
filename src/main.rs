@@ -3,10 +3,11 @@ mod modules;
 use crate::modules::monad::Monad;
 use crate::modules::dyad::Dyad;
 use crate::modules::triad::Triad;
+use crate::modules::tetrad::Tetrad;
 use std::io::{self, Write}; // Import for input/output
 
 fn main() {
-    println!("Create a new entity: Monad (m), Dyad (d), or Triad (t)?");
+    println!("Create a new entity: Monad (m), Dyad (d), Triad (t), or Tetrad (e)?");
     let mut choice = String::new();
     io::stdin().read_line(&mut choice).expect("Failed to read choice");
 
@@ -19,6 +20,9 @@ fn main() {
         }
         "t" | "triad" => {
             create_triad();
+        }
+        "e" | "tetrad" => {
+            create_tetrad();
         }
         _ => {
             println!("Invalid choice. Exiting.");
@@ -137,8 +141,58 @@ fn create_triad() {
     println!("\n--- Triad Details ---");
     println!("Triad Name: {}", my_triad.name);
     println!("Core Attribute: {}", Triad::TERM_ATTRIBUTE_DESCRIPTION);
-    println!("Active Aspect: {}", my_triad.active);
-    println!("Passive Aspect: {}", my_triad.passive);
-    println!("Reconciling Aspect: {}", my_triad.reconciling);
+    println!("Active Term: {}", my_triad.active);
+    println!("Passive Term: {}", my_triad.passive);
+    println!("Reconciling Term: {}", my_triad.reconciling);
+    println!("---------------------");
+}
+
+fn create_tetrad() {
+    println!("\n--- Creating a Tetrad ---");
+    let mut name_input = String::new();
+    print!("Enter a name for your Tetrad: ");
+    io::stdout().flush().unwrap();
+    io::stdin().read_line(&mut name_input).expect("Failed to read Tetrad name");
+    let name = name_input.trim();
+
+    let mut ground_input = String::new();
+    print!("Enter the Tetrad's ground aspect: ");
+    io::stdout().flush().unwrap();
+    io::stdin().read_line(&mut ground_input).expect("Failed to read ground aspect");
+    let ground = ground_input.trim();
+
+    let mut ideal_input = String::new();
+    print!("Enter the Tetrad's ideal aspect: ");
+    io::stdout().flush().unwrap();
+    io::stdin().read_line(&mut ideal_input).expect("Failed to read ideal aspect");
+    let ideal = ideal_input.trim();
+
+    let mut instrumental_input = String::new();
+    print!("Enter the Tetrad's instrumental aspect: ");
+    io::stdout().flush().unwrap();
+    io::stdin().read_line(&mut instrumental_input).expect("Failed to read instrumental aspect");
+    let instrumental = instrumental_input.trim();
+
+    let mut directive_input = String::new();
+    print!("Enter the Tetrad's directive aspect: ");
+    io::stdout().flush().unwrap();
+    io::stdin().read_line(&mut directive_input).expect("Failed to read directive aspect");
+    let directive = directive_input.trim();
+
+    let my_tetrad = Tetrad::new(
+        if name.is_empty() { "Unnamed Tetrad" } else { name },
+        if ground.is_empty() { "Default Ground" } else { ground },
+        if ideal.is_empty() { "Default Ideal" } else { ideal },
+        if instrumental.is_empty() { "Default Instrumental" } else { instrumental },
+        if directive.is_empty() { "Default Directive" } else { directive },
+    );
+
+    println!("\n--- Tetrad Details ---");
+    println!("Tetrad Name: {}", my_tetrad.name);
+    println!("Core Attribute: {}", Tetrad::TERM_ATTRIBUTE_DESCRIPTION);
+    println!("Ground Term: {}", my_tetrad.ground);
+    println!("Ideal Term: {}", my_tetrad.ideal);
+    println!("Instrumental Term: {}", my_tetrad.instrumental);
+    println!("Directive Term: {}", my_tetrad.directive);
     println!("---------------------");
 }
