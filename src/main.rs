@@ -2,10 +2,11 @@ mod modules;
 
 use crate::modules::monad::Monad;
 use crate::modules::dyad::Dyad;
+use crate::modules::triad::Triad;
 use std::io::{self, Write}; // Import for input/output
 
 fn main() {
-    println!("Create a new entity: Monad (m) or Dyad (d)?");
+    println!("Create a new entity: Monad (m), Dyad (d), or Triad (t)?");
     let mut choice = String::new();
     io::stdin().read_line(&mut choice).expect("Failed to read choice");
 
@@ -15,6 +16,9 @@ fn main() {
         }
         "d" | "dyad" => {
             create_dyad();
+        }
+        "t" | "triad" => {
+            create_triad();
         }
         _ => {
             println!("Invalid choice. Exiting.");
@@ -93,5 +97,48 @@ fn create_dyad() {
     println!("Core Attribute: {}", Dyad::TERM_ATTRIBUTE_DESCRIPTION);
     println!("Essence: {}", my_dyad.essence);
     println!("Existence: {}", my_dyad.existence);
-    println!("--------------------");
+    println!("---------------------");
+}
+
+fn create_triad() {
+    println!("\n--- Creating a Triad ---");
+
+    let mut name_input = String::new();
+    print!("Enter a name for your Triad: ");
+    io::stdout().flush().unwrap();
+    io::stdin().read_line(&mut name_input).expect("Failed to read Triad name");
+    let name = name_input.trim();
+
+    let mut active_input = String::new();
+    print!("Enter the Triad's active aspect: ");
+    io::stdout().flush().unwrap();
+    io::stdin().read_line(&mut active_input).expect("Failed to read active aspect");
+    let active = active_input.trim();
+
+    let mut passive_input = String::new();
+    print!("Enter the Triad's passive aspect: ");
+    io::stdout().flush().unwrap();
+    io::stdin().read_line(&mut passive_input).expect("Failed to read passive aspect");
+    let passive = passive_input.trim();
+
+    let mut reconciling_input = String::new();
+    print!("Enter the Triad's reconciling aspect: ");
+    io::stdout().flush().unwrap();
+    io::stdin().read_line(&mut reconciling_input).expect("Failed to read reconciling aspect");
+    let reconciling = reconciling_input.trim();
+
+    let my_triad = Triad::new(
+        if name.is_empty() { "Unnamed Triad" } else { name },
+        if active.is_empty() { "Default Active" } else { active },
+        if passive.is_empty() { "Default Passive" } else { passive },
+        if reconciling.is_empty() { "Default Reconciling" } else { reconciling },
+    );
+
+    println!("\n--- Triad Details ---");
+    println!("Triad Name: {}", my_triad.name);
+    println!("Core Attribute: {}", Triad::TERM_ATTRIBUTE_DESCRIPTION);
+    println!("Active Aspect: {}", my_triad.active);
+    println!("Passive Aspect: {}", my_triad.passive);
+    println!("Reconciling Aspect: {}", my_triad.reconciling);
+    println!("---------------------");
 }
