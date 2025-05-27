@@ -6,10 +6,11 @@ use crate::modules::triad::Triad;
 use crate::modules::tetrad::Tetrad;
 use crate::modules::pentad::Pentad;
 use crate::modules::hexad::Hexad;
+use crate::modules::heptad::Heptad;
 use std::io::{self, Write}; // Import for input/output
 
 fn main() {
-    println!("Create a new entity: Monad (m), Dyad (d), Triad (t), Tetrad (e), Pentad (p), or Hexad (h)?");
+    println!("Create a new entity: Monad (m), Dyad (d), Triad (t), Tetrad (e), Pentad (p), Hexad (h), or Heptad (s)?");
     let mut choice = String::new();
     io::stdin().read_line(&mut choice).expect("Failed to read choice");
 
@@ -31,6 +32,9 @@ fn main() {
         }
         "h" | "hexad" => {
             create_hexad();
+        }
+        "s" | "heptad" => {
+            create_heptad();
         }
         _ => {
             println!("Invalid choice. Exiting.");
@@ -326,5 +330,79 @@ fn create_hexad() {
     println!("Criteria: {}", my_hexad.criteria);
     println!("Facts: {}", my_hexad.facts);
     println!("Priorities: {}", my_hexad.priorities);
+    println!("---------------------");
+}
+
+fn create_heptad() {
+    println!("\n--- Creating a Heptad ---");
+    let mut name_input = String::new();
+    print!("Enter a name for your Heptad: ");
+    io::stdout().flush().unwrap();
+    io::stdin().read_line(&mut name_input).expect("Failed to read Heptad name");
+    let name = name_input.trim();
+
+    let mut insight_input = String::new();
+    print!("Enter the Heptad's insight: ");
+    io::stdout().flush().unwrap();
+    io::stdin().read_line(&mut insight_input).expect("Failed to read insight");
+    let insight = insight_input.trim();
+
+    let mut research_input = String::new();
+    print!("Enter the Heptad's research: ");
+    io::stdout().flush().unwrap();
+    io::stdin().read_line(&mut research_input).expect("Failed to read research");
+    let research = research_input.trim();
+
+    let mut design_input = String::new();
+    print!("Enter the Heptad's design: ");
+    io::stdout().flush().unwrap();
+    io::stdin().read_line(&mut design_input).expect("Failed to read design");
+    let design = design_input.trim();
+
+    let mut synthesis_input = String::new();
+    print!("Enter the Heptad's synthesis: ");
+    io::stdout().flush().unwrap();
+    io::stdin().read_line(&mut synthesis_input).expect("Failed to read synthesis");
+    let synthesis = synthesis_input.trim();
+
+    let mut application_input = String::new();
+    print!("Enter the Heptad's application: ");
+    io::stdout().flush().unwrap();
+    io::stdin().read_line(&mut application_input).expect("Failed to read application");
+    let application = application_input.trim();
+
+    let mut delivery_input = String::new();
+    print!("Enter the Heptad's delivery: ");
+    io::stdout().flush().unwrap();
+    io::stdin().read_line(&mut delivery_input).expect("Failed to read delivery");
+    let delivery = delivery_input.trim();
+
+    let mut value_input = String::new();
+    print!("Enter the Heptad's value: ");
+    io::stdout().flush().unwrap();
+    io::stdin().read_line(&mut value_input).expect("Failed to read value");
+    let value = value_input.trim();
+
+    let my_heptad = Heptad::new(
+        if name.is_empty() { "Unnamed Heptad" } else { name },
+        if insight.is_empty() { "Default Insight" } else { insight },
+        if research.is_empty() { "Default Research" } else { research },
+        if design.is_empty() { "Default Design" } else { design },
+        if synthesis.is_empty() { "Default Synthesis" } else { synthesis },
+        if application.is_empty() { "Default Application" } else { application },
+        if delivery.is_empty() { "Default Delivery" } else { delivery },
+        if value.is_empty() { "Default Value" } else { value },
+    );
+
+    println!("\n--- Heptad Details ---");
+    println!("Heptad Name: {}", my_heptad.name);
+    println!("Core Attribute: {}", Heptad::TERM_ATTRIBUTE_DESCRIPTION);
+    println!("Insight: {}", my_heptad.insight);
+    println!("Research: {}", my_heptad.research);
+    println!("Design: {}", my_heptad.design);
+    println!("Synthesis: {}", my_heptad.synthesis);
+    println!("Application: {}", my_heptad.application);
+    println!("Delivery: {}", my_heptad.delivery);
+    println!("Value: {}", my_heptad.value);
     println!("---------------------");
 }
