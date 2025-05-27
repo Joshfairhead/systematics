@@ -90,3 +90,13 @@ fn main() {
 
     println!("Yin Yang is a {:?}", yinyang);
 }
+
+
+fn main() {
+    let cetetrad = Tetrad {
+        name: "CE Tetrad".to_string(),
+        ground: "Existential Foundation".to_string(),
+        ideal: "Origination Myth".to_string(),
+        instrumental: "Rich Narrative Structure".to_string(),
+        directive: "Law Conformity".to_string(),
+    };
