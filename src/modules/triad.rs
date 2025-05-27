@@ -1,19 +1,21 @@
-
 #[derive(Debug)]
-struct Triad {
-    name: String,
-    active: String,
-    passive: String,
-    reconciling: String,
+pub struct Triad {
+    pub name: String,
+    pub active: String,
+    pub passive: String,
+    pub reconciling: String,
 }
 
-fn main() {
-    let landry = Triad {
-        name: "triad".to_string(),
-        active: "trancendental".to_string(),
-        passive: "omnisient".to_string(),
-        reconciling: "immanent".to_string(),
-    };
+impl Triad {
+    pub const TERM_ATTRIBUTE_DESCRIPTION: &'static str = "dynamism, relation, will";
 
-    println!("{:?}", landry);
+    /// Creates a new Triad.
+    pub fn new(name: &str, active: &str, passive: &str, reconciling: &str) -> Self {
+        Triad {
+            name: name.to_string(),
+            active: active.to_string(),
+            passive: passive.to_string(),
+            reconciling: reconciling.to_string(),
+        }
+    }
 }
