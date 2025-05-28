@@ -7,10 +7,11 @@ use crate::modules::tetrad::Tetrad;
 use crate::modules::pentad::Pentad;
 use crate::modules::hexad::Hexad;
 use crate::modules::heptad::Heptad;
+use crate::modules::octad::Octad;
 use std::io::{self, Write}; // Import for input/output
 
 fn main() {
-    println!("Create a new entity: Monad (m), Dyad (d), Triad (t), Tetrad (e), Pentad (p), Hexad (h), or Heptad (s)?");
+    println!("Create a new entity: Monad (m), Dyad (d), Triad (t), Tetrad (e), Pentad (p), Hexad (h), Heptad (s), or Octad (o)?");
     let mut choice = String::new();
     io::stdin().read_line(&mut choice).expect("Failed to read choice");
 
@@ -35,6 +36,9 @@ fn main() {
         }
         "s" | "heptad" => {
             create_heptad();
+        }
+        "o" | "octad" => {
+            create_octad();
         }
         _ => {
             println!("Invalid choice. Exiting.");
@@ -404,5 +408,87 @@ fn create_heptad() {
     println!("Application: {}", my_heptad.application);
     println!("Delivery: {}", my_heptad.delivery);
     println!("Value: {}", my_heptad.value);
+    println!("---------------------");
+}
+
+fn create_octad() {
+    println!("\n--- Creating an Octad ---");
+    let mut name_input = String::new();
+    print!("Enter a name for your Octad: ");
+    io::stdout().flush().unwrap();
+    io::stdin().read_line(&mut name_input).expect("Failed to read Octad name");
+    let name = name_input.trim();
+
+    let mut holon_input = String::new();
+    print!("Enter the Octad's smallest significant holon: ");
+    io::stdout().flush().unwrap();
+    io::stdin().read_line(&mut holon_input).expect("Failed to read smallest significant holon");
+    let smallest_significant_holon = holon_input.trim();
+
+    let mut functions_input = String::new();
+    print!("Enter the Octad's critical functions: ");
+    io::stdout().flush().unwrap();
+    io::stdin().read_line(&mut functions_input).expect("Failed to read critical functions");
+    let critical_functions = functions_input.trim();
+
+    let mut platform_input = String::new();
+    print!("Enter the Octad's supportive platform: ");
+    io::stdout().flush().unwrap();
+    io::stdin().read_line(&mut platform_input).expect("Failed to read supportive platform");
+    let supportive_platform = platform_input.trim();
+
+    let mut resourcing_input = String::new();
+    print!("Enter the Octad's necessary resourcing: ");
+    io::stdout().flush().unwrap();
+    io::stdin().read_line(&mut resourcing_input).expect("Failed to read necessary resourcing");
+    let necessary_resourcing = resourcing_input.trim();
+
+    let mut totality_input = String::new();
+    print!("Enter the Octad's integrative totality: ");
+    io::stdout().flush().unwrap();
+    io::stdin().read_line(&mut totality_input).expect("Failed to read integrative totality");
+    let integrative_totality = totality_input.trim();
+
+    let mut values_input = String::new();
+    print!("Enter the Octad's inherent values: ");
+    io::stdout().flush().unwrap();
+    io::stdin().read_line(&mut values_input).expect("Failed to read inherent values");
+    let inherent_values = values_input.trim();
+
+    let mut nature_input = String::new();
+    print!("Enter the Octad's intrinsic nature: ");
+    io::stdout().flush().unwrap();
+    io::stdin().read_line(&mut nature_input).expect("Failed to read intrinsic nature");
+    let intrinsic_nature = nature_input.trim();
+
+    let mut modes_input = String::new();
+    print!("Enter the Octad's organisational modes: ");
+    io::stdout().flush().unwrap();
+    io::stdin().read_line(&mut modes_input).expect("Failed to read organisational modes");
+    let organisational_modes = modes_input.trim();
+
+    let my_octad = Octad::new(
+        if name.is_empty() { "Unnamed Octad" } else { name },
+        if smallest_significant_holon.is_empty() { "Default Smallest Significant Holon" } else { smallest_significant_holon },
+        if critical_functions.is_empty() { "Default Critical Functions" } else { critical_functions },
+        if supportive_platform.is_empty() { "Default Supportive Platform" } else { supportive_platform },
+        if necessary_resourcing.is_empty() { "Default Necessary Resourcing" } else { necessary_resourcing },
+        if integrative_totality.is_empty() { "Default Integrative Totality" } else { integrative_totality },
+        if inherent_values.is_empty() { "Default Inherent Values" } else { inherent_values },
+        if intrinsic_nature.is_empty() { "Default Intrinsic Nature" } else { intrinsic_nature },
+        if organisational_modes.is_empty() { "Default Organisational Modes" } else { organisational_modes },
+    );
+
+    println!("\n--- Octad Details ---");
+    println!("Octad Name: {}", my_octad.name);
+    println!("Core Attribute: {}", Octad::TERM_ATTRIBUTE_DESCRIPTION);
+    println!("Smallest Significant Holon: {}", my_octad.smallest_significant_holon);
+    println!("Critical Functions: {}", my_octad.critical_functions);
+    println!("Supportive Platform: {}", my_octad.supportive_platform);
+    println!("Necessary Resourcing: {}", my_octad.necessary_resourcing);
+    println!("Integrative Totality: {}", my_octad.integrative_totality);
+    println!("Inherent Values: {}", my_octad.inherent_values);
+    println!("Intrinsic Nature: {}", my_octad.intrinsic_nature);
+    println!("Organisational Modes: {}", my_octad.organisational_modes);
     println!("---------------------");
 }
