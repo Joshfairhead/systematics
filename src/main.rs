@@ -11,41 +11,38 @@ use crate::modules::octad::Octad;
 use crate::modules::dodecad::Dodecad;
 use std::io::{self, Write}; // Import for input/output
 
-fn main() {
-    println!("Create a new entity: Monad (m), Dyad (d), Triad (t), Tetrad (e), Pentad (p), Hexad (h), Heptad (s), Octad (o), or Dodecad (w)?");
-    let mut choice = String::new();
-    io::stdin().read_line(&mut choice).expect("Failed to read choice");
+// Helper macro to reduce repetition for input gathering
+macro_rules! get_input {
+    ($prompt:expr, $failure_msg:expr, $default_val:expr) => {{
+        let mut input_str = String::new();
+        print!($prompt);
+        io::stdout().flush().unwrap();
+        io::stdin().read_line(&mut input_str).expect($failure_msg);
+        let trimmed = input_str.trim();
+        if trimmed.is_empty() { $default_val.to_string() } else { trimmed.to_string() }
+    }};
+}
 
-    match choice.trim().to_lowercase().as_str() {
-        "m" | "monad" => {
-            create_monad();
-        }
-        "d" | "dyad" => {
-            create_dyad();
-        }
-        "t" | "triad" => {
-            create_triad();
-        }
-        "e" | "tetrad" => {
-            create_tetrad();
-        }
-        "p" | "pentad" => {
-            create_pentad();
-        }
-        "h" | "hexad" => {
-            create_hexad();
-        }
-        "s" | "heptad" => {
-            create_heptad();
-        }
-        "o" | "octad" => {
-            create_octad();
-        }
-        "w" | "dodecad" => {
-            create_dodecad();
-        }
-        _ => {
-            println!("Invalid choice. Exiting.");
+fn main() {
+    println!("How many terms in your system? (1, 2, 3, 4, 5, 6, 7, 8, or 12)");
+    let mut choice_input = String::new();
+    io::stdin().read_line(&mut choice_input).expect("Failed to read choice");
+
+    match choice_input.trim().parse::<u32>() {
+        Ok(num_terms) => match num_terms {
+            1 => create_monad(),
+            2 => create_dyad(),
+            3 => create_triad(),
+            4 => create_tetrad(),
+            5 => create_pentad(),
+            6 => create_hexad(),
+            7 => create_heptad(),
+            8 => create_octad(),
+            12 => create_dodecad(),
+            _ => println!("Invalid number of terms. Please enter 1, 2, 3, 4, 5, 6, 7, 8, or 12."),
+        },
+        Err(_) => {
+            println!("Invalid input. Please enter a number.");
         }
     }
 }
@@ -53,13 +50,9 @@ fn main() {
 fn create_monad() {
     println!("\n--- Creating a Monad ---");
 
-    let mut monad_name_input = String::new();
-    print!("Enter a name for your Monad: ");
-    io::stdout().flush().unwrap();
-    io::stdin().read_line(&mut monad_name_input).expect("Failed to read name");
-    let monad_name = monad_name_input.trim();
+    let monad_name_str: String = get_input!("Enter a name for your Monad: ", "Failed to read name", "Unnamed Monad");
 
-    let mut my_monad = Monad::new(if monad_name.is_empty() { "Unnamed Monad" } else { monad_name });
+    let mut my_monad = Monad::new(&monad_name_str);
 
     println!("\nEnter terms for \"{}\". Press Enter on an empty line when done.", my_monad.name);
     loop {
@@ -92,28 +85,14 @@ fn create_monad() {
 fn create_dyad() {
     println!("\n--- Creating a Dyad ---");
 
-    let mut dyad_name_input = String::new();
-    print!("Enter a name for your Dyad: ");
-    io::stdout().flush().unwrap();
-    io::stdin().read_line(&mut dyad_name_input).expect("Failed to read Dyad name");
-    let dyad_name = dyad_name_input.trim();
-
-    let mut essence_input = String::new();
-    print!("Enter the Dyad's essence: ");
-    io::stdout().flush().unwrap();
-    io::stdin().read_line(&mut essence_input).expect("Failed to read essence");
-    let essence = essence_input.trim();
-
-    let mut existence_input = String::new();
-    print!("Enter the Dyad's existence: ");
-    io::stdout().flush().unwrap();
-    io::stdin().read_line(&mut existence_input).expect("Failed to read existence");
-    let existence = existence_input.trim();
+    let name_str: String = get_input!("Enter a name for your Dyad: ", "Failed to read Dyad name", "Unnamed Dyad");
+    let essence_str: String = get_input!("Enter the Dyad's essence: ", "Failed to read essence", "Default Essence");
+    let existence_str: String = get_input!("Enter the Dyad's existence: ", "Failed to read existence", "Default Existence");
 
     let my_dyad = Dyad::new(
-        if dyad_name.is_empty() { "Unnamed Dyad" } else { dyad_name },
-        if essence.is_empty() { "Default Essence" } else { essence },
-        if existence.is_empty() { "Default Existence" } else { existence },
+        &name_str,
+        &essence_str,
+        &existence_str,
     );
 
     println!("\n--- Dyad Details ---");
@@ -127,35 +106,16 @@ fn create_dyad() {
 fn create_triad() {
     println!("\n--- Creating a Triad ---");
 
-    let mut name_input = String::new();
-    print!("Enter a name for your Triad: ");
-    io::stdout().flush().unwrap();
-    io::stdin().read_line(&mut name_input).expect("Failed to read Triad name");
-    let name = name_input.trim();
-
-    let mut active_input = String::new();
-    print!("Enter the Triad's active aspect: ");
-    io::stdout().flush().unwrap();
-    io::stdin().read_line(&mut active_input).expect("Failed to read active aspect");
-    let active = active_input.trim();
-
-    let mut passive_input = String::new();
-    print!("Enter the Triad's passive aspect: ");
-    io::stdout().flush().unwrap();
-    io::stdin().read_line(&mut passive_input).expect("Failed to read passive aspect");
-    let passive = passive_input.trim();
-
-    let mut reconciling_input = String::new();
-    print!("Enter the Triad's reconciling aspect: ");
-    io::stdout().flush().unwrap();
-    io::stdin().read_line(&mut reconciling_input).expect("Failed to read reconciling aspect");
-    let reconciling = reconciling_input.trim();
+    let name_str: String = get_input!("Enter a name for your Triad: ", "Failed to read Triad name", "Unnamed Triad");
+    let active_str: String = get_input!("Enter the Triad's active aspect: ", "Failed to read active aspect", "Default Active");
+    let passive_str: String = get_input!("Enter the Triad's passive aspect: ", "Failed to read passive aspect", "Default Passive");
+    let reconciling_str: String = get_input!("Enter the Triad's reconciling aspect: ", "Failed to read reconciling aspect", "Default Reconciling");
 
     let my_triad = Triad::new(
-        if name.is_empty() { "Unnamed Triad" } else { name },
-        if active.is_empty() { "Default Active" } else { active },
-        if passive.is_empty() { "Default Passive" } else { passive },
-        if reconciling.is_empty() { "Default Reconciling" } else { reconciling },
+        &name_str,
+        &active_str,
+        &passive_str,
+        &reconciling_str,
     );
 
     println!("\n--- Triad Details ---");
@@ -169,42 +129,18 @@ fn create_triad() {
 
 fn create_tetrad() {
     println!("\n--- Creating a Tetrad ---");
-    let mut name_input = String::new();
-    print!("Enter a name for your Tetrad: ");
-    io::stdout().flush().unwrap();
-    io::stdin().read_line(&mut name_input).expect("Failed to read Tetrad name");
-    let name = name_input.trim();
-
-    let mut ground_input = String::new();
-    print!("Enter the Tetrad's ground aspect: ");
-    io::stdout().flush().unwrap();
-    io::stdin().read_line(&mut ground_input).expect("Failed to read ground aspect");
-    let ground = ground_input.trim();
-
-    let mut ideal_input = String::new();
-    print!("Enter the Tetrad's ideal aspect: ");
-    io::stdout().flush().unwrap();
-    io::stdin().read_line(&mut ideal_input).expect("Failed to read ideal aspect");
-    let ideal = ideal_input.trim();
-
-    let mut instrumental_input = String::new();
-    print!("Enter the Tetrad's instrumental aspect: ");
-    io::stdout().flush().unwrap();
-    io::stdin().read_line(&mut instrumental_input).expect("Failed to read instrumental aspect");
-    let instrumental = instrumental_input.trim();
-
-    let mut directive_input = String::new();
-    print!("Enter the Tetrad's directive aspect: ");
-    io::stdout().flush().unwrap();
-    io::stdin().read_line(&mut directive_input).expect("Failed to read directive aspect");
-    let directive = directive_input.trim();
+    let name_str: String = get_input!("Enter a name for your Tetrad: ", "Failed to read Tetrad name", "Unnamed Tetrad");
+    let ground_str: String = get_input!("Enter the Tetrad's ground aspect: ", "Failed to read ground aspect", "Default Ground");
+    let ideal_str: String = get_input!("Enter the Tetrad's ideal aspect: ", "Failed to read ideal aspect", "Default Ideal");
+    let instrumental_str: String = get_input!("Enter the Tetrad's instrumental aspect: ", "Failed to read instrumental aspect", "Default Instrumental");
+    let directive_str: String = get_input!("Enter the Tetrad's directive aspect: ", "Failed to read directive aspect", "Default Directive");
 
     let my_tetrad = Tetrad::new(
-        if name.is_empty() { "Unnamed Tetrad" } else { name },
-        if ground.is_empty() { "Default Ground" } else { ground },
-        if ideal.is_empty() { "Default Ideal" } else { ideal },
-        if instrumental.is_empty() { "Default Instrumental" } else { instrumental },
-        if directive.is_empty() { "Default Directive" } else { directive },
+        &name_str,
+        &ground_str,
+        &ideal_str,
+        &instrumental_str,
+        &directive_str,
     );
 
     println!("\n--- Tetrad Details ---");
@@ -219,49 +155,20 @@ fn create_tetrad() {
 
 fn create_pentad() {
     println!("\n--- Creating a Pentad ---");
-    let mut name_input = String::new();
-    print!("Enter a name for your Pentad: ");
-    io::stdout().flush().unwrap();
-    io::stdin().read_line(&mut name_input).expect("Failed to read Pentad name");
-    let name = name_input.trim();
-
-    let mut intrinsic_input = String::new();
-    print!("Enter the Pentad's intrinsic limit: ");
-    io::stdout().flush().unwrap();
-    io::stdin().read_line(&mut intrinsic_input).expect("Failed to read intrinsic limit");
-    let intrinsiclimit = intrinsic_input.trim();
-
-    let mut innerupper_input = String::new();
-    print!("Enter the Pentad's inner upper limit: ");
-    io::stdout().flush().unwrap();
-    io::stdin().read_line(&mut innerupper_input).expect("Failed to read inner upper limit");
-    let innerupperlimit = innerupper_input.trim();
-
-    let mut innerlower_input = String::new();
-    print!("Enter the Pentad's inner lower limit: ");
-    io::stdout().flush().unwrap();
-    io::stdin().read_line(&mut innerlower_input).expect("Failed to read inner lower limit");
-    let innerlowerlimit = innerlower_input.trim();
-
-    let mut outerupper_input = String::new();
-    print!("Enter the Pentad's outer upper limit: ");
-    io::stdout().flush().unwrap();
-    io::stdin().read_line(&mut outerupper_input).expect("Failed to read outer upper limit");
-    let outerupperlimit = outerupper_input.trim();
-
-    let mut outerlower_input = String::new();
-    print!("Enter the Pentad's outer lower limit: ");
-    io::stdout().flush().unwrap();
-    io::stdin().read_line(&mut outerlower_input).expect("Failed to read outer lower limit");
-    let outerlowerlimit = outerlower_input.trim();
+    let name_str: String = get_input!("Enter a name for your Pentad: ", "Failed to read Pentad name", "Unnamed Pentad");
+    let intrinsiclimit_str: String = get_input!("Enter the Pentad's intrinsic limit: ", "Failed to read intrinsic limit", "Default Intrinsic Limit");
+    let innerupperlimit_str: String = get_input!("Enter the Pentad's inner upper limit: ", "Failed to read inner upper limit", "Default Inner Upper Limit");
+    let innerlowerlimit_str: String = get_input!("Enter the Pentad's inner lower limit: ", "Failed to read inner lower limit", "Default Inner Lower Limit");
+    let outerupperlimit_str: String = get_input!("Enter the Pentad's outer upper limit: ", "Failed to read outer upper limit", "Default Outer Upper Limit");
+    let outerlowerlimit_str: String = get_input!("Enter the Pentad's outer lower limit: ", "Failed to read outer lower limit", "Default Outer Lower Limit");
 
     let my_pentad = Pentad::new(
-        if name.is_empty() { "Unnamed Pentad" } else { name },
-        if intrinsiclimit.is_empty() { "Default Intrinsic Limit" } else { intrinsiclimit },
-        if innerupperlimit.is_empty() { "Default Inner Upper Limit" } else { innerupperlimit },
-        if innerlowerlimit.is_empty() { "Default Inner Lower Limit" } else { innerlowerlimit },
-        if outerupperlimit.is_empty() { "Default Outer Upper Limit" } else { outerupperlimit },
-        if outerlowerlimit.is_empty() { "Default Outer Lower Limit" } else { outerlowerlimit },
+        &name_str,
+        &intrinsiclimit_str,
+        &innerupperlimit_str,
+        &innerlowerlimit_str,
+        &outerupperlimit_str,
+        &outerlowerlimit_str,
     );
 
     println!("\n--- Pentad Details ---");
@@ -277,56 +184,22 @@ fn create_pentad() {
 
 fn create_hexad() {
     println!("\n--- Creating a Hexad ---");
-    let mut name_input = String::new();
-    print!("Enter a name for your Hexad: ");
-    io::stdout().flush().unwrap();
-    io::stdin().read_line(&mut name_input).expect("Failed to read Hexad name");
-    let name = name_input.trim();
-
-    let mut resources_input = String::new();
-    print!("Enter the Hexad's resources: ");
-    io::stdout().flush().unwrap();
-    io::stdin().read_line(&mut resources_input).expect("Failed to read resources");
-    let resources = resources_input.trim();
-
-    let mut values_input = String::new();
-    print!("Enter the Hexad's values: ");
-    io::stdout().flush().unwrap();
-    io::stdin().read_line(&mut values_input).expect("Failed to read values");
-    let values = values_input.trim();
-
-    let mut options_input = String::new();
-    print!("Enter the Hexad's options: ");
-    io::stdout().flush().unwrap();
-    io::stdin().read_line(&mut options_input).expect("Failed to read options");
-    let options = options_input.trim();
-
-    let mut criteria_input = String::new();
-    print!("Enter the Hexad's criteria: ");
-    io::stdout().flush().unwrap();
-    io::stdin().read_line(&mut criteria_input).expect("Failed to read criteria");
-    let criteria = criteria_input.trim();
-
-    let mut facts_input = String::new();
-    print!("Enter the Hexad's facts: ");
-    io::stdout().flush().unwrap();
-    io::stdin().read_line(&mut facts_input).expect("Failed to read facts");
-    let facts = facts_input.trim();
-
-    let mut priorities_input = String::new();
-    print!("Enter the Hexad's priorities: ");
-    io::stdout().flush().unwrap();
-    io::stdin().read_line(&mut priorities_input).expect("Failed to read priorities");
-    let priorities = priorities_input.trim();
+    let name_str: String = get_input!("Enter a name for your Hexad: ", "Failed to read Hexad name", "Unnamed Hexad");
+    let resources_str: String = get_input!("Enter the Hexad's resources: ", "Failed to read resources", "Default Resources");
+    let values_str: String = get_input!("Enter the Hexad's values: ", "Failed to read values", "Default Values");
+    let options_str: String = get_input!("Enter the Hexad's options: ", "Failed to read options", "Default Options");
+    let criteria_str: String = get_input!("Enter the Hexad's criteria: ", "Failed to read criteria", "Default Criteria");
+    let facts_str: String = get_input!("Enter the Hexad's facts: ", "Failed to read facts", "Default Facts");
+    let priorities_str: String = get_input!("Enter the Hexad's priorities: ", "Failed to read priorities", "Default Priorities");
 
     let my_hexad = Hexad::new(
-        if name.is_empty() { "Unnamed Hexad" } else { name },
-        if resources.is_empty() { "Default Resources" } else { resources },
-        if values.is_empty() { "Default Values" } else { values },
-        if options.is_empty() { "Default Options" } else { options },
-        if criteria.is_empty() { "Default Criteria" } else { criteria },
-        if facts.is_empty() { "Default Facts" } else { facts },
-        if priorities.is_empty() { "Default Priorities" } else { priorities },
+        &name_str,
+        &resources_str,
+        &values_str,
+        &options_str,
+        &criteria_str,
+        &facts_str,
+        &priorities_str,
     );
 
     println!("\n--- Hexad Details ---");
@@ -343,63 +216,24 @@ fn create_hexad() {
 
 fn create_heptad() {
     println!("\n--- Creating a Heptad ---");
-    let mut name_input = String::new();
-    print!("Enter a name for your Heptad: ");
-    io::stdout().flush().unwrap();
-    io::stdin().read_line(&mut name_input).expect("Failed to read Heptad name");
-    let name = name_input.trim();
-
-    let mut insight_input = String::new();
-    print!("Enter the Heptad's insight: ");
-    io::stdout().flush().unwrap();
-    io::stdin().read_line(&mut insight_input).expect("Failed to read insight");
-    let insight = insight_input.trim();
-
-    let mut research_input = String::new();
-    print!("Enter the Heptad's research: ");
-    io::stdout().flush().unwrap();
-    io::stdin().read_line(&mut research_input).expect("Failed to read research");
-    let research = research_input.trim();
-
-    let mut design_input = String::new();
-    print!("Enter the Heptad's design: ");
-    io::stdout().flush().unwrap();
-    io::stdin().read_line(&mut design_input).expect("Failed to read design");
-    let design = design_input.trim();
-
-    let mut synthesis_input = String::new();
-    print!("Enter the Heptad's synthesis: ");
-    io::stdout().flush().unwrap();
-    io::stdin().read_line(&mut synthesis_input).expect("Failed to read synthesis");
-    let synthesis = synthesis_input.trim();
-
-    let mut application_input = String::new();
-    print!("Enter the Heptad's application: ");
-    io::stdout().flush().unwrap();
-    io::stdin().read_line(&mut application_input).expect("Failed to read application");
-    let application = application_input.trim();
-
-    let mut delivery_input = String::new();
-    print!("Enter the Heptad's delivery: ");
-    io::stdout().flush().unwrap();
-    io::stdin().read_line(&mut delivery_input).expect("Failed to read delivery");
-    let delivery = delivery_input.trim();
-
-    let mut value_input = String::new();
-    print!("Enter the Heptad's value: ");
-    io::stdout().flush().unwrap();
-    io::stdin().read_line(&mut value_input).expect("Failed to read value");
-    let value = value_input.trim();
+    let name_str: String = get_input!("Enter a name for your Heptad: ", "Failed to read Heptad name", "Unnamed Heptad");
+    let insight_str: String = get_input!("Enter the Heptad's insight: ", "Failed to read insight", "Default Insight");
+    let research_str: String = get_input!("Enter the Heptad's research: ", "Failed to read research", "Default Research");
+    let design_str: String = get_input!("Enter the Heptad's design: ", "Failed to read design", "Default Design");
+    let synthesis_str: String = get_input!("Enter the Heptad's synthesis: ", "Failed to read synthesis", "Default Synthesis");
+    let application_str: String = get_input!("Enter the Heptad's application: ", "Failed to read application", "Default Application");
+    let delivery_str: String = get_input!("Enter the Heptad's delivery: ", "Failed to read delivery", "Default Delivery");
+    let value_str: String = get_input!("Enter the Heptad's value: ", "Failed to read value", "Default Value");
 
     let my_heptad = Heptad::new(
-        if name.is_empty() { "Unnamed Heptad" } else { name },
-        if insight.is_empty() { "Default Insight" } else { insight },
-        if research.is_empty() { "Default Research" } else { research },
-        if design.is_empty() { "Default Design" } else { design },
-        if synthesis.is_empty() { "Default Synthesis" } else { synthesis },
-        if application.is_empty() { "Default Application" } else { application },
-        if delivery.is_empty() { "Default Delivery" } else { delivery },
-        if value.is_empty() { "Default Value" } else { value },
+        &name_str,
+        &insight_str,
+        &research_str,
+        &design_str,
+        &synthesis_str,
+        &application_str,
+        &delivery_str,
+        &value_str,
     );
 
     println!("\n--- Heptad Details ---");
@@ -417,70 +251,26 @@ fn create_heptad() {
 
 fn create_octad() {
     println!("\n--- Creating an Octad ---");
-    let mut name_input = String::new();
-    print!("Enter a name for your Octad: ");
-    io::stdout().flush().unwrap();
-    io::stdin().read_line(&mut name_input).expect("Failed to read Octad name");
-    let name = name_input.trim();
-
-    let mut holon_input = String::new();
-    print!("Enter the Octad's smallest significant holon: ");
-    io::stdout().flush().unwrap();
-    io::stdin().read_line(&mut holon_input).expect("Failed to read smallest significant holon");
-    let smallest_significant_holon = holon_input.trim();
-
-    let mut functions_input = String::new();
-    print!("Enter the Octad's critical functions: ");
-    io::stdout().flush().unwrap();
-    io::stdin().read_line(&mut functions_input).expect("Failed to read critical functions");
-    let critical_functions = functions_input.trim();
-
-    let mut platform_input = String::new();
-    print!("Enter the Octad's supportive platform: ");
-    io::stdout().flush().unwrap();
-    io::stdin().read_line(&mut platform_input).expect("Failed to read supportive platform");
-    let supportive_platform = platform_input.trim();
-
-    let mut resourcing_input = String::new();
-    print!("Enter the Octad's necessary resourcing: ");
-    io::stdout().flush().unwrap();
-    io::stdin().read_line(&mut resourcing_input).expect("Failed to read necessary resourcing");
-    let necessary_resourcing = resourcing_input.trim();
-
-    let mut totality_input = String::new();
-    print!("Enter the Octad's integrative totality: ");
-    io::stdout().flush().unwrap();
-    io::stdin().read_line(&mut totality_input).expect("Failed to read integrative totality");
-    let integrative_totality = totality_input.trim();
-
-    let mut values_input = String::new();
-    print!("Enter the Octad's inherent values: ");
-    io::stdout().flush().unwrap();
-    io::stdin().read_line(&mut values_input).expect("Failed to read inherent values");
-    let inherent_values = values_input.trim();
-
-    let mut nature_input = String::new();
-    print!("Enter the Octad's intrinsic nature: ");
-    io::stdout().flush().unwrap();
-    io::stdin().read_line(&mut nature_input).expect("Failed to read intrinsic nature");
-    let intrinsic_nature = nature_input.trim();
-
-    let mut modes_input = String::new();
-    print!("Enter the Octad's organisational modes: ");
-    io::stdout().flush().unwrap();
-    io::stdin().read_line(&mut modes_input).expect("Failed to read organisational modes");
-    let organisational_modes = modes_input.trim();
+    let name_str: String = get_input!("Enter a name for your Octad: ", "Failed to read Octad name", "Unnamed Octad");
+    let smallest_significant_holon_str: String = get_input!("Enter the Octad's smallest significant holon: ", "Failed to read smallest significant holon", "Default Smallest Significant Holon");
+    let critical_functions_str: String = get_input!("Enter the Octad's critical functions: ", "Failed to read critical functions", "Default Critical Functions");
+    let supportive_platform_str: String = get_input!("Enter the Octad's supportive platform: ", "Failed to read supportive platform", "Default Supportive Platform");
+    let necessary_resourcing_str: String = get_input!("Enter the Octad's necessary resourcing: ", "Failed to read necessary resourcing", "Default Necessary Resourcing");
+    let integrative_totality_str: String = get_input!("Enter the Octad's integrative totality: ", "Failed to read integrative totality", "Default Integrative Totality");
+    let inherent_values_str: String = get_input!("Enter the Octad's inherent values: ", "Failed to read inherent values", "Default Inherent Values");
+    let intrinsic_nature_str: String = get_input!("Enter the Octad's intrinsic nature: ", "Failed to read intrinsic nature", "Default Intrinsic Nature");
+    let organisational_modes_str: String = get_input!("Enter the Octad's organisational modes: ", "Failed to read organisational modes", "Default Organisational Modes");
 
     let my_octad = Octad::new(
-        if name.is_empty() { "Unnamed Octad" } else { name },
-        if smallest_significant_holon.is_empty() { "Default Smallest Significant Holon" } else { smallest_significant_holon },
-        if critical_functions.is_empty() { "Default Critical Functions" } else { critical_functions },
-        if supportive_platform.is_empty() { "Default Supportive Platform" } else { supportive_platform },
-        if necessary_resourcing.is_empty() { "Default Necessary Resourcing" } else { necessary_resourcing },
-        if integrative_totality.is_empty() { "Default Integrative Totality" } else { integrative_totality },
-        if inherent_values.is_empty() { "Default Inherent Values" } else { inherent_values },
-        if intrinsic_nature.is_empty() { "Default Intrinsic Nature" } else { intrinsic_nature },
-        if organisational_modes.is_empty() { "Default Organisational Modes" } else { organisational_modes },
+        &name_str,
+        &smallest_significant_holon_str,
+        &critical_functions_str,
+        &supportive_platform_str,
+        &necessary_resourcing_str,
+        &integrative_totality_str,
+        &inherent_values_str,
+        &intrinsic_nature_str,
+        &organisational_modes_str,
     );
 
     println!("\n--- Octad Details ---");
@@ -504,18 +294,6 @@ fn create_dodecad() {
     io::stdout().flush().unwrap();
     io::stdin().read_line(&mut name_input).expect("Failed to read Dodecad name");
     let name = name_input.trim();
-
-    // Helper macro to reduce repetition for input gathering
-    macro_rules! get_input {
-        ($prompt:expr, $failure_msg:expr, $default_val:expr) => {{
-            let mut input_str = String::new();
-            print!($prompt);
-            io::stdout().flush().unwrap();
-            io::stdin().read_line(&mut input_str).expect($failure_msg);
-            let trimmed = input_str.trim();
-            if trimmed.is_empty() { $default_val.to_string() } else { trimmed.to_string() }
-        }};
-    }
 
     let autocracy: String = get_input!("Enter Dodecad's autocracy: ", "Failed to read autocracy", "Default Autocracy");
     let domination: String = get_input!("Enter Dodecad's domination: ", "Failed to read domination", "Default Domination");
