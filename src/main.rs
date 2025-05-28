@@ -8,10 +8,11 @@ use crate::modules::pentad::Pentad;
 use crate::modules::hexad::Hexad;
 use crate::modules::heptad::Heptad;
 use crate::modules::octad::Octad;
+use crate::modules::dodecad::Dodecad;
 use std::io::{self, Write}; // Import for input/output
 
 fn main() {
-    println!("Create a new entity: Monad (m), Dyad (d), Triad (t), Tetrad (e), Pentad (p), Hexad (h), Heptad (s), or Octad (o)?");
+    println!("Create a new entity: Monad (m), Dyad (d), Triad (t), Tetrad (e), Pentad (p), Hexad (h), Heptad (s), Octad (o), or Dodecad (w)?");
     let mut choice = String::new();
     io::stdin().read_line(&mut choice).expect("Failed to read choice");
 
@@ -39,6 +40,9 @@ fn main() {
         }
         "o" | "octad" => {
             create_octad();
+        }
+        "w" | "dodecad" => {
+            create_dodecad();
         }
         _ => {
             println!("Invalid choice. Exiting.");
@@ -490,5 +494,72 @@ fn create_octad() {
     println!("Inherent Values: {}", my_octad.inherent_values);
     println!("Intrinsic Nature: {}", my_octad.intrinsic_nature);
     println!("Organisational Modes: {}", my_octad.organisational_modes);
+    println!("---------------------");
+}
+
+fn create_dodecad() {
+    println!("\n--- Creating a Dodecad ---");
+    let mut name_input = String::new();
+    print!("Enter a name for your Dodecad: ");
+    io::stdout().flush().unwrap();
+    io::stdin().read_line(&mut name_input).expect("Failed to read Dodecad name");
+    let name = name_input.trim();
+
+    // Helper macro to reduce repetition for input gathering
+    macro_rules! get_input {
+        ($prompt:expr, $failure_msg:expr, $default_val:expr) => {{
+            let mut input_str = String::new();
+            print!($prompt);
+            io::stdout().flush().unwrap();
+            io::stdin().read_line(&mut input_str).expect($failure_msg);
+            let trimmed = input_str.trim();
+            if trimmed.is_empty() { $default_val.to_string() } else { trimmed.to_string() }
+        }};
+    }
+
+    let autocracy: String = get_input!("Enter Dodecad's autocracy: ", "Failed to read autocracy", "Default Autocracy");
+    let domination: String = get_input!("Enter Dodecad's domination: ", "Failed to read domination", "Default Domination");
+    let creativity: String = get_input!("Enter Dodecad's creativity: ", "Failed to read creativity", "Default Creativity");
+    let pattern: String = get_input!("Enter Dodecad's pattern: ", "Failed to read pattern", "Default Pattern");
+    let individuality: String = get_input!("Enter Dodecad's individuality: ", "Failed to read individuality", "Default Individuality");
+    let structure: String = get_input!("Enter Dodecad's structure: ", "Failed to read structure", "Default Structure");
+    let repetition: String = get_input!("Enter Dodecad's repetition: ", "Failed to read repetition", "Default Repetition");
+    let potentiality: String = get_input!("Enter Dodecad's potentiality: ", "Failed to read potentiality", "Default Potentiality");
+    let subsistence: String = get_input!("Enter Dodecad's subsistence: ", "Failed to read subsistence", "Default Subsistence");
+    let relatedness: String = get_input!("Enter Dodecad's relatedness: ", "Failed to read relatedness", "Default Relatedness");
+    let polarity: String = get_input!("Enter Dodecad's polarity: ", "Failed to read polarity", "Default Polarity");
+    let wholeness: String = get_input!("Enter Dodecad's wholeness: ", "Failed to read wholeness", "Default Wholeness");
+
+    let my_dodecad = Dodecad::new(
+        if name.is_empty() { "Unnamed Dodecad" } else { name },
+        &autocracy,
+        &domination,
+        &creativity,
+        &pattern,
+        &individuality,
+        &structure,
+        &repetition,
+        &potentiality,
+        &subsistence,
+        &relatedness,
+        &polarity,
+        &wholeness,
+    );
+
+    println!("\n--- Dodecad Details ---");
+    println!("Dodecad Name: {}", my_dodecad.name);
+    println!("Core Attribute: {}", Dodecad::TERM_ATTRIBUTE_DESCRIPTION);
+    println!("Autocracy: {}", my_dodecad.autocracy);
+    println!("Domination: {}", my_dodecad.domination);
+    println!("Creativity: {}", my_dodecad.creativity);
+    println!("Pattern: {}", my_dodecad.pattern);
+    println!("Individuality: {}", my_dodecad.individuality);
+    println!("Structure: {}", my_dodecad.structure);
+    println!("Repetition: {}", my_dodecad.repetition);
+    println!("Potentiality: {}", my_dodecad.potentiality);
+    println!("Subsistence: {}", my_dodecad.subsistence);
+    println!("Relatedness: {}", my_dodecad.relatedness);
+    println!("Polarity: {}", my_dodecad.polarity);
+    println!("Wholeness: {}", my_dodecad.wholeness);
     println!("---------------------");
 }
