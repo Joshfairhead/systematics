@@ -1,0 +1,1 @@
+system_selector::CheckPropsAll<HasPropson_system_selected<AssertAllProps>>
