@@ -1,0 +1,10 @@
+/Users/joshfairhead/Dev/systematics/rust_yew_frontend/target/wasm32-unknown-unknown/debug/deps/libgloo_storage-21bb0b0c1a75f3d7.rmeta: /Users/joshfairhead/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-storage-0.3.0/src/lib.rs /Users/joshfairhead/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-storage-0.3.0/src/errors.rs /Users/joshfairhead/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-storage-0.3.0/src/local_storage.rs /Users/joshfairhead/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-storage-0.3.0/src/session_storage.rs
+
+/Users/joshfairhead/Dev/systematics/rust_yew_frontend/target/wasm32-unknown-unknown/debug/deps/libgloo_storage-21bb0b0c1a75f3d7.rlib: /Users/joshfairhead/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-storage-0.3.0/src/lib.rs /Users/joshfairhead/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-storage-0.3.0/src/errors.rs /Users/joshfairhead/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-storage-0.3.0/src/local_storage.rs /Users/joshfairhead/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-storage-0.3.0/src/session_storage.rs
+
+/Users/joshfairhead/Dev/systematics/rust_yew_frontend/target/wasm32-unknown-unknown/debug/deps/gloo_storage-21bb0b0c1a75f3d7.d: /Users/joshfairhead/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-storage-0.3.0/src/lib.rs /Users/joshfairhead/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-storage-0.3.0/src/errors.rs /Users/joshfairhead/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-storage-0.3.0/src/local_storage.rs /Users/joshfairhead/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-storage-0.3.0/src/session_storage.rs
+
+/Users/joshfairhead/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-storage-0.3.0/src/lib.rs:
+/Users/joshfairhead/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-storage-0.3.0/src/errors.rs:
+/Users/joshfairhead/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-storage-0.3.0/src/local_storage.rs:
+/Users/joshfairhead/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-storage-0.3.0/src/session_storage.rs:
