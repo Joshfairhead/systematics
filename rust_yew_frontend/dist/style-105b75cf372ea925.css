@@ -1,0 +1,102 @@
+body {
+    font-family: sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #ffffff;
+    color: #333;
+    height: 100vh;
+    overflow: hidden; /* Prevent scrolling to maintain full viewport */
+}
+
+.app-container {
+    position: relative;
+    height: 100vh;
+    width: 100vw;
+}
+
+.system-selector-container {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 10;
+    padding: 10px;
+    background-color: #e9e9e9;
+    border-radius: 5px;
+}
+
+.system-selector-container label {
+    margin-right: 10px;
+}
+
+.system-selector-container select {
+    padding: 5px;
+    border-radius: 3px;
+    border: 1px solid #ccc;
+}
+
+.main-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* Full viewport height for true centering */
+    width: 100vw;  /* Full viewport width */
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.main-content img {
+    display: block;
+    max-width: 90vw; /* Responsive to viewport width */
+    max-height: 70vh; /* Responsive to viewport height */
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    /* Ensure the image is perfectly centered */
+    margin: auto;
+}
+
+/* System-specific image sizing with responsive limits */
+.system-1 img {
+    max-width: min(300px, 80vw);
+    max-height: min(300px, 60vh);
+}
+
+.system-2 img {
+    max-width: min(350px, 83vw);
+    max-height: min(350px, 63vh);
+}
+
+.system-3 img {
+    max-width: min(250px, 78vw);
+    max-height: min(250px, 58vh);
+}
+
+.system-4 img {
+    max-width: min(300px, 80vw);
+    max-height: min(300px, 60vh);
+}
+
+.system-5 img {
+    max-width: min(370px, 85vw);
+    max-height: min(370px, 65vh);
+}
+
+.system-6 img {
+    max-width: min(360px, 84vw);
+    max-height: min(360px, 64vh);
+}
+
+.system-7 img {
+    max-width: min(440px, 86vw);
+    max-height: min(440px, 66vh);
+}
+
+.system-8 img {
+    max-width: min(630px, 95vw);
+    max-height: min(630px, 75vh);
+}
+
+h1 {
+    color: #0078d4;
+} 
