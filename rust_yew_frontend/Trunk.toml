@@ -1,0 +1,6 @@
+[build]
+target = "index.html"
+
+[serve]
+# Serve static files from the static directory
+assets = "static" 

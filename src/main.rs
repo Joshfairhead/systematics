@@ -151,7 +151,7 @@ fn create_tetrad() {
     println!("Instrumental Term: {}", my_tetrad.instrumental);
     println!("Directive Term: {}", my_tetrad.directive);
     println!("---------------------");
-}
+    }
 
 fn create_pentad() {
     println!("\n--- Creating a Pentad ---");
