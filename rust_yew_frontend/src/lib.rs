@@ -1,45 +1,65 @@
-use yew::prelude::*;
+use yew::{html, Component, Context, Html, Callback};
 use wasm_bindgen::prelude::*;
 
 mod components; // Declare the components module
 use components::system_selector::SystemSelector; // Import the SystemSelector
 
-#[function_component(App)]
-fn app() -> Html {
-    // State to hold the currently selected system number. Default to 1 (Monad).
-    let selected_system_num = use_state(|| 1_i32);
+pub struct App {
+    selected_system_num: i32,
+}
 
-    let on_system_change = {
-        let selected_system_num = selected_system_num.clone();
-        Callback::from(move |new_system_num: i32| {
-            selected_system_num.set(new_system_num);
-        })
-    };
+pub enum Msg {
+    SystemSelected(i32),
+}
 
-    // Determine image source based on selection
-    let (image_src, image_alt) = match *selected_system_num {
-        1 => ("monad.png", "Monad System"),
-        2 => ("dyad.png", "Dyad System"),
-        3 => ("triad.png", "Triad System"),
-        4 => ("tetrad.png", "Tetrad System"),
-        5 => ("pentad.png", "Pentad System"),
-        6 => ("hexad.png", "Hexad System"),
-        7 => ("heptad.png", "Heptad System"),
-        8 => ("octad.png", "Octad System"),
-        _ => ("default.png", "System Diagram"),
-    };
+impl Component for App {
+    type Message = Msg;
+    type Properties = ();
 
-    html! {
-        <div class="app-container">
-            <SystemSelector on_system_change={on_system_change} />
-            <div class="main-content">
-                <img 
-                    src={image_src}
-                    alt={image_alt}
-                    style="max-width: 500px; max-height: 500px;"
-                />
+    fn create(_ctx: &Context<Self>) -> Self {
+        Self {
+            selected_system_num: 1,
+        }
+    }
+
+    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
+        match msg {
+            Msg::SystemSelected(system_num) => {
+                self.selected_system_num = system_num;
+                true
+            }
+        }
+    }
+
+    fn view(&self, ctx: &Context<Self>) -> Html {
+        let on_system_selected = ctx.link().callback(Msg::SystemSelected);
+        
+        // Determine the image URL based on the selected system
+        let image_url = match self.selected_system_num {
+            1 => "monad.png",
+            2 => "dyad.png",
+            3 => "triad.png",
+            4 => "tetrad.png",
+            5 => "pentad.png",
+            6 => "hexad.png",
+            7 => "heptad.png",
+            8 => "octad.png",
+            _ => "default.png",
+        };
+
+        // Create system-specific CSS class
+        let system_class = format!("system-{}", self.selected_system_num);
+
+        html! {
+            <div class="app-container">
+                <div class="system-selector-container">
+                    <SystemSelector {on_system_selected} />
+                </div>
+                <div class={format!("main-content {}", system_class)}>
+                    <img src={image_url} alt={format!("System {}", self.selected_system_num)} />
+                </div>
             </div>
-        </div>
+        }
     }
 }
 
