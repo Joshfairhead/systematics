@@ -1,8 +1,9 @@
-use yew::{html, Component, Context, Html, Callback};
+use yew::{html, Component, Context, Html};
 use wasm_bindgen::prelude::*;
 
 mod components; // Declare the components module
 use components::system_selector::SystemSelector; // Import the SystemSelector
+use components::system_overlay::SystemOverlay;
 
 pub struct App {
     selected_system_num: i32,
@@ -53,10 +54,11 @@ impl Component for App {
         html! {
             <div class="app-container">
                 <div class="system-selector-container">
-                    <SystemSelector {on_system_selected} />
+                    <SystemSelector {on_system_selected} selected_system={self.selected_system_num} />
                 </div>
                 <div class={format!("main-content {}", system_class)}>
                     <img src={image_url} alt={format!("System {}", self.selected_system_num)} />
+                    <SystemOverlay system_num={self.selected_system_num} />
                 </div>
             </div>
         }
