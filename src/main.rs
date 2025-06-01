@@ -39,10 +39,30 @@ fn main() {
                     Err(e) => eprintln!("Error creating tetrad: {}", e),
                 }
             }
-            5 => create_pentad(),
-            6 => create_hexad(),
-            7 => create_heptad(),
-            8 => create_octad(),
+            5 => {
+                match Pentad::create_interactive() {
+                    Ok(_pentad) => {}, // Successfully created
+                    Err(e) => eprintln!("Error creating pentad: {}", e),
+                }
+            }
+            6 => {
+                match Hexad::create_interactive() {
+                    Ok(_hexad) => {}, // Successfully created
+                    Err(e) => eprintln!("Error creating hexad: {}", e),
+                }
+            }
+            7 => {
+                match Heptad::create_interactive() {
+                    Ok(_heptad) => {}, // Successfully created
+                    Err(e) => eprintln!("Error creating heptad: {}", e),
+                }
+            }
+            8 => {
+                match Octad::create_interactive() {
+                    Ok(_octad) => {}, // Successfully created
+                    Err(e) => eprintln!("Error creating octad: {}", e),
+                }
+            }
             12 => create_dodecad(),
             _ => println!("Invalid number of terms. Please enter 1, 2, 3, 4, 5, 6, 7, 8, or 12."),
         },
@@ -131,140 +151,6 @@ fn create_triad() {
     println!("Active Term: {}", my_triad.active);
     println!("Passive Term: {}", my_triad.passive);
     println!("Reconciling Term: {}", my_triad.reconciling);
-    println!("---------------------");
-}
-
-fn create_pentad() {
-    println!("\n--- Creating a Pentad ---");
-    let name_str: String = get_input!("Enter a name for your Pentad: ", "Failed to read Pentad name", "Unnamed Pentad");
-    let intrinsiclimit_str: String = get_input!("Enter the Pentad's intrinsic limit: ", "Failed to read intrinsic limit", "Default Intrinsic Limit");
-    let innerupperlimit_str: String = get_input!("Enter the Pentad's inner upper limit: ", "Failed to read inner upper limit", "Default Inner Upper Limit");
-    let innerlowerlimit_str: String = get_input!("Enter the Pentad's inner lower limit: ", "Failed to read inner lower limit", "Default Inner Lower Limit");
-    let outerupperlimit_str: String = get_input!("Enter the Pentad's outer upper limit: ", "Failed to read outer upper limit", "Default Outer Upper Limit");
-    let outerlowerlimit_str: String = get_input!("Enter the Pentad's outer lower limit: ", "Failed to read outer lower limit", "Default Outer Lower Limit");
-
-    let my_pentad = Pentad::new(
-        &name_str,
-        &intrinsiclimit_str,
-        &innerupperlimit_str,
-        &innerlowerlimit_str,
-        &outerupperlimit_str,
-        &outerlowerlimit_str,
-    );
-
-    println!("\n--- Pentad Details ---");
-    println!("Pentad Name: {}", my_pentad.name);
-    println!("Core Attribute: {}", Pentad::TERM_ATTRIBUTE_DESCRIPTION);
-    println!("Intrinsic Limit: {}", my_pentad.intrinsiclimit);
-    println!("Inner Upper Limit: {}", my_pentad.innerupperlimit);
-    println!("Inner Lower Limit: {}", my_pentad.innerlowerlimit);
-    println!("Outer Upper Limit: {}", my_pentad.outerupperlimit);
-    println!("Outer Lower Limit: {}", my_pentad.outerlowerlimit);
-    println!("---------------------");
-}
-
-fn create_hexad() {
-    println!("\n--- Creating a Hexad ---");
-    let name_str: String = get_input!("Enter a name for your Hexad: ", "Failed to read Hexad name", "Unnamed Hexad");
-    let resources_str: String = get_input!("Enter the Hexad's resources: ", "Failed to read resources", "Default Resources");
-    let values_str: String = get_input!("Enter the Hexad's values: ", "Failed to read values", "Default Values");
-    let options_str: String = get_input!("Enter the Hexad's options: ", "Failed to read options", "Default Options");
-    let criteria_str: String = get_input!("Enter the Hexad's criteria: ", "Failed to read criteria", "Default Criteria");
-    let facts_str: String = get_input!("Enter the Hexad's facts: ", "Failed to read facts", "Default Facts");
-    let priorities_str: String = get_input!("Enter the Hexad's priorities: ", "Failed to read priorities", "Default Priorities");
-
-    let my_hexad = Hexad::new(
-        &name_str,
-        &resources_str,
-        &values_str,
-        &options_str,
-        &criteria_str,
-        &facts_str,
-        &priorities_str,
-    );
-
-    println!("\n--- Hexad Details ---");
-    println!("Hexad Name: {}", my_hexad.name);
-    println!("Core Attribute: {}", Hexad::TERM_ATTRIBUTE_DESCRIPTION);
-    println!("Resources: {}", my_hexad.resources);
-    println!("Values: {}", my_hexad.values);
-    println!("Options: {}", my_hexad.options);
-    println!("Criteria: {}", my_hexad.criteria);
-    println!("Facts: {}", my_hexad.facts);
-    println!("Priorities: {}", my_hexad.priorities);
-    println!("---------------------");
-}
-
-fn create_heptad() {
-    println!("\n--- Creating a Heptad ---");
-    let name_str: String = get_input!("Enter a name for your Heptad: ", "Failed to read Heptad name", "Unnamed Heptad");
-    let insight_str: String = get_input!("Enter the Heptad's insight: ", "Failed to read insight", "Default Insight");
-    let research_str: String = get_input!("Enter the Heptad's research: ", "Failed to read research", "Default Research");
-    let design_str: String = get_input!("Enter the Heptad's design: ", "Failed to read design", "Default Design");
-    let synthesis_str: String = get_input!("Enter the Heptad's synthesis: ", "Failed to read synthesis", "Default Synthesis");
-    let application_str: String = get_input!("Enter the Heptad's application: ", "Failed to read application", "Default Application");
-    let delivery_str: String = get_input!("Enter the Heptad's delivery: ", "Failed to read delivery", "Default Delivery");
-    let value_str: String = get_input!("Enter the Heptad's value: ", "Failed to read value", "Default Value");
-
-    let my_heptad = Heptad::new(
-        &name_str,
-        &insight_str,
-        &research_str,
-        &design_str,
-        &synthesis_str,
-        &application_str,
-        &delivery_str,
-        &value_str,
-    );
-
-    println!("\n--- Heptad Details ---");
-    println!("Heptad Name: {}", my_heptad.name);
-    println!("Core Attribute: {}", Heptad::TERM_ATTRIBUTE_DESCRIPTION);
-    println!("Insight: {}", my_heptad.insight);
-    println!("Research: {}", my_heptad.research);
-    println!("Design: {}", my_heptad.design);
-    println!("Synthesis: {}", my_heptad.synthesis);
-    println!("Application: {}", my_heptad.application);
-    println!("Delivery: {}", my_heptad.delivery);
-    println!("Value: {}", my_heptad.value);
-    println!("---------------------");
-}
-
-fn create_octad() {
-    println!("\n--- Creating an Octad ---");
-    let name_str: String = get_input!("Enter a name for your Octad: ", "Failed to read Octad name", "Unnamed Octad");
-    let smallest_significant_holon_str: String = get_input!("Enter the Octad's smallest significant holon: ", "Failed to read smallest significant holon", "Default Smallest Significant Holon");
-    let critical_functions_str: String = get_input!("Enter the Octad's critical functions: ", "Failed to read critical functions", "Default Critical Functions");
-    let supportive_platform_str: String = get_input!("Enter the Octad's supportive platform: ", "Failed to read supportive platform", "Default Supportive Platform");
-    let necessary_resourcing_str: String = get_input!("Enter the Octad's necessary resourcing: ", "Failed to read necessary resourcing", "Default Necessary Resourcing");
-    let integrative_totality_str: String = get_input!("Enter the Octad's integrative totality: ", "Failed to read integrative totality", "Default Integrative Totality");
-    let inherent_values_str: String = get_input!("Enter the Octad's inherent values: ", "Failed to read inherent values", "Default Inherent Values");
-    let intrinsic_nature_str: String = get_input!("Enter the Octad's intrinsic nature: ", "Failed to read intrinsic nature", "Default Intrinsic Nature");
-    let organisational_modes_str: String = get_input!("Enter the Octad's organisational modes: ", "Failed to read organisational modes", "Default Organisational Modes");
-
-    let my_octad = Octad::new(
-        &name_str,
-        &smallest_significant_holon_str,
-        &critical_functions_str,
-        &supportive_platform_str,
-        &necessary_resourcing_str,
-        &integrative_totality_str,
-        &inherent_values_str,
-        &intrinsic_nature_str,
-        &organisational_modes_str,
-    );
-
-    println!("\n--- Octad Details ---");
-    println!("Octad Name: {}", my_octad.name);
-    println!("Core Attribute: {}", Octad::TERM_ATTRIBUTE_DESCRIPTION);
-    println!("Smallest Significant Holon: {}", my_octad.smallest_significant_holon);
-    println!("Critical Functions: {}", my_octad.critical_functions);
-    println!("Supportive Platform: {}", my_octad.supportive_platform);
-    println!("Necessary Resourcing: {}", my_octad.necessary_resourcing);
-    println!("Integrative Totality: {}", my_octad.integrative_totality);
-    println!("Inherent Values: {}", my_octad.inherent_values);
-    println!("Intrinsic Nature: {}", my_octad.intrinsic_nature);
-    println!("Organisational Modes: {}", my_octad.organisational_modes);
     println!("---------------------");
 }
 
