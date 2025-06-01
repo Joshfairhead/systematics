@@ -43,7 +43,7 @@ impl Tetrad {
         println!("\n--- Creating a Tetrad ---");
         
         // Helper for required input - loops until valid input is provided
-        let get_required_input = |prompt: &str, field_name: &str| -> Result<String, Box<dyn std::error::Error>> {
+        let _get_required_input = |prompt: &str, field_name: &str| -> Result<String, Box<dyn std::error::Error>> {
             loop {
                 let mut input = String::new();
                 print!("{}", prompt);
@@ -149,15 +149,15 @@ impl Tetrad {
         
         // Get required inputs
         let name = get_optional_input("Enter a name for your Tetrad (or press Enter for 'Unnamed Tetrad'): ", "Unnamed Tetrad")?;
-        let ground = get_required_input("Enter the Ground instance: ", "Ground instance")?;
-        let ideal = get_required_input("Enter the Ideal instance: ", "Ideal instance")?;
-        let instrumental = get_required_input("Enter the Instrumental instance: ", "Instrumental instance")?;
-        let directive = get_required_input("Enter the Directive instance: ", "Directive instance")?;
+        let ground = get_optional_input("Enter the Ground instance (or press Enter for 'Ground'): ", "Ground")?;
+        let ideal = get_optional_input("Enter the Ideal instance (or press Enter for 'Ideal'): ", "Ideal")?;
+        let instrumental = get_optional_input("Enter the Instrumental instance (or press Enter for 'Instrumental'): ", "Instrumental")?;
+        let directive = get_optional_input("Enter the Directive instance (or press Enter for 'Directive'): ", "Directive")?;
 
         let mut tetrad = Tetrad::new(&name, &ground, &ideal, &instrumental, &directive);
         
         // Ask if user wants to modify the default connectives
-        let modify_connectives = get_yes_no_input("\nWould you like to modify the default connectives? (y/n): ", "n")?;
+        let modify_connectives = get_yes_no_input("\nWould you like to modify the default connectives? (y/n): ", "y")?;
         
         if modify_connectives.starts_with('y') {
             println!("\nModifying connectives (press Enter to keep default, or input new value):");
@@ -198,18 +198,7 @@ impl Tetrad {
                 "Demonstrable activity"
             )?;
         } else {
-            // Ask if they want to remove all connectives
-            let remove_all = get_yes_no_input("Would you like to remove all connectives? (y/n): ", "n")?;
-            
-            if remove_all.starts_with('y') {
-                tetrad.ground_ideal_connective = None;
-                tetrad.ground_instrumental_connective = None;
-                tetrad.ground_directive_connective = None;
-                tetrad.ideal_instrumental_connective = None;
-                tetrad.ideal_directive_connective = None;
-                tetrad.instrumental_directive_connective = None;
-            }
-            // Otherwise keep the defaults that were initialized
+            // Keep the defaults that were initialized (no further questions needed)
         }
         
         // Display the created tetrad
@@ -234,11 +223,13 @@ impl Tetrad {
     }
     
     /// Get canonical term names (hardcoded)
+    #[allow(dead_code)]
     pub fn get_canonical_terms() -> Vec<&'static str> {
         vec!["Ground", "Ideal", "Instrumental", "Directive"]
     }
     
     /// Get all user instances
+    #[allow(dead_code)]
     pub fn get_instances(&self) -> Vec<String> {
         vec![
             self.ground.clone(),
