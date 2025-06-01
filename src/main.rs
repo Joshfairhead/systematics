@@ -33,7 +33,12 @@ fn main() {
             1 => create_monad(),
             2 => create_dyad(),
             3 => create_triad(),
-            4 => create_tetrad(),
+            4 => { 
+                match Tetrad::create_interactive() {
+                    Ok(_tetrad) => {}, // Successfully created
+                    Err(e) => eprintln!("Error creating tetrad: {}", e),
+                }
+            }
             5 => create_pentad(),
             6 => create_hexad(),
             7 => create_heptad(),
@@ -45,6 +50,8 @@ fn main() {
             println!("Invalid input. Please enter a number.");
         }
     }
+
+    // Demo removed - tetrad interactive creation now handles everything
 }
 
 fn create_monad() {
@@ -126,32 +133,6 @@ fn create_triad() {
     println!("Reconciling Term: {}", my_triad.reconciling);
     println!("---------------------");
 }
-
-fn create_tetrad() {
-    println!("\n--- Creating a Tetrad ---");
-    let name_str: String = get_input!("Enter a name for your Tetrad: ", "Failed to read Tetrad name", "Unnamed Tetrad");
-    let ground_str: String = get_input!("Enter the Tetrad's ground aspect: ", "Failed to read ground aspect", "Default Ground");
-    let ideal_str: String = get_input!("Enter the Tetrad's ideal aspect: ", "Failed to read ideal aspect", "Default Ideal");
-    let instrumental_str: String = get_input!("Enter the Tetrad's instrumental aspect: ", "Failed to read instrumental aspect", "Default Instrumental");
-    let directive_str: String = get_input!("Enter the Tetrad's directive aspect: ", "Failed to read directive aspect", "Default Directive");
-
-    let my_tetrad = Tetrad::new(
-        &name_str,
-        &ground_str,
-        &ideal_str,
-        &instrumental_str,
-        &directive_str,
-    );
-
-    println!("\n--- Tetrad Details ---");
-    println!("Tetrad Name: {}", my_tetrad.name);
-    println!("Core Attribute: {}", Tetrad::TERM_ATTRIBUTE_DESCRIPTION);
-    println!("Ground Term: {}", my_tetrad.ground);
-    println!("Ideal Term: {}", my_tetrad.ideal);
-    println!("Instrumental Term: {}", my_tetrad.instrumental);
-    println!("Directive Term: {}", my_tetrad.directive);
-    println!("---------------------");
-    }
 
 fn create_pentad() {
     println!("\n--- Creating a Pentad ---");
