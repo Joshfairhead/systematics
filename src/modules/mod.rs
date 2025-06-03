@@ -6,4 +6,5 @@ pub mod pentad;
 pub mod hexad;
 pub mod heptad;
 pub mod octad;
-pub mod dodecad; 
+pub mod dodecad;
+pub mod permutations; 
