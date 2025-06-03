@@ -18,7 +18,6 @@ impl Monad {
     }
 
     /// Interactive creation method - handles all input/output internally
-    #[allow(dead_code)]
     pub fn create_interactive() -> Result<Self, Box<dyn std::error::Error>> {
         println!("\n--- Creating a Monad ---");
         
@@ -130,19 +129,16 @@ impl Monad {
     }
 
     /// Check if monad has any terms defined
-    #[allow(dead_code)]
     pub fn has_terms(&self) -> bool {
         !self.terms.is_empty()
     }
     
     /// Get the number of terms in the monad
-    #[allow(dead_code)]
     pub fn term_count(&self) -> usize {
         self.terms.len()
     }
 
     /// Display the monad in a formatted way
-    #[allow(dead_code)]
     pub fn display(&self) {
         println!("\n--- Monad Details ---");
         println!("Monad Name: {}", self.name);
