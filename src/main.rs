@@ -42,7 +42,12 @@ fn main() {
                     Err(e) => eprintln!("Error creating dyad: {}", e),
                 }
             }
-            3 => create_triad(),
+            3 => {
+                match Triad::create_interactive() {
+                    Ok(_triad) => {}, // Successfully created
+                    Err(e) => eprintln!("Error creating triad: {}", e),
+                }
+            }
             4 => { 
                 match Tetrad::create_interactive() {
                     Ok(_tetrad) => {}, // Successfully created
@@ -82,30 +87,6 @@ fn main() {
     }
 
     // Demo removed - tetrad interactive creation now handles everything
-}
-
-fn create_triad() {
-    println!("\n--- Creating a Triad ---");
-
-    let name_str: String = get_input!("Enter a name for your Triad: ", "Failed to read Triad name", "Unnamed Triad");
-    let active_str: String = get_input!("Enter the Triad's active aspect: ", "Failed to read active aspect", "Default Active");
-    let passive_str: String = get_input!("Enter the Triad's passive aspect: ", "Failed to read passive aspect", "Default Passive");
-    let reconciling_str: String = get_input!("Enter the Triad's reconciling aspect: ", "Failed to read reconciling aspect", "Default Reconciling");
-
-    let my_triad = Triad::new(
-        &name_str,
-        &active_str,
-        &passive_str,
-        &reconciling_str,
-    );
-
-    println!("\n--- Triad Details ---");
-    println!("Triad Name: {}", my_triad.name);
-    println!("Core Attribute: {}", Triad::TERM_ATTRIBUTE_DESCRIPTION);
-    println!("Active Term: {}", my_triad.active);
-    println!("Passive Term: {}", my_triad.passive);
-    println!("Reconciling Term: {}", my_triad.reconciling);
-    println!("---------------------");
 }
 
 fn create_dodecad() {

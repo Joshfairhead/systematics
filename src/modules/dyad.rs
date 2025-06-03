@@ -142,16 +142,19 @@ impl Dyad {
     }
     
     /// Check if dyad has valid terms defined
+    #[allow(dead_code)]
     pub fn has_terms(&self) -> bool {
         !self.essence.is_empty() && !self.existence.is_empty()
     }
     
     /// Get canonical terms for Dyad
+    #[allow(dead_code)]
     pub fn get_canonical_terms() -> Vec<&'static str> {
         vec!["Essence", "Existence"]
     }
     
     /// Get user instances for all canonical positions
+    #[allow(dead_code)]
     pub fn get_instances(&self) -> Vec<String> {
         vec![self.essence.clone(), self.existence.clone()]
     }
