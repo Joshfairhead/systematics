@@ -30,8 +30,18 @@ fn main() {
 
     match choice_input.trim().parse::<u32>() {
         Ok(num_terms) => match num_terms {
-            1 => create_monad(),
-            2 => create_dyad(),
+            1 => {
+                match Monad::create_interactive() {
+                    Ok(_monad) => {}, // Successfully created
+                    Err(e) => eprintln!("Error creating monad: {}", e),
+                }
+            }
+            2 => {
+                match Dyad::create_interactive() {
+                    Ok(_dyad) => {}, // Successfully created
+                    Err(e) => eprintln!("Error creating dyad: {}", e),
+                }
+            }
             3 => create_triad(),
             4 => { 
                 match Tetrad::create_interactive() {
@@ -72,62 +82,6 @@ fn main() {
     }
 
     // Demo removed - tetrad interactive creation now handles everything
-}
-
-fn create_monad() {
-    println!("\n--- Creating a Monad ---");
-
-    let monad_name_str: String = get_input!("Enter a name for your Monad: ", "Failed to read name", "Unnamed Monad");
-
-    let mut my_monad = Monad::new(&monad_name_str);
-
-    println!("\nEnter terms for \"{}\". Press Enter on an empty line when done.", my_monad.name);
-    loop {
-        let mut term_input = String::new();
-        print!("Term: ");
-        io::stdout().flush().unwrap();
-        io::stdin().read_line(&mut term_input).expect("Failed to read term");
-        let trimmed_term = term_input.trim();
-        if trimmed_term.is_empty() {
-            break;
-        }
-        my_monad.add_term(trimmed_term);
-    }
-
-    println!("\n--- Monad Details ---");
-    println!("Monad Name: {}", my_monad.name);
-    println!("Core Attribute: {}", Monad::TERM_ATTRIBUTE_DESCRIPTION);
-    let terms = my_monad.get_all_terms();
-    if !terms.is_empty() {
-        println!("User-defined Terms:");
-        for term in terms {
-            println!("- {}", term);
-        }
-    } else {
-        println!("No user-defined terms were added.");
-    }
-    println!("---------------------");
-}
-
-fn create_dyad() {
-    println!("\n--- Creating a Dyad ---");
-
-    let name_str: String = get_input!("Enter a name for your Dyad: ", "Failed to read Dyad name", "Unnamed Dyad");
-    let essence_str: String = get_input!("Enter the Dyad's essence: ", "Failed to read essence", "Default Essence");
-    let existence_str: String = get_input!("Enter the Dyad's existence: ", "Failed to read existence", "Default Existence");
-
-    let my_dyad = Dyad::new(
-        &name_str,
-        &essence_str,
-        &existence_str,
-    );
-
-    println!("\n--- Dyad Details ---");
-    println!("Dyad Name: {}", my_dyad.name);
-    println!("Core Attribute: {}", Dyad::TERM_ATTRIBUTE_DESCRIPTION);
-    println!("Essence: {}", my_dyad.essence);
-    println!("Existence: {}", my_dyad.existence);
-    println!("---------------------");
 }
 
 fn create_triad() {

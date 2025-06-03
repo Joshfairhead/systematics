@@ -8,7 +8,7 @@ pub struct Dyad {
 }
 
 impl Dyad {
-    pub const TERM_ATTRIBUTE_DESCRIPTION: &'static str = "Complimentarity, polarity or force";
+    pub const TERM_ATTRIBUTE_DESCRIPTION: &'static str = "Complementarity, polarity or force";
 
     /// Creates a new Dyad.
     pub fn new(name: &str, essence: &str, existence: &str) -> Self {
@@ -20,7 +20,6 @@ impl Dyad {
     }
     
     /// Interactive creation method - handles all input/output internally
-    #[allow(dead_code)]
     pub fn create_interactive() -> Result<Self, Box<dyn std::error::Error>> {
         println!("\n--- Creating a Dyad ---");
         
@@ -142,8 +141,22 @@ impl Dyad {
         Ok(dyad)
     }
     
+    /// Check if dyad has valid terms defined
+    pub fn has_terms(&self) -> bool {
+        !self.essence.is_empty() && !self.existence.is_empty()
+    }
+    
+    /// Get canonical terms for Dyad
+    pub fn get_canonical_terms() -> Vec<&'static str> {
+        vec!["Essence", "Existence"]
+    }
+    
+    /// Get user instances for all canonical positions
+    pub fn get_instances(&self) -> Vec<String> {
+        vec![self.essence.clone(), self.existence.clone()]
+    }
+    
     /// Display dyad details
-    #[allow(dead_code)]
     pub fn display(&self) {
         println!("\n--- Dyad Details ---");
         println!("Dyad Name: {}", self.name);
@@ -160,14 +173,183 @@ mod tests {
 
     #[test]
     fn test_dyad_creation() {
-        let dyad = Dyad::new(
-            "Test Dyad",
-            "Being", 
-            "Becoming"
-        );
+        let dyad = Dyad::new("Test Dyad", "Being", "Becoming");
         
         assert_eq!(dyad.name, "Test Dyad");
         assert_eq!(dyad.essence, "Being");
         assert_eq!(dyad.existence, "Becoming");
+    }
+
+    #[test]
+    fn test_dyad_creation_with_empty_name() {
+        let dyad = Dyad::new("", "Essence", "Existence");
+        
+        assert_eq!(dyad.name, "");
+        assert_eq!(dyad.essence, "Essence");
+        assert_eq!(dyad.existence, "Existence");
+    }
+
+    #[test]
+    fn test_canonical_terms() {
+        let terms = Dyad::get_canonical_terms();
+        assert_eq!(terms, vec!["Essence", "Existence"]);
+    }
+
+    #[test]
+    fn test_get_instances() {
+        let dyad = Dyad::new("Test", "Universal Being", "Cosmic Becoming");
+        let instances = dyad.get_instances();
+        
+        assert_eq!(instances.len(), 2);
+        assert_eq!(instances[0], "Universal Being");
+        assert_eq!(instances[1], "Cosmic Becoming");
+    }
+
+    #[test]
+    fn test_has_terms_with_content() {
+        let dyad = Dyad::new("Test", "Being", "Becoming");
+        assert!(dyad.has_terms());
+    }
+
+    #[test]
+    fn test_has_terms_with_empty_essence() {
+        let dyad = Dyad::new("Test", "", "Becoming");
+        assert!(!dyad.has_terms());
+    }
+
+    #[test]
+    fn test_has_terms_with_empty_existence() {
+        let dyad = Dyad::new("Test", "Being", "");
+        assert!(!dyad.has_terms());
+    }
+
+    #[test]
+    fn test_has_terms_with_both_empty() {
+        let dyad = Dyad::new("Test", "", "");
+        assert!(!dyad.has_terms());
+    }
+
+    #[test]
+    fn test_term_attribute_description() {
+        assert_eq!(Dyad::TERM_ATTRIBUTE_DESCRIPTION, "Complementarity, polarity or force");
+    }
+
+    #[test]
+    fn test_dyad_with_special_characters() {
+        let dyad = Dyad::new("Test-Dyad!", "Being (Primary)", "Becoming, Universal");
+        
+        assert_eq!(dyad.name, "Test-Dyad!");
+        assert_eq!(dyad.essence, "Being (Primary)");
+        assert_eq!(dyad.existence, "Becoming, Universal");
+    }
+
+    #[test]
+    fn test_dyad_with_unicode() {
+        let dyad = Dyad::new("测试", "存在", "成为");
+        
+        assert_eq!(dyad.name, "测试");
+        assert_eq!(dyad.essence, "存在");
+        assert_eq!(dyad.existence, "成为");
+    }
+
+    #[test]
+    fn test_dyad_clone_and_modify() {
+        let original = Dyad::new("Original", "Original Essence", "Original Existence");
+        let mut modified = Dyad::new(&original.name, &original.essence, &original.existence);
+        
+        modified.name = "Modified".to_string();
+        modified.essence = "Modified Essence".to_string();
+        modified.existence = "Modified Existence".to_string();
+        
+        // Original should be unchanged
+        assert_eq!(original.name, "Original");
+        assert_eq!(original.essence, "Original Essence");
+        assert_eq!(original.existence, "Original Existence");
+        
+        // Modified should be changed
+        assert_eq!(modified.name, "Modified");
+        assert_eq!(modified.essence, "Modified Essence");
+        assert_eq!(modified.existence, "Modified Existence");
+    }
+
+    #[test]
+    fn test_dyad_debug_format() {
+        let dyad = Dyad::new("Debug Test", "Debug Essence", "Debug Existence");
+        let debug_str = format!("{:?}", dyad);
+        
+        assert!(debug_str.contains("Debug Test"));
+        assert!(debug_str.contains("Debug Essence"));
+        assert!(debug_str.contains("Debug Existence"));
+    }
+
+    #[test]
+    fn test_canonical_terms_immutable() {
+        let terms1 = Dyad::get_canonical_terms();
+        let terms2 = Dyad::get_canonical_terms();
+        
+        assert_eq!(terms1, terms2);
+        assert_eq!(terms1.len(), 2);
+    }
+
+    #[test]
+    fn test_get_instances_order() {
+        let dyad = Dyad::new("Order Test", "First Term", "Second Term");
+        let instances = dyad.get_instances();
+        
+        assert_eq!(instances.len(), 2);
+        assert_eq!(instances[0], "First Term");
+        assert_eq!(instances[1], "Second Term");
+    }
+
+    #[test]
+    fn test_dyad_construction_consistency() {
+        let name = "Consistency Test";
+        let essence = "Consistent Essence";
+        let existence = "Consistent Existence";
+        
+        let dyad = Dyad::new(name, essence, existence);
+        
+        assert_eq!(dyad.name, name);
+        assert_eq!(dyad.essence, essence);
+        assert_eq!(dyad.existence, existence);
+        
+        let instances = dyad.get_instances();
+        assert_eq!(instances[0], essence);
+        assert_eq!(instances[1], existence);
+    }
+
+    #[test]
+    fn test_empty_string_handling() {
+        let dyad = Dyad::new("", "", "");
+        
+        assert_eq!(dyad.name, "");
+        assert_eq!(dyad.essence, "");
+        assert_eq!(dyad.existence, "");
+        assert!(!dyad.has_terms());
+        
+        let instances = dyad.get_instances();
+        assert_eq!(instances.len(), 2);
+        assert_eq!(instances[0], "");
+        assert_eq!(instances[1], "");
+    }
+
+    #[test]
+    fn test_dyad_polarity_concepts() {
+        let dyad = Dyad::new("Polarity Test", "Light", "Dark");
+        
+        assert_eq!(dyad.essence, "Light");
+        assert_eq!(dyad.existence, "Dark");
+        assert!(dyad.has_terms());
+        
+        let dyad2 = Dyad::new("Force Test", "Action", "Reaction");
+        assert_eq!(dyad2.essence, "Action");
+        assert_eq!(dyad2.existence, "Reaction");
+    }
+
+    #[test]
+    fn test_term_attribute_description_consistency() {
+        // Test that the description matches Bennett's terminology for dyads
+        let description = Dyad::TERM_ATTRIBUTE_DESCRIPTION;
+        assert!(description.contains("polarity") || description.contains("force") || description.contains("Complementarity"));
     }
 }
