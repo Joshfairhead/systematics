@@ -9,6 +9,7 @@ use crate::modules::hexad::Hexad;
 use crate::modules::heptad::Heptad;
 use crate::modules::octad::Octad;
 use crate::modules::dodecad::Dodecad;
+use crate::modules::permutations;
 use std::io::{self, Write}; // Import for input/output
 
 // Helper macro to reduce repetition for input gathering
@@ -24,11 +25,23 @@ macro_rules! get_input {
 }
 
 fn main() {
-    println!("How many terms in your system? (1, 2, 3, 4, 5, 6, 7, 8, or 12)");
+    println!("How many terms in your system? (1, 2, 3, 4, 5, 6, 7, 8, 12, or P for permutations)");
     let mut choice_input = String::new();
     io::stdin().read_line(&mut choice_input).expect("Failed to read choice");
 
-    match choice_input.trim().parse::<u32>() {
+    let choice = choice_input.trim();
+    
+    // Handle permutations option
+    if choice.to_lowercase() == "p" || choice.to_lowercase() == "permutations" {
+        match permutations::create_interactive() {
+            Ok(_) => {}, // Successfully created
+            Err(e) => eprintln!("Error creating permutations: {}", e),
+        }
+        return;
+    }
+    
+    // Handle numeric choices
+    match choice.parse::<u32>() {
         Ok(num_terms) => match num_terms {
             1 => {
                 match Monad::create_interactive() {
@@ -79,10 +92,10 @@ fn main() {
                 }
             }
             12 => create_dodecad(),
-            _ => println!("Invalid number of terms. Please enter 1, 2, 3, 4, 5, 6, 7, 8, or 12."),
+            _ => println!("Invalid number of terms. Please enter 1, 2, 3, 4, 5, 6, 7, 8, 12, or P for permutations."),
         },
         Err(_) => {
-            println!("Invalid input. Please enter a number.");
+            println!("Invalid input. Please enter a number (1, 2, 3, 4, 5, 6, 7, 8, 12) or P for permutations.");
         }
     }
 
