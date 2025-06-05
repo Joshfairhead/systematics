@@ -1,3 +1,5 @@
+<!-- Testing local Git integration -->
+
 # Systematics
 
 A Rust-based application for creating, managing, and analyzing systematic structures. This project provides both CLI and web interfaces for working with various systematic frameworks from monad (1 term) to dodecad (12 terms), plus a standalone six permutations generator.
