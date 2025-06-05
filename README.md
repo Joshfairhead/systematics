@@ -14,9 +14,9 @@ Systematics allows you to:
 - Work with comprehensive systematic frameworks using Bennett's authentic terms and relationships
 
 ## Current Features
-- **CLI Interface**: Main menu for selecting systematic structures (1-12 terms) or permutations generator
+- **CLI Interface**: Main menu for selecting systematic structures (1–12 terms) or permutations generator
 - **Six Permutations Generator**: Standalone tool for generating named permutation patterns from three terms
-- **Comprehensive Testing**: 111 tests passing with excellent coverage across all modules
+- **Comprehensive Testing**: 115+ tests passing with excellent coverage across all modules
 - **Input Validation**: Robust handling of user input with clear error messages
 - **Yew Frontend**: Web interface with system overlay visualizations
 
@@ -29,10 +29,10 @@ Systematics allows you to:
 - **Hexad (6 terms)**: Complete implementation with full systematic structure
 - **Heptad (7 terms)**: Complete implementation with comprehensive functionality
 - **Octad (8 terms)**: Complete implementation with all systematic relationships
+- **Dodecad (12 terms)**: Newly implemented with 12 canonical attributes representing "Totality"
 - **Permutations**: Six named permutation patterns for any three terms
 
 ### 🔄 Partially Implemented
-- **Dodecad**: Basic structure, needs completion
 - **Frontend Integration**: System overlays exist but not fully connected to backend logic
 
 ## Project Structure
@@ -50,7 +50,7 @@ systematics/
 │       ├── hexad.rs           # Complete implementation ✅
 │       ├── heptad.rs          # Complete implementation ✅
 │       ├── octad.rs           # Complete implementation ✅
-│       ├── dodecad.rs         # Needs completion 🔄
+│       ├── dodecad.rs         # dodecad.rs # ✅ NEW
 │       ├── permutations.rs    # Complete implementation ✅
 │       └── mod.rs             # Module declarations
 ├── rust_yew_frontend/         # Web interface
@@ -140,7 +140,7 @@ cargo test permutations      # Run permutations-specific tests
 - **Enneagram** (9 terms): Not yet implemented
 - **Decad** (10 terms): Not yet implemented
 - **Hendecad** (11 terms): Not yet implemented
-- **Dodecad** (12 terms): Needs completion 🔄
+- **Dodecad** (12 terms): **Complete** ✅
 - **Six Permutations**: **Complete** ✅
 
 ## Contributing
