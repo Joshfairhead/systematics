@@ -1,4 +1,4 @@
-pub mod monad;
+pub mod systematic_structures;
 pub mod dyad;
 pub mod triad;
 pub mod tetrad;

@@ -1,6 +1,7 @@
-mod modules; 
+mod modules;
+mod schemas; 
 
-use crate::modules::monad::Monad;
+use crate::modules::systematic_structures::{Monad, TetradicStructure};
 use crate::modules::dyad::Dyad;
 use crate::modules::triad::Triad;
 use crate::modules::tetrad::Tetrad;
@@ -10,10 +11,37 @@ use crate::modules::heptad::Heptad;
 use crate::modules::octad::Octad;
 use crate::modules::dodecad::Dodecad;
 use crate::modules::permutations;
+use crate::schemas::BennettTetradSchema;
 use std::io; // Import for input/output
 
+fn demo_schema_system() {
+    println!("\n=== Schema System Demo ===");
+    
+    // Demo Bennett's Tetrad Schema
+    println!("\nBennett's Tetrad Schema:");
+    let mut bennett_tetrad = TetradicStructure::new_with_positions(
+        "Bennett Example",
+        "Earth",
+        "Heaven", 
+        "Tools",
+        "Purpose"
+    );
+    bennett_tetrad.apply_schema(Box::new(BennettTetradSchema));
+    bennett_tetrad.display();
+    bennett_tetrad.display_connectives();
+    
+    println!("\n=== Demo Complete ===");
+    println!("This demonstrates the new architecture with:");
+    println!("- Positional structures (TetradicStructure)");
+    println!("- Dynamic schema overlays (Bennett's Tetrad)");
+    println!("- Schema-aware connective labeling");
+    println!("- Separation of structure from semantics");
+}
+
 fn main() {
-    println!("How many terms in your system? (1, 2, 3, 4, 5, 6, 7, 8, 12, or P for permutations)");
+    println!("How many terms in your system? (1, 2, 3, 4, 4s, 4d, 5, 6, 7, 8, 12, or P for permutations)");
+    println!("Note: Use '4s' for the new schema-based Tetrad system");
+    println!("Note: Use '4d' for a demo of the schema system");
     let mut choice_input = String::new();
     io::stdin().read_line(&mut choice_input).expect("Failed to read choice");
 
@@ -24,6 +52,21 @@ fn main() {
         match permutations::create_interactive() {
             Ok(_) => {}, // Successfully created
             Err(e) => eprintln!("Error creating permutations: {}", e),
+        }
+        return;
+    }
+    
+    // Handle schema demo option
+    if choice.to_lowercase() == "4d" {
+        demo_schema_system();
+        return;
+    }
+    
+    // Handle schema-based tetrad option
+    if choice.to_lowercase() == "4s" {
+        match TetradicStructure::create_interactive() {
+            Ok(_tetrad) => {}, // Successfully created
+            Err(e) => eprintln!("Error creating schema-based tetrad: {}", e),
         }
         return;
     }
