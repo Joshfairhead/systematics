@@ -1,4 +1,5 @@
 use std::io::{self, Write};
+use std::collections::HashMap;
 
 #[derive(Debug)]
 #[allow(non_snake_case)] // Connective fields use intentional positional-semantic naming
@@ -13,35 +14,8 @@ pub struct Octad {
     pub inherent_values: String,            // Position F
     pub intrinsic_nature: String,           // Position G
     pub organisational_modes: String,       // Position H
-    // Positional-semantic connectives (bidirectional relationships)
-    pub AB_smallest_critical: Option<String>,           // A<>B
-    pub AC_smallest_supportive: Option<String>,         // A<>C
-    pub AD_smallest_necessary: Option<String>,          // A<>D
-    pub AE_smallest_integrative: Option<String>,        // A<>E
-    pub AF_smallest_inherent: Option<String>,           // A<>F
-    pub AG_smallest_intrinsic: Option<String>,          // A<>G
-    pub AH_smallest_organisational: Option<String>,     // A<>H
-    pub BC_critical_supportive: Option<String>,         // B<>C
-    pub BD_critical_necessary: Option<String>,          // B<>D
-    pub BE_critical_integrative: Option<String>,        // B<>E
-    pub BF_critical_inherent: Option<String>,           // B<>F
-    pub BG_critical_intrinsic: Option<String>,          // B<>G
-    pub BH_critical_organisational: Option<String>,     // B<>H
-    pub CD_supportive_necessary: Option<String>,        // C<>D
-    pub CE_supportive_integrative: Option<String>,      // C<>E
-    pub CF_supportive_inherent: Option<String>,         // C<>F
-    pub CG_supportive_intrinsic: Option<String>,        // C<>G
-    pub CH_supportive_organisational: Option<String>,   // C<>H
-    pub DE_necessary_integrative: Option<String>,       // D<>E
-    pub DF_necessary_inherent: Option<String>,          // D<>F
-    pub DG_necessary_intrinsic: Option<String>,         // D<>G
-    pub DH_necessary_organisational: Option<String>,    // D<>H
-    pub EF_integrative_inherent: Option<String>,        // E<>F
-    pub EG_integrative_intrinsic: Option<String>,       // E<>G
-    pub EH_integrative_organisational: Option<String>,  // E<>H
-    pub FG_inherent_intrinsic: Option<String>,          // F<>G
-    pub FH_inherent_organisational: Option<String>,     // F<>H
-    pub GH_intrinsic_organisational: Option<String>,    // G<>H
+    // Connectives stored as HashMap for scalability
+    pub connectives: HashMap<(usize, usize), String>,
 }
 
 impl Octad {
@@ -59,7 +33,7 @@ impl Octad {
         intrinsic_nature: &str,
         organisational_modes: &str,
     ) -> Self {
-        Octad {
+        let mut octad = Octad {
             name: name.to_string(),
             smallest_significant_holon: smallest_significant_holon.to_string(),
             critical_functions: critical_functions.to_string(),
@@ -69,36 +43,45 @@ impl Octad {
             inherent_values: inherent_values.to_string(),
             intrinsic_nature: intrinsic_nature.to_string(),
             organisational_modes: organisational_modes.to_string(),
-            // Initialize connectives with positional-semantic defaults
-            AB_smallest_critical: Some("AB_smallest_critical".to_string()),
-            AC_smallest_supportive: Some("AC_smallest_supportive".to_string()),
-            AD_smallest_necessary: Some("AD_smallest_necessary".to_string()),
-            AE_smallest_integrative: Some("AE_smallest_integrative".to_string()),
-            AF_smallest_inherent: Some("AF_smallest_inherent".to_string()),
-            AG_smallest_intrinsic: Some("AG_smallest_intrinsic".to_string()),
-            AH_smallest_organisational: Some("AH_smallest_organisational".to_string()),
-            BC_critical_supportive: Some("BC_critical_supportive".to_string()),
-            BD_critical_necessary: Some("BD_critical_necessary".to_string()),
-            BE_critical_integrative: Some("BE_critical_integrative".to_string()),
-            BF_critical_inherent: Some("BF_critical_inherent".to_string()),
-            BG_critical_intrinsic: Some("BG_critical_intrinsic".to_string()),
-            BH_critical_organisational: Some("BH_critical_organisational".to_string()),
-            CD_supportive_necessary: Some("CD_supportive_necessary".to_string()),
-            CE_supportive_integrative: Some("CE_supportive_integrative".to_string()),
-            CF_supportive_inherent: Some("CF_supportive_inherent".to_string()),
-            CG_supportive_intrinsic: Some("CG_supportive_intrinsic".to_string()),
-            CH_supportive_organisational: Some("CH_supportive_organisational".to_string()),
-            DE_necessary_integrative: Some("DE_necessary_integrative".to_string()),
-            DF_necessary_inherent: Some("DF_necessary_inherent".to_string()),
-            DG_necessary_intrinsic: Some("DG_necessary_intrinsic".to_string()),
-            DH_necessary_organisational: Some("DH_necessary_organisational".to_string()),
-            EF_integrative_inherent: Some("EF_integrative_inherent".to_string()),
-            EG_integrative_intrinsic: Some("EG_integrative_intrinsic".to_string()),
-            EH_integrative_organisational: Some("EH_integrative_organisational".to_string()),
-            FG_inherent_intrinsic: Some("FG_inherent_intrinsic".to_string()),
-            FH_inherent_organisational: Some("FH_inherent_organisational".to_string()),
-            GH_intrinsic_organisational: Some("GH_intrinsic_organisational".to_string()),
+            connectives: HashMap::new(),
+        };
+
+        // Initialize all 28 connectives with positional-semantic defaults
+        let terms = vec![
+            "smallest", "critical", "supportive", "necessary", 
+            "integrative", "inherent", "intrinsic", "organisational"
+        ];
+        
+        for i in 0..8 {
+            for j in (i + 1)..8 {
+                let connective_name = format!("{}_{}_{}_{}", 
+                    if i < j { char::from(b'A' + i as u8) } else { char::from(b'A' + j as u8) },
+                    if i < j { char::from(b'A' + j as u8) } else { char::from(b'A' + i as u8) },
+                    terms[i], 
+                    terms[j]
+                );
+                octad.connectives.insert((i, j), connective_name);
+            }
         }
+
+        octad
+    }
+
+    /// Get a connective by position indices
+    pub fn get_connective(&self, i: usize, j: usize) -> Option<&String> {
+        let key = if i < j { (i, j) } else { (j, i) };
+        self.connectives.get(&key)
+    }
+
+    /// Set a connective by position indices
+    pub fn set_connective(&mut self, i: usize, j: usize, value: String) {
+        let key = if i < j { (i, j) } else { (j, i) };
+        self.connectives.insert(key, value);
+    }
+
+    /// Get the total number of connectives
+    pub fn connectives_count(&self) -> usize {
+        self.connectives.len()
     }
     
     /// Interactive creation method - handles all input/output internally
@@ -230,42 +213,21 @@ impl Octad {
             println!("\nModifying connectives (press Enter to keep default, or input new value):");
             println!("Note: Octad has 28 connectives - this will take several moments to review.");
             
-            // Helper to handle connective modification
-            let modify_connective = |prompt: &str, current: &str| -> Result<Option<String>, Box<dyn std::error::Error>> {
-                let input = get_optional_input(prompt, current)?;
-                Ok(Some(input))
-            };
+            // Get all connective keys and sort them for consistent ordering
+            let mut keys: Vec<_> = octad.connectives.keys().cloned().collect();
+            keys.sort();
             
-            octad.AB_smallest_critical = modify_connective("AB_smallest_critical: ", "AB_smallest_critical")?;
-            octad.AC_smallest_supportive = modify_connective("AC_smallest_supportive: ", "AC_smallest_supportive")?;
-            octad.AD_smallest_necessary = modify_connective("AD_smallest_necessary: ", "AD_smallest_necessary")?;
-            octad.AE_smallest_integrative = modify_connective("AE_smallest_integrative: ", "AE_smallest_integrative")?;
-            octad.AF_smallest_inherent = modify_connective("AF_smallest_inherent: ", "AF_smallest_inherent")?;
-            octad.AG_smallest_intrinsic = modify_connective("AG_smallest_intrinsic: ", "AG_smallest_intrinsic")?;
-            octad.AH_smallest_organisational = modify_connective("AH_smallest_organisational: ", "AH_smallest_organisational")?;
-            octad.BC_critical_supportive = modify_connective("BC_critical_supportive: ", "BC_critical_supportive")?;
-            octad.BD_critical_necessary = modify_connective("BD_critical_necessary: ", "BD_critical_necessary")?;
-            octad.BE_critical_integrative = modify_connective("BE_critical_integrative: ", "BE_critical_integrative")?;
-            octad.BF_critical_inherent = modify_connective("BF_critical_inherent: ", "BF_critical_inherent")?;
-            octad.BG_critical_intrinsic = modify_connective("BG_critical_intrinsic: ", "BG_critical_intrinsic")?;
-            octad.BH_critical_organisational = modify_connective("BH_critical_organisational: ", "BH_critical_organisational")?;
-            octad.CD_supportive_necessary = modify_connective("CD_supportive_necessary: ", "CD_supportive_necessary")?;
-            octad.CE_supportive_integrative = modify_connective("CE_supportive_integrative: ", "CE_supportive_integrative")?;
-            octad.CF_supportive_inherent = modify_connective("CF_supportive_inherent: ", "CF_supportive_inherent")?;
-            octad.CG_supportive_intrinsic = modify_connective("CG_supportive_intrinsic: ", "CG_supportive_intrinsic")?;
-            octad.CH_supportive_organisational = modify_connective("CH_supportive_organisational: ", "CH_supportive_organisational")?;
-            octad.DE_necessary_integrative = modify_connective("DE_necessary_integrative: ", "DE_necessary_integrative")?;
-            octad.DF_necessary_inherent = modify_connective("DF_necessary_inherent: ", "DF_necessary_inherent")?;
-            octad.DG_necessary_intrinsic = modify_connective("DG_necessary_intrinsic: ", "DG_necessary_intrinsic")?;
-            octad.DH_necessary_organisational = modify_connective("DH_necessary_organisational: ", "DH_necessary_organisational")?;
-            octad.EF_integrative_inherent = modify_connective("EF_integrative_inherent: ", "EF_integrative_inherent")?;
-            octad.EG_integrative_intrinsic = modify_connective("EG_integrative_intrinsic: ", "EG_integrative_intrinsic")?;
-            octad.EH_integrative_organisational = modify_connective("EH_integrative_organisational: ", "EH_integrative_organisational")?;
-            octad.FG_inherent_intrinsic = modify_connective("FG_inherent_intrinsic: ", "FG_inherent_intrinsic")?;
-            octad.FH_inherent_organisational = modify_connective("FH_inherent_organisational: ", "FH_inherent_organisational")?;
-            octad.GH_intrinsic_organisational = modify_connective("GH_intrinsic_organisational: ", "GH_intrinsic_organisational")?;
-        } else {
-            // Keep the defaults that were initialized (no further questions needed)
+            for (i, j) in keys {
+                let current_value = octad.connectives.get(&(i, j)).unwrap();
+                let prompt = format!("Connective {}<>{} ({}): ", 
+                    char::from(b'A' + i as u8), 
+                    char::from(b'A' + j as u8),
+                    current_value
+                );
+                
+                let new_value = get_optional_input(&prompt, current_value)?;
+                octad.set_connective(i, j, new_value);
+            }
         }
         
         // Display the created octad
@@ -281,34 +243,7 @@ impl Octad {
     
     /// Check if any connectives are defined
     pub fn has_connectives(&self) -> bool {
-        self.AB_smallest_critical.is_some() ||
-        self.AC_smallest_supportive.is_some() ||
-        self.AD_smallest_necessary.is_some() ||
-        self.AE_smallest_integrative.is_some() ||
-        self.AF_smallest_inherent.is_some() ||
-        self.AG_smallest_intrinsic.is_some() ||
-        self.AH_smallest_organisational.is_some() ||
-        self.BC_critical_supportive.is_some() ||
-        self.BD_critical_necessary.is_some() ||
-        self.BE_critical_integrative.is_some() ||
-        self.BF_critical_inherent.is_some() ||
-        self.BG_critical_intrinsic.is_some() ||
-        self.BH_critical_organisational.is_some() ||
-        self.CD_supportive_necessary.is_some() ||
-        self.CE_supportive_integrative.is_some() ||
-        self.CF_supportive_inherent.is_some() ||
-        self.CG_supportive_intrinsic.is_some() ||
-        self.CH_supportive_organisational.is_some() ||
-        self.DE_necessary_integrative.is_some() ||
-        self.DF_necessary_inherent.is_some() ||
-        self.DG_necessary_intrinsic.is_some() ||
-        self.DH_necessary_organisational.is_some() ||
-        self.EF_integrative_inherent.is_some() ||
-        self.EG_integrative_intrinsic.is_some() ||
-        self.EH_integrative_organisational.is_some() ||
-        self.FG_inherent_intrinsic.is_some() ||
-        self.FH_inherent_organisational.is_some() ||
-        self.GH_intrinsic_organisational.is_some()
+        !self.connectives.is_empty()
     }
     
     /// Get canonical term names (hardcoded)
@@ -360,42 +295,16 @@ impl Octad {
     /// Display all connectives
     pub fn display_connectives(&self) {
         println!("\nConnectives:");
-        let connectives = [
-            (&self.smallest_significant_holon, &self.critical_functions, &self.AB_smallest_critical, "A<>B"),
-            (&self.smallest_significant_holon, &self.supportive_platform, &self.AC_smallest_supportive, "A<>C"),
-            (&self.smallest_significant_holon, &self.necessary_resourcing, &self.AD_smallest_necessary, "A<>D"),
-            (&self.smallest_significant_holon, &self.integrative_totality, &self.AE_smallest_integrative, "A<>E"),
-            (&self.smallest_significant_holon, &self.inherent_values, &self.AF_smallest_inherent, "A<>F"),
-            (&self.smallest_significant_holon, &self.intrinsic_nature, &self.AG_smallest_intrinsic, "A<>G"),
-            (&self.smallest_significant_holon, &self.organisational_modes, &self.AH_smallest_organisational, "A<>H"),
-            (&self.critical_functions, &self.supportive_platform, &self.BC_critical_supportive, "B<>C"),
-            (&self.critical_functions, &self.necessary_resourcing, &self.BD_critical_necessary, "B<>D"),
-            (&self.critical_functions, &self.integrative_totality, &self.BE_critical_integrative, "B<>E"),
-            (&self.critical_functions, &self.inherent_values, &self.BF_critical_inherent, "B<>F"),
-            (&self.critical_functions, &self.intrinsic_nature, &self.BG_critical_intrinsic, "B<>G"),
-            (&self.critical_functions, &self.organisational_modes, &self.BH_critical_organisational, "B<>H"),
-            (&self.supportive_platform, &self.necessary_resourcing, &self.CD_supportive_necessary, "C<>D"),
-            (&self.supportive_platform, &self.integrative_totality, &self.CE_supportive_integrative, "C<>E"),
-            (&self.supportive_platform, &self.inherent_values, &self.CF_supportive_inherent, "C<>F"),
-            (&self.supportive_platform, &self.intrinsic_nature, &self.CG_supportive_intrinsic, "C<>G"),
-            (&self.supportive_platform, &self.organisational_modes, &self.CH_supportive_organisational, "C<>H"),
-            (&self.necessary_resourcing, &self.integrative_totality, &self.DE_necessary_integrative, "D<>E"),
-            (&self.necessary_resourcing, &self.inherent_values, &self.DF_necessary_inherent, "D<>F"),
-            (&self.necessary_resourcing, &self.intrinsic_nature, &self.DG_necessary_intrinsic, "D<>G"),
-            (&self.necessary_resourcing, &self.organisational_modes, &self.DH_necessary_organisational, "D<>H"),
-            (&self.integrative_totality, &self.inherent_values, &self.EF_integrative_inherent, "E<>F"),
-            (&self.integrative_totality, &self.intrinsic_nature, &self.EG_integrative_intrinsic, "E<>G"),
-            (&self.integrative_totality, &self.organisational_modes, &self.EH_integrative_organisational, "E<>H"),
-            (&self.inherent_values, &self.intrinsic_nature, &self.FG_inherent_intrinsic, "F<>G"),
-            (&self.inherent_values, &self.organisational_modes, &self.FH_inherent_organisational, "F<>H"),
-            (&self.intrinsic_nature, &self.organisational_modes, &self.GH_intrinsic_organisational, "G<>H"),
-        ];
+        let instances = self.get_instances();
         
-        for (from, to, connective, code) in connectives {
-            match connective {
-                Some(conn) => println!("  {} <--[{}]--> {} ({})", from, conn, to, code),
-                None => println!("  {} <--> {} (no connective defined) ({})", from, to, code),
-            }
+        // Get all connective keys and sort them for consistent ordering
+        let mut keys: Vec<_> = self.connectives.keys().cloned().collect();
+        keys.sort();
+        
+        for (i, j) in keys {
+            let connective = self.connectives.get(&(i, j)).unwrap();
+            let code = format!("{}<>{}", char::from(b'A' + i as u8), char::from(b'A' + j as u8));
+            println!("  {} <--[{}]--> {} ({})", instances[i], connective, instances[j], code);
         }
     }
 }
@@ -430,7 +339,7 @@ mod tests {
         
         // Should have default connectives
         assert!(octad.has_connectives());
-        assert_eq!(octad.AB_smallest_critical.unwrap(), "AB_smallest_critical");
+        assert_eq!(octad.connectives_count(), 28);
     }
 
     #[test]
@@ -471,45 +380,14 @@ mod tests {
 
     #[test]
     fn test_has_connectives_with_some() {
-        let mut octad = Octad::new("Test", "A", "B", "C", "D", "E", "F", "G", "H");
-        octad.AB_smallest_critical = Some("test connection".to_string());
-        
+        let octad = Octad::new("Test", "A", "B", "C", "D", "E", "F", "G", "H");
         assert!(octad.has_connectives());
     }
 
     #[test]
     fn test_has_connectives_with_none() {
         let mut octad = Octad::new("Test", "A", "B", "C", "D", "E", "F", "G", "H");
-        // Remove all connectives to test none state
-        octad.AB_smallest_critical = None;
-        octad.AC_smallest_supportive = None;
-        octad.AD_smallest_necessary = None;
-        octad.AE_smallest_integrative = None;
-        octad.AF_smallest_inherent = None;
-        octad.AG_smallest_intrinsic = None;
-        octad.AH_smallest_organisational = None;
-        octad.BC_critical_supportive = None;
-        octad.BD_critical_necessary = None;
-        octad.BE_critical_integrative = None;
-        octad.BF_critical_inherent = None;
-        octad.BG_critical_intrinsic = None;
-        octad.BH_critical_organisational = None;
-        octad.CD_supportive_necessary = None;
-        octad.CE_supportive_integrative = None;
-        octad.CF_supportive_inherent = None;
-        octad.CG_supportive_intrinsic = None;
-        octad.CH_supportive_organisational = None;
-        octad.DE_necessary_integrative = None;
-        octad.DF_necessary_inherent = None;
-        octad.DG_necessary_intrinsic = None;
-        octad.DH_necessary_organisational = None;
-        octad.EF_integrative_inherent = None;
-        octad.EG_integrative_intrinsic = None;
-        octad.EH_integrative_organisational = None;
-        octad.FG_inherent_intrinsic = None;
-        octad.FH_inherent_organisational = None;
-        octad.GH_intrinsic_organisational = None;
-        
+        octad.connectives.clear();
         assert!(!octad.has_connectives());
     }
 
@@ -519,10 +397,10 @@ mod tests {
         
         // Should start with positional-semantic connectives
         assert!(octad.has_connectives());
-        assert_eq!(octad.AB_smallest_critical.unwrap(), "AB_smallest_critical");
-        assert_eq!(octad.CD_supportive_necessary.unwrap(), "CD_supportive_necessary");
-        assert_eq!(octad.EF_integrative_inherent.unwrap(), "EF_integrative_inherent");
-        assert_eq!(octad.GH_intrinsic_organisational.unwrap(), "GH_intrinsic_organisational");
+        assert_eq!(octad.get_connective(0, 1).unwrap(), "A_B_smallest_critical");
+        assert_eq!(octad.get_connective(2, 3).unwrap(), "C_D_supportive_necessary");
+        assert_eq!(octad.get_connective(4, 5).unwrap(), "E_F_integrative_inherent");
+        assert_eq!(octad.get_connective(6, 7).unwrap(), "G_H_intrinsic_organisational");
     }
 
     #[test]
@@ -530,14 +408,14 @@ mod tests {
         let mut octad = Octad::new("Test", "A", "B", "C", "D", "E", "F", "G", "H");
         
         // Modify one connective while others keep defaults
-        octad.AB_smallest_critical = Some("custom connection".to_string());
+        octad.set_connective(0, 1, "custom connection".to_string());
         
         assert!(octad.has_connectives());
-        assert_eq!(octad.AB_smallest_critical.unwrap(), "custom connection");
+        assert_eq!(octad.get_connective(0, 1).unwrap(), "custom connection");
         
         // Other connectives should still have defaults
-        assert_eq!(octad.CD_supportive_necessary.unwrap(), "CD_supportive_necessary");
-        assert_eq!(octad.EF_integrative_inherent.unwrap(), "EF_integrative_inherent");
+        assert_eq!(octad.get_connective(2, 3).unwrap(), "C_D_supportive_necessary");
+        assert_eq!(octad.get_connective(4, 5).unwrap(), "E_F_integrative_inherent");
     }
 
     #[test]
@@ -545,37 +423,20 @@ mod tests {
         let octad = Octad::new("Test", "A", "B", "C", "D", "E", "F", "G", "H");
         
         // Should have exactly 28 connectives (8 choose 2 = 28)
-        let connectives_count = [
-            octad.AB_smallest_critical.is_some(),
-            octad.AC_smallest_supportive.is_some(),
-            octad.AD_smallest_necessary.is_some(),
-            octad.AE_smallest_integrative.is_some(),
-            octad.AF_smallest_inherent.is_some(),
-            octad.AG_smallest_intrinsic.is_some(),
-            octad.AH_smallest_organisational.is_some(),
-            octad.BC_critical_supportive.is_some(),
-            octad.BD_critical_necessary.is_some(),
-            octad.BE_critical_integrative.is_some(),
-            octad.BF_critical_inherent.is_some(),
-            octad.BG_critical_intrinsic.is_some(),
-            octad.BH_critical_organisational.is_some(),
-            octad.CD_supportive_necessary.is_some(),
-            octad.CE_supportive_integrative.is_some(),
-            octad.CF_supportive_inherent.is_some(),
-            octad.CG_supportive_intrinsic.is_some(),
-            octad.CH_supportive_organisational.is_some(),
-            octad.DE_necessary_integrative.is_some(),
-            octad.DF_necessary_inherent.is_some(),
-            octad.DG_necessary_intrinsic.is_some(),
-            octad.DH_necessary_organisational.is_some(),
-            octad.EF_integrative_inherent.is_some(),
-            octad.EG_integrative_intrinsic.is_some(),
-            octad.EH_integrative_organisational.is_some(),
-            octad.FG_inherent_intrinsic.is_some(),
-            octad.FH_inherent_organisational.is_some(),
-            octad.GH_intrinsic_organisational.is_some(),
-        ].iter().filter(|&&x| x).count();
+        assert_eq!(octad.connectives_count(), 28);
+    }
+
+    #[test]
+    fn test_connective_helper_methods() {
+        let mut octad = Octad::new("Test", "A", "B", "C", "D", "E", "F", "G", "H");
         
-        assert_eq!(connectives_count, 28);
+        // Test get/set connective methods
+        assert!(octad.get_connective(0, 1).is_some());
+        
+        octad.set_connective(0, 1, "new value".to_string());
+        assert_eq!(octad.get_connective(0, 1).unwrap(), "new value");
+        
+        // Test bidirectional access (should work both ways)
+        assert_eq!(octad.get_connective(1, 0).unwrap(), "new value");
     }
 } 

@@ -1,7 +1,7 @@
 use std::io::{self, Write};
+use std::collections::HashMap;
 
 #[derive(Debug)]
-#[allow(non_snake_case)] // Connective fields use intentional positional-semantic naming
 pub struct Hexad {
     pub name: String,
     // User instances for canonical positions
@@ -11,22 +11,8 @@ pub struct Hexad {
     pub criteria: String,      // Position D
     pub facts: String,         // Position E
     pub priorities: String,    // Position F
-    // Positional-semantic connectives (bidirectional relationships)
-    pub AB_resources_values: Option<String>,      // A<>B
-    pub AC_resources_options: Option<String>,     // A<>C
-    pub AD_resources_criteria: Option<String>,    // A<>D
-    pub AE_resources_facts: Option<String>,       // A<>E
-    pub AF_resources_priorities: Option<String>,  // A<>F
-    pub BC_values_options: Option<String>,        // B<>C
-    pub BD_values_criteria: Option<String>,       // B<>D
-    pub BE_values_facts: Option<String>,          // B<>E
-    pub BF_values_priorities: Option<String>,     // B<>F
-    pub CD_options_criteria: Option<String>,      // C<>D
-    pub CE_options_facts: Option<String>,         // C<>E
-    pub CF_options_priorities: Option<String>,    // C<>F
-    pub DE_criteria_facts: Option<String>,        // D<>E
-    pub DF_criteria_priorities: Option<String>,   // D<>F
-    pub EF_facts_priorities: Option<String>,      // E<>F
+    // Connectives stored as HashMap for scalability
+    pub connectives: HashMap<(usize, usize), String>,
 }
 
 impl Hexad {
@@ -42,7 +28,7 @@ impl Hexad {
         facts: &str,
         priorities: &str,
     ) -> Self {
-        Hexad {
+        let mut hexad = Hexad {
             name: name.to_string(),
             resources: resources.to_string(),
             values: values.to_string(),
@@ -50,23 +36,44 @@ impl Hexad {
             criteria: criteria.to_string(),
             facts: facts.to_string(),
             priorities: priorities.to_string(),
-            // Initialize connectives with positional-semantic defaults
-            AB_resources_values: Some("AB_resources_values".to_string()),
-            AC_resources_options: Some("AC_resources_options".to_string()),
-            AD_resources_criteria: Some("AD_resources_criteria".to_string()),
-            AE_resources_facts: Some("AE_resources_facts".to_string()),
-            AF_resources_priorities: Some("AF_resources_priorities".to_string()),
-            BC_values_options: Some("BC_values_options".to_string()),
-            BD_values_criteria: Some("BD_values_criteria".to_string()),
-            BE_values_facts: Some("BE_values_facts".to_string()),
-            BF_values_priorities: Some("BF_values_priorities".to_string()),
-            CD_options_criteria: Some("CD_options_criteria".to_string()),
-            CE_options_facts: Some("CE_options_facts".to_string()),
-            CF_options_priorities: Some("CF_options_priorities".to_string()),
-            DE_criteria_facts: Some("DE_criteria_facts".to_string()),
-            DF_criteria_priorities: Some("DF_criteria_priorities".to_string()),
-            EF_facts_priorities: Some("EF_facts_priorities".to_string()),
+            connectives: HashMap::new(),
+        };
+
+        // Initialize all 15 connectives with positional-semantic defaults
+        let terms = vec![
+            "resources", "values", "options", "criteria", "facts", "priorities"
+        ];
+        
+        for i in 0..6 {
+            for j in (i + 1)..6 {
+                let connective_name = format!("{}_{}_{}_{}", 
+                    char::from(b'A' + i as u8),
+                    char::from(b'A' + j as u8),
+                    terms[i], 
+                    terms[j]
+                );
+                hexad.connectives.insert((i, j), connective_name);
+            }
         }
+
+        hexad
+    }
+
+    /// Get a connective by position indices
+    pub fn get_connective(&self, i: usize, j: usize) -> Option<&String> {
+        let key = if i < j { (i, j) } else { (j, i) };
+        self.connectives.get(&key)
+    }
+
+    /// Set a connective by position indices
+    pub fn set_connective(&mut self, i: usize, j: usize, value: String) {
+        let key = if i < j { (i, j) } else { (j, i) };
+        self.connectives.insert(key, value);
+    }
+
+    /// Get the total number of connectives
+    pub fn connectives_count(&self) -> usize {
+        self.connectives.len()
     }
     
     /// Interactive creation method - handles all input/output internally
@@ -194,31 +201,23 @@ impl Hexad {
         
         if modify_connectives.starts_with('y') {
             println!("\nModifying connectives (press Enter to keep default, or input new value):");
-            println!("Note: Hexad has 15 connectives - this may take a moment to review.");
+            println!("Note: Hexad has 15 connectives - this will take a moment to review.");
             
-            // Helper to handle connective modification
-            let modify_connective = |prompt: &str, current: &str| -> Result<Option<String>, Box<dyn std::error::Error>> {
-                let input = get_optional_input(prompt, current)?;
-                Ok(Some(input))
-            };
+            // Get all connective keys and sort them for consistent ordering
+            let mut keys: Vec<_> = hexad.connectives.keys().cloned().collect();
+            keys.sort();
             
-            hexad.AB_resources_values = modify_connective("AB_resources_values: ", "AB_resources_values")?;
-            hexad.AC_resources_options = modify_connective("AC_resources_options: ", "AC_resources_options")?;
-            hexad.AD_resources_criteria = modify_connective("AD_resources_criteria: ", "AD_resources_criteria")?;
-            hexad.AE_resources_facts = modify_connective("AE_resources_facts: ", "AE_resources_facts")?;
-            hexad.AF_resources_priorities = modify_connective("AF_resources_priorities: ", "AF_resources_priorities")?;
-            hexad.BC_values_options = modify_connective("BC_values_options: ", "BC_values_options")?;
-            hexad.BD_values_criteria = modify_connective("BD_values_criteria: ", "BD_values_criteria")?;
-            hexad.BE_values_facts = modify_connective("BE_values_facts: ", "BE_values_facts")?;
-            hexad.BF_values_priorities = modify_connective("BF_values_priorities: ", "BF_values_priorities")?;
-            hexad.CD_options_criteria = modify_connective("CD_options_criteria: ", "CD_options_criteria")?;
-            hexad.CE_options_facts = modify_connective("CE_options_facts: ", "CE_options_facts")?;
-            hexad.CF_options_priorities = modify_connective("CF_options_priorities: ", "CF_options_priorities")?;
-            hexad.DE_criteria_facts = modify_connective("DE_criteria_facts: ", "DE_criteria_facts")?;
-            hexad.DF_criteria_priorities = modify_connective("DF_criteria_priorities: ", "DF_criteria_priorities")?;
-            hexad.EF_facts_priorities = modify_connective("EF_facts_priorities: ", "EF_facts_priorities")?;
-        } else {
-            // Keep the defaults that were initialized (no further questions needed)
+            for (i, j) in keys {
+                let current_value = hexad.connectives.get(&(i, j)).unwrap();
+                let prompt = format!("Connective {}<>{} ({}): ", 
+                    char::from(b'A' + i as u8), 
+                    char::from(b'A' + j as u8),
+                    current_value
+                );
+                
+                let new_value = get_optional_input(&prompt, current_value)?;
+                hexad.set_connective(i, j, new_value);
+            }
         }
         
         // Display the created hexad
@@ -234,21 +233,7 @@ impl Hexad {
     
     /// Check if any connectives are defined
     pub fn has_connectives(&self) -> bool {
-        self.AB_resources_values.is_some() ||
-        self.AC_resources_options.is_some() ||
-        self.AD_resources_criteria.is_some() ||
-        self.AE_resources_facts.is_some() ||
-        self.AF_resources_priorities.is_some() ||
-        self.BC_values_options.is_some() ||
-        self.BD_values_criteria.is_some() ||
-        self.BE_values_facts.is_some() ||
-        self.BF_values_priorities.is_some() ||
-        self.CD_options_criteria.is_some() ||
-        self.CE_options_facts.is_some() ||
-        self.CF_options_priorities.is_some() ||
-        self.DE_criteria_facts.is_some() ||
-        self.DF_criteria_priorities.is_some() ||
-        self.EF_facts_priorities.is_some()
+        !self.connectives.is_empty()
     }
     
     /// Get canonical term names (hardcoded)
@@ -287,29 +272,16 @@ impl Hexad {
     /// Display all connectives
     pub fn display_connectives(&self) {
         println!("\nConnectives:");
-        let connectives = [
-            (&self.resources, &self.values, &self.AB_resources_values, "A<>B"),
-            (&self.resources, &self.options, &self.AC_resources_options, "A<>C"),
-            (&self.resources, &self.criteria, &self.AD_resources_criteria, "A<>D"),
-            (&self.resources, &self.facts, &self.AE_resources_facts, "A<>E"),
-            (&self.resources, &self.priorities, &self.AF_resources_priorities, "A<>F"),
-            (&self.values, &self.options, &self.BC_values_options, "B<>C"),
-            (&self.values, &self.criteria, &self.BD_values_criteria, "B<>D"),
-            (&self.values, &self.facts, &self.BE_values_facts, "B<>E"),
-            (&self.values, &self.priorities, &self.BF_values_priorities, "B<>F"),
-            (&self.options, &self.criteria, &self.CD_options_criteria, "C<>D"),
-            (&self.options, &self.facts, &self.CE_options_facts, "C<>E"),
-            (&self.options, &self.priorities, &self.CF_options_priorities, "C<>F"),
-            (&self.criteria, &self.facts, &self.DE_criteria_facts, "D<>E"),
-            (&self.criteria, &self.priorities, &self.DF_criteria_priorities, "D<>F"),
-            (&self.facts, &self.priorities, &self.EF_facts_priorities, "E<>F"),
-        ];
+        let instances = self.get_instances();
         
-        for (from, to, connective, code) in connectives {
-            match connective {
-                Some(conn) => println!("  {} <--[{}]--> {} ({})", from, conn, to, code),
-                None => println!("  {} <--> {} (no connective defined) ({})", from, to, code),
-            }
+        // Get all connective keys and sort them for consistent ordering
+        let mut keys: Vec<_> = self.connectives.keys().cloned().collect();
+        keys.sort();
+        
+        for (i, j) in keys {
+            let connective = self.connectives.get(&(i, j)).unwrap();
+            let code = format!("{}<>{}", char::from(b'A' + i as u8), char::from(b'A' + j as u8));
+            println!("  {} <--[{}]--> {} ({})", instances[i], connective, instances[j], code);
         }
     }
 }
@@ -322,25 +294,25 @@ mod tests {
     fn test_hexad_creation() {
         let hexad = Hexad::new(
             "Test Hexad",
-            "Money", 
-            "Quality",
-            "Choices",
-            "Standards",
-            "Data",
-            "Goals"
+            "Available Resources",
+            "Core Values",
+            "Possible Options",
+            "Selection Criteria",
+            "Known Facts",
+            "Key Priorities"
         );
         
         assert_eq!(hexad.name, "Test Hexad");
-        assert_eq!(hexad.resources, "Money");
-        assert_eq!(hexad.values, "Quality");
-        assert_eq!(hexad.options, "Choices");
-        assert_eq!(hexad.criteria, "Standards");
-        assert_eq!(hexad.facts, "Data");
-        assert_eq!(hexad.priorities, "Goals");
+        assert_eq!(hexad.resources, "Available Resources");
+        assert_eq!(hexad.values, "Core Values");
+        assert_eq!(hexad.options, "Possible Options");
+        assert_eq!(hexad.criteria, "Selection Criteria");
+        assert_eq!(hexad.facts, "Known Facts");
+        assert_eq!(hexad.priorities, "Key Priorities");
         
         // Should have default connectives
         assert!(hexad.has_connectives());
-        assert_eq!(hexad.AB_resources_values.unwrap(), "AB_resources_values");
+        assert_eq!(hexad.connectives_count(), 15);
     }
 
     #[test]
@@ -353,99 +325,79 @@ mod tests {
     fn test_get_instances() {
         let hexad = Hexad::new(
             "Test",
-            "Money", 
-            "Quality",
-            "Choices",
-            "Standards",
-            "Data",
-            "Goals"
+            "Available Resources",
+            "Core Values",
+            "Possible Options",
+            "Selection Criteria",
+            "Known Facts",
+            "Key Priorities"
         );
         
         let instances = hexad.get_instances();
-        assert_eq!(instances, vec!["Money", "Quality", "Choices", "Standards", "Data", "Goals"]);
+        assert_eq!(instances, vec![
+            "Available Resources", "Core Values", "Possible Options", 
+            "Selection Criteria", "Known Facts", "Key Priorities"
+        ]);
     }
 
     #[test]
     fn test_has_connectives_with_some() {
-        let mut hexad = Hexad::new("Test", "R", "V", "O", "C", "F", "P");
-        hexad.AB_resources_values = Some("test connection".to_string());
-        
+        let hexad = Hexad::new("Test", "A", "B", "C", "D", "E", "F");
         assert!(hexad.has_connectives());
     }
 
     #[test]
     fn test_has_connectives_with_none() {
-        let mut hexad = Hexad::new("Test", "R", "V", "O", "C", "F", "P");
-        // Remove all connectives to test none state
-        hexad.AB_resources_values = None;
-        hexad.AC_resources_options = None;
-        hexad.AD_resources_criteria = None;
-        hexad.AE_resources_facts = None;
-        hexad.AF_resources_priorities = None;
-        hexad.BC_values_options = None;
-        hexad.BD_values_criteria = None;
-        hexad.BE_values_facts = None;
-        hexad.BF_values_priorities = None;
-        hexad.CD_options_criteria = None;
-        hexad.CE_options_facts = None;
-        hexad.CF_options_priorities = None;
-        hexad.DE_criteria_facts = None;
-        hexad.DF_criteria_priorities = None;
-        hexad.EF_facts_priorities = None;
-        
+        let mut hexad = Hexad::new("Test", "A", "B", "C", "D", "E", "F");
+        hexad.connectives.clear();
         assert!(!hexad.has_connectives());
     }
 
     #[test]
     fn test_positional_semantic_connectives() {
-        let hexad = Hexad::new("Test", "R", "V", "O", "C", "F", "P");
+        let hexad = Hexad::new("Test", "A", "B", "C", "D", "E", "F");
         
         // Should start with positional-semantic connectives
         assert!(hexad.has_connectives());
-        assert_eq!(hexad.AB_resources_values.unwrap(), "AB_resources_values");
-        assert_eq!(hexad.BC_values_options.unwrap(), "BC_values_options");
-        assert_eq!(hexad.DE_criteria_facts.unwrap(), "DE_criteria_facts");
-        assert_eq!(hexad.EF_facts_priorities.unwrap(), "EF_facts_priorities");
+        assert_eq!(hexad.get_connective(0, 1).unwrap(), "A_B_resources_values");
+        assert_eq!(hexad.get_connective(2, 3).unwrap(), "C_D_options_criteria");
+        assert_eq!(hexad.get_connective(4, 5).unwrap(), "E_F_facts_priorities");
     }
 
     #[test]
     fn test_custom_connectives() {
-        let mut hexad = Hexad::new("Test", "R", "V", "O", "C", "F", "P");
+        let mut hexad = Hexad::new("Test", "A", "B", "C", "D", "E", "F");
         
         // Modify one connective while others keep defaults
-        hexad.AB_resources_values = Some("custom connection".to_string());
+        hexad.set_connective(0, 1, "custom connection".to_string());
         
         assert!(hexad.has_connectives());
-        assert_eq!(hexad.AB_resources_values.unwrap(), "custom connection");
+        assert_eq!(hexad.get_connective(0, 1).unwrap(), "custom connection");
         
         // Other connectives should still have defaults
-        assert_eq!(hexad.BC_values_options.unwrap(), "BC_values_options");
-        assert_eq!(hexad.DE_criteria_facts.unwrap(), "DE_criteria_facts");
+        assert_eq!(hexad.get_connective(2, 3).unwrap(), "C_D_options_criteria");
+        assert_eq!(hexad.get_connective(4, 5).unwrap(), "E_F_facts_priorities");
     }
 
     #[test]
     fn test_all_connectives_count() {
-        let hexad = Hexad::new("Test", "R", "V", "O", "C", "F", "P");
+        let hexad = Hexad::new("Test", "A", "B", "C", "D", "E", "F");
         
         // Should have exactly 15 connectives (6 choose 2 = 15)
-        let connectives_count = [
-            hexad.AB_resources_values.is_some(),
-            hexad.AC_resources_options.is_some(),
-            hexad.AD_resources_criteria.is_some(),
-            hexad.AE_resources_facts.is_some(),
-            hexad.AF_resources_priorities.is_some(),
-            hexad.BC_values_options.is_some(),
-            hexad.BD_values_criteria.is_some(),
-            hexad.BE_values_facts.is_some(),
-            hexad.BF_values_priorities.is_some(),
-            hexad.CD_options_criteria.is_some(),
-            hexad.CE_options_facts.is_some(),
-            hexad.CF_options_priorities.is_some(),
-            hexad.DE_criteria_facts.is_some(),
-            hexad.DF_criteria_priorities.is_some(),
-            hexad.EF_facts_priorities.is_some(),
-        ].iter().filter(|&&x| x).count();
+        assert_eq!(hexad.connectives_count(), 15);
+    }
+
+    #[test]
+    fn test_connective_helper_methods() {
+        let mut hexad = Hexad::new("Test", "A", "B", "C", "D", "E", "F");
         
-        assert_eq!(connectives_count, 15);
+        // Test get/set connective methods
+        assert!(hexad.get_connective(0, 1).is_some());
+        
+        hexad.set_connective(0, 1, "new value".to_string());
+        assert_eq!(hexad.get_connective(0, 1).unwrap(), "new value");
+        
+        // Test bidirectional access (should work both ways)
+        assert_eq!(hexad.get_connective(1, 0).unwrap(), "new value");
     }
 } 

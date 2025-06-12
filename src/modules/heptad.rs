@@ -1,4 +1,5 @@
 use std::io::{self, Write};
+use std::collections::HashMap;
 
 #[derive(Debug)]
 #[allow(non_snake_case)] // Connective fields use intentional positional-semantic naming
@@ -12,28 +13,8 @@ pub struct Heptad {
     pub application: String,  // Position E
     pub delivery: String,     // Position F
     pub value: String,        // Position G
-    // Positional-semantic connectives (bidirectional relationships)
-    pub AB_insight_research: Option<String>,       // A<>B
-    pub AC_insight_design: Option<String>,         // A<>C
-    pub AD_insight_synthesis: Option<String>,      // A<>D
-    pub AE_insight_application: Option<String>,    // A<>E
-    pub AF_insight_delivery: Option<String>,       // A<>F
-    pub AG_insight_value: Option<String>,          // A<>G
-    pub BC_research_design: Option<String>,        // B<>C
-    pub BD_research_synthesis: Option<String>,     // B<>D
-    pub BE_research_application: Option<String>,   // B<>E
-    pub BF_research_delivery: Option<String>,      // B<>F
-    pub BG_research_value: Option<String>,         // B<>G
-    pub CD_design_synthesis: Option<String>,       // C<>D
-    pub CE_design_application: Option<String>,     // C<>E
-    pub CF_design_delivery: Option<String>,        // C<>F
-    pub CG_design_value: Option<String>,           // C<>G
-    pub DE_synthesis_application: Option<String>,  // D<>E
-    pub DF_synthesis_delivery: Option<String>,     // D<>F
-    pub DG_synthesis_value: Option<String>,        // D<>G
-    pub EF_application_delivery: Option<String>,   // E<>F
-    pub EG_application_value: Option<String>,      // E<>G
-    pub FG_delivery_value: Option<String>,         // F<>G
+    // Connectives stored as HashMap for scalability
+    pub connectives: HashMap<(usize, usize), String>,
 }
 
 impl Heptad {
@@ -50,7 +31,7 @@ impl Heptad {
         delivery: &str,
         value: &str,
     ) -> Self {
-        Heptad {
+        let mut heptad = Heptad {
             name: name.to_string(),
             insight: insight.to_string(),
             research: research.to_string(),
@@ -59,29 +40,45 @@ impl Heptad {
             application: application.to_string(),
             delivery: delivery.to_string(),
             value: value.to_string(),
-            // Initialize connectives with positional-semantic defaults
-            AB_insight_research: Some("AB_insight_research".to_string()),
-            AC_insight_design: Some("AC_insight_design".to_string()),
-            AD_insight_synthesis: Some("AD_insight_synthesis".to_string()),
-            AE_insight_application: Some("AE_insight_application".to_string()),
-            AF_insight_delivery: Some("AF_insight_delivery".to_string()),
-            AG_insight_value: Some("AG_insight_value".to_string()),
-            BC_research_design: Some("BC_research_design".to_string()),
-            BD_research_synthesis: Some("BD_research_synthesis".to_string()),
-            BE_research_application: Some("BE_research_application".to_string()),
-            BF_research_delivery: Some("BF_research_delivery".to_string()),
-            BG_research_value: Some("BG_research_value".to_string()),
-            CD_design_synthesis: Some("CD_design_synthesis".to_string()),
-            CE_design_application: Some("CE_design_application".to_string()),
-            CF_design_delivery: Some("CF_design_delivery".to_string()),
-            CG_design_value: Some("CG_design_value".to_string()),
-            DE_synthesis_application: Some("DE_synthesis_application".to_string()),
-            DF_synthesis_delivery: Some("DF_synthesis_delivery".to_string()),
-            DG_synthesis_value: Some("DG_synthesis_value".to_string()),
-            EF_application_delivery: Some("EF_application_delivery".to_string()),
-            EG_application_value: Some("EG_application_value".to_string()),
-            FG_delivery_value: Some("FG_delivery_value".to_string()),
+            connectives: HashMap::new(),
+        };
+
+        // Initialize all 21 connectives with positional-semantic defaults
+        let terms = vec![
+            "insight", "research", "design", "synthesis", 
+            "application", "delivery", "value"
+        ];
+        
+        for i in 0..7 {
+            for j in (i + 1)..7 {
+                let connective_name = format!("{}_{}_{}_{}", 
+                    char::from(b'A' + i as u8),
+                    char::from(b'A' + j as u8),
+                    terms[i], 
+                    terms[j]
+                );
+                heptad.connectives.insert((i, j), connective_name);
+            }
         }
+
+        heptad
+    }
+
+    /// Get a connective by position indices
+    pub fn get_connective(&self, i: usize, j: usize) -> Option<&String> {
+        let key = if i < j { (i, j) } else { (j, i) };
+        self.connectives.get(&key)
+    }
+
+    /// Set a connective by position indices
+    pub fn set_connective(&mut self, i: usize, j: usize, value: String) {
+        let key = if i < j { (i, j) } else { (j, i) };
+        self.connectives.insert(key, value);
+    }
+
+    /// Get the total number of connectives
+    pub fn connectives_count(&self) -> usize {
+        self.connectives.len()
     }
     
     /// Interactive creation method - handles all input/output internally
@@ -210,37 +207,23 @@ impl Heptad {
         
         if modify_connectives.starts_with('y') {
             println!("\nModifying connectives (press Enter to keep default, or input new value):");
-            println!("Note: Heptad has 21 connectives - this will take a moment to review.");
+            println!("Note: Heptad has 21 connectives - this will take several moments to review.");
             
-            // Helper to handle connective modification
-            let modify_connective = |prompt: &str, current: &str| -> Result<Option<String>, Box<dyn std::error::Error>> {
-                let input = get_optional_input(prompt, current)?;
-                Ok(Some(input))
-            };
+            // Get all connective keys and sort them for consistent ordering
+            let mut keys: Vec<_> = heptad.connectives.keys().cloned().collect();
+            keys.sort();
             
-            heptad.AB_insight_research = modify_connective("AB_insight_research: ", "AB_insight_research")?;
-            heptad.AC_insight_design = modify_connective("AC_insight_design: ", "AC_insight_design")?;
-            heptad.AD_insight_synthesis = modify_connective("AD_insight_synthesis: ", "AD_insight_synthesis")?;
-            heptad.AE_insight_application = modify_connective("AE_insight_application: ", "AE_insight_application")?;
-            heptad.AF_insight_delivery = modify_connective("AF_insight_delivery: ", "AF_insight_delivery")?;
-            heptad.AG_insight_value = modify_connective("AG_insight_value: ", "AG_insight_value")?;
-            heptad.BC_research_design = modify_connective("BC_research_design: ", "BC_research_design")?;
-            heptad.BD_research_synthesis = modify_connective("BD_research_synthesis: ", "BD_research_synthesis")?;
-            heptad.BE_research_application = modify_connective("BE_research_application: ", "BE_research_application")?;
-            heptad.BF_research_delivery = modify_connective("BF_research_delivery: ", "BF_research_delivery")?;
-            heptad.BG_research_value = modify_connective("BG_research_value: ", "BG_research_value")?;
-            heptad.CD_design_synthesis = modify_connective("CD_design_synthesis: ", "CD_design_synthesis")?;
-            heptad.CE_design_application = modify_connective("CE_design_application: ", "CE_design_application")?;
-            heptad.CF_design_delivery = modify_connective("CF_design_delivery: ", "CF_design_delivery")?;
-            heptad.CG_design_value = modify_connective("CG_design_value: ", "CG_design_value")?;
-            heptad.DE_synthesis_application = modify_connective("DE_synthesis_application: ", "DE_synthesis_application")?;
-            heptad.DF_synthesis_delivery = modify_connective("DF_synthesis_delivery: ", "DF_synthesis_delivery")?;
-            heptad.DG_synthesis_value = modify_connective("DG_synthesis_value: ", "DG_synthesis_value")?;
-            heptad.EF_application_delivery = modify_connective("EF_application_delivery: ", "EF_application_delivery")?;
-            heptad.EG_application_value = modify_connective("EG_application_value: ", "EG_application_value")?;
-            heptad.FG_delivery_value = modify_connective("FG_delivery_value: ", "FG_delivery_value")?;
-        } else {
-            // Keep the defaults that were initialized (no further questions needed)
+            for (i, j) in keys {
+                let current_value = heptad.connectives.get(&(i, j)).unwrap();
+                let prompt = format!("Connective {}<>{} ({}): ", 
+                    char::from(b'A' + i as u8), 
+                    char::from(b'A' + j as u8),
+                    current_value
+                );
+                
+                let new_value = get_optional_input(&prompt, current_value)?;
+                heptad.set_connective(i, j, new_value);
+            }
         }
         
         // Display the created heptad
@@ -256,27 +239,7 @@ impl Heptad {
     
     /// Check if any connectives are defined
     pub fn has_connectives(&self) -> bool {
-        self.AB_insight_research.is_some() ||
-        self.AC_insight_design.is_some() ||
-        self.AD_insight_synthesis.is_some() ||
-        self.AE_insight_application.is_some() ||
-        self.AF_insight_delivery.is_some() ||
-        self.AG_insight_value.is_some() ||
-        self.BC_research_design.is_some() ||
-        self.BD_research_synthesis.is_some() ||
-        self.BE_research_application.is_some() ||
-        self.BF_research_delivery.is_some() ||
-        self.BG_research_value.is_some() ||
-        self.CD_design_synthesis.is_some() ||
-        self.CE_design_application.is_some() ||
-        self.CF_design_delivery.is_some() ||
-        self.CG_design_value.is_some() ||
-        self.DE_synthesis_application.is_some() ||
-        self.DF_synthesis_delivery.is_some() ||
-        self.DG_synthesis_value.is_some() ||
-        self.EF_application_delivery.is_some() ||
-        self.EG_application_value.is_some() ||
-        self.FG_delivery_value.is_some()
+        !self.connectives.is_empty()
     }
     
     /// Get canonical term names (hardcoded)
@@ -317,35 +280,16 @@ impl Heptad {
     /// Display all connectives
     pub fn display_connectives(&self) {
         println!("\nConnectives:");
-        let connectives = [
-            (&self.insight, &self.research, &self.AB_insight_research, "A<>B"),
-            (&self.insight, &self.design, &self.AC_insight_design, "A<>C"),
-            (&self.insight, &self.synthesis, &self.AD_insight_synthesis, "A<>D"),
-            (&self.insight, &self.application, &self.AE_insight_application, "A<>E"),
-            (&self.insight, &self.delivery, &self.AF_insight_delivery, "A<>F"),
-            (&self.insight, &self.value, &self.AG_insight_value, "A<>G"),
-            (&self.research, &self.design, &self.BC_research_design, "B<>C"),
-            (&self.research, &self.synthesis, &self.BD_research_synthesis, "B<>D"),
-            (&self.research, &self.application, &self.BE_research_application, "B<>E"),
-            (&self.research, &self.delivery, &self.BF_research_delivery, "B<>F"),
-            (&self.research, &self.value, &self.BG_research_value, "B<>G"),
-            (&self.design, &self.synthesis, &self.CD_design_synthesis, "C<>D"),
-            (&self.design, &self.application, &self.CE_design_application, "C<>E"),
-            (&self.design, &self.delivery, &self.CF_design_delivery, "C<>F"),
-            (&self.design, &self.value, &self.CG_design_value, "C<>G"),
-            (&self.synthesis, &self.application, &self.DE_synthesis_application, "D<>E"),
-            (&self.synthesis, &self.delivery, &self.DF_synthesis_delivery, "D<>F"),
-            (&self.synthesis, &self.value, &self.DG_synthesis_value, "D<>G"),
-            (&self.application, &self.delivery, &self.EF_application_delivery, "E<>F"),
-            (&self.application, &self.value, &self.EG_application_value, "E<>G"),
-            (&self.delivery, &self.value, &self.FG_delivery_value, "F<>G"),
-        ];
+        let instances = self.get_instances();
         
-        for (from, to, connective, code) in connectives {
-            match connective {
-                Some(conn) => println!("  {} <--[{}]--> {} ({})", from, conn, to, code),
-                None => println!("  {} <--> {} (no connective defined) ({})", from, to, code),
-            }
+        // Get all connective keys and sort them for consistent ordering
+        let mut keys: Vec<_> = self.connectives.keys().cloned().collect();
+        keys.sort();
+        
+        for (i, j) in keys {
+            let connective = self.connectives.get(&(i, j)).unwrap();
+            let code = format!("{}<>{}", char::from(b'A' + i as u8), char::from(b'A' + j as u8));
+            println!("  {} <--[{}]--> {} ({})", instances[i], connective, instances[j], code);
         }
     }
 }
@@ -358,27 +302,27 @@ mod tests {
     fn test_heptad_creation() {
         let heptad = Heptad::new(
             "Test Heptad",
-            "Innovation", 
-            "Analysis",
-            "Planning",
-            "Integration",
-            "Implementation",
-            "Deployment",
-            "Worth"
+            "Core Insight",
+            "Deep Research",
+            "Creative Design",
+            "Smart Synthesis",
+            "Practical Application",
+            "Effective Delivery",
+            "Real Value"
         );
         
         assert_eq!(heptad.name, "Test Heptad");
-        assert_eq!(heptad.insight, "Innovation");
-        assert_eq!(heptad.research, "Analysis");
-        assert_eq!(heptad.design, "Planning");
-        assert_eq!(heptad.synthesis, "Integration");
-        assert_eq!(heptad.application, "Implementation");
-        assert_eq!(heptad.delivery, "Deployment");
-        assert_eq!(heptad.value, "Worth");
+        assert_eq!(heptad.insight, "Core Insight");
+        assert_eq!(heptad.research, "Deep Research");
+        assert_eq!(heptad.design, "Creative Design");
+        assert_eq!(heptad.synthesis, "Smart Synthesis");
+        assert_eq!(heptad.application, "Practical Application");
+        assert_eq!(heptad.delivery, "Effective Delivery");
+        assert_eq!(heptad.value, "Real Value");
         
         // Should have default connectives
         assert!(heptad.has_connectives());
-        assert_eq!(heptad.AB_insight_research.unwrap(), "AB_insight_research");
+        assert_eq!(heptad.connectives_count(), 21);
     }
 
     #[test]
@@ -391,112 +335,81 @@ mod tests {
     fn test_get_instances() {
         let heptad = Heptad::new(
             "Test",
-            "Innovation", 
-            "Analysis",
-            "Planning",
-            "Integration",
-            "Implementation",
-            "Deployment",
-            "Worth"
+            "Core Insight",
+            "Deep Research",
+            "Creative Design",
+            "Smart Synthesis",
+            "Practical Application",
+            "Effective Delivery",
+            "Real Value"
         );
         
         let instances = heptad.get_instances();
-        assert_eq!(instances, vec!["Innovation", "Analysis", "Planning", "Integration", "Implementation", "Deployment", "Worth"]);
+        assert_eq!(instances, vec![
+            "Core Insight", "Deep Research", "Creative Design", "Smart Synthesis", 
+            "Practical Application", "Effective Delivery", "Real Value"
+        ]);
     }
 
     #[test]
     fn test_has_connectives_with_some() {
-        let mut heptad = Heptad::new("Test", "I", "R", "D", "S", "A", "De", "V");
-        heptad.AB_insight_research = Some("test connection".to_string());
-        
+        let heptad = Heptad::new("Test", "A", "B", "C", "D", "E", "F", "G");
         assert!(heptad.has_connectives());
     }
 
     #[test]
     fn test_has_connectives_with_none() {
-        let mut heptad = Heptad::new("Test", "I", "R", "D", "S", "A", "De", "V");
-        // Remove all connectives to test none state
-        heptad.AB_insight_research = None;
-        heptad.AC_insight_design = None;
-        heptad.AD_insight_synthesis = None;
-        heptad.AE_insight_application = None;
-        heptad.AF_insight_delivery = None;
-        heptad.AG_insight_value = None;
-        heptad.BC_research_design = None;
-        heptad.BD_research_synthesis = None;
-        heptad.BE_research_application = None;
-        heptad.BF_research_delivery = None;
-        heptad.BG_research_value = None;
-        heptad.CD_design_synthesis = None;
-        heptad.CE_design_application = None;
-        heptad.CF_design_delivery = None;
-        heptad.CG_design_value = None;
-        heptad.DE_synthesis_application = None;
-        heptad.DF_synthesis_delivery = None;
-        heptad.DG_synthesis_value = None;
-        heptad.EF_application_delivery = None;
-        heptad.EG_application_value = None;
-        heptad.FG_delivery_value = None;
-        
+        let mut heptad = Heptad::new("Test", "A", "B", "C", "D", "E", "F", "G");
+        heptad.connectives.clear();
         assert!(!heptad.has_connectives());
     }
 
     #[test]
     fn test_positional_semantic_connectives() {
-        let heptad = Heptad::new("Test", "I", "R", "D", "S", "A", "De", "V");
+        let heptad = Heptad::new("Test", "A", "B", "C", "D", "E", "F", "G");
         
         // Should start with positional-semantic connectives
         assert!(heptad.has_connectives());
-        assert_eq!(heptad.AB_insight_research.unwrap(), "AB_insight_research");
-        assert_eq!(heptad.CD_design_synthesis.unwrap(), "CD_design_synthesis");
-        assert_eq!(heptad.EF_application_delivery.unwrap(), "EF_application_delivery");
-        assert_eq!(heptad.FG_delivery_value.unwrap(), "FG_delivery_value");
+        assert_eq!(heptad.get_connective(0, 1).unwrap(), "A_B_insight_research");
+        assert_eq!(heptad.get_connective(2, 3).unwrap(), "C_D_design_synthesis");
+        assert_eq!(heptad.get_connective(4, 5).unwrap(), "E_F_application_delivery");
+        assert_eq!(heptad.get_connective(5, 6).unwrap(), "F_G_delivery_value");
     }
 
     #[test]
     fn test_custom_connectives() {
-        let mut heptad = Heptad::new("Test", "I", "R", "D", "S", "A", "De", "V");
+        let mut heptad = Heptad::new("Test", "A", "B", "C", "D", "E", "F", "G");
         
         // Modify one connective while others keep defaults
-        heptad.AB_insight_research = Some("custom connection".to_string());
+        heptad.set_connective(0, 1, "custom connection".to_string());
         
         assert!(heptad.has_connectives());
-        assert_eq!(heptad.AB_insight_research.unwrap(), "custom connection");
+        assert_eq!(heptad.get_connective(0, 1).unwrap(), "custom connection");
         
         // Other connectives should still have defaults
-        assert_eq!(heptad.CD_design_synthesis.unwrap(), "CD_design_synthesis");
-        assert_eq!(heptad.EF_application_delivery.unwrap(), "EF_application_delivery");
+        assert_eq!(heptad.get_connective(2, 3).unwrap(), "C_D_design_synthesis");
+        assert_eq!(heptad.get_connective(4, 5).unwrap(), "E_F_application_delivery");
     }
 
     #[test]
     fn test_all_connectives_count() {
-        let heptad = Heptad::new("Test", "I", "R", "D", "S", "A", "De", "V");
+        let heptad = Heptad::new("Test", "A", "B", "C", "D", "E", "F", "G");
         
         // Should have exactly 21 connectives (7 choose 2 = 21)
-        let connectives_count = [
-            heptad.AB_insight_research.is_some(),
-            heptad.AC_insight_design.is_some(),
-            heptad.AD_insight_synthesis.is_some(),
-            heptad.AE_insight_application.is_some(),
-            heptad.AF_insight_delivery.is_some(),
-            heptad.AG_insight_value.is_some(),
-            heptad.BC_research_design.is_some(),
-            heptad.BD_research_synthesis.is_some(),
-            heptad.BE_research_application.is_some(),
-            heptad.BF_research_delivery.is_some(),
-            heptad.BG_research_value.is_some(),
-            heptad.CD_design_synthesis.is_some(),
-            heptad.CE_design_application.is_some(),
-            heptad.CF_design_delivery.is_some(),
-            heptad.CG_design_value.is_some(),
-            heptad.DE_synthesis_application.is_some(),
-            heptad.DF_synthesis_delivery.is_some(),
-            heptad.DG_synthesis_value.is_some(),
-            heptad.EF_application_delivery.is_some(),
-            heptad.EG_application_value.is_some(),
-            heptad.FG_delivery_value.is_some(),
-        ].iter().filter(|&&x| x).count();
+        assert_eq!(heptad.connectives_count(), 21);
+    }
+
+    #[test]
+    fn test_connective_helper_methods() {
+        let mut heptad = Heptad::new("Test", "A", "B", "C", "D", "E", "F", "G");
         
-        assert_eq!(connectives_count, 21);
+        // Test get/set connective methods
+        assert!(heptad.get_connective(0, 1).is_some());
+        
+        heptad.set_connective(0, 1, "new value".to_string());
+        assert_eq!(heptad.get_connective(0, 1).unwrap(), "new value");
+        
+        // Test bidirectional access (should work both ways)
+        assert_eq!(heptad.get_connective(1, 0).unwrap(), "new value");
     }
 } 
