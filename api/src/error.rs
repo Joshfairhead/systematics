@@ -21,11 +21,11 @@ pub enum SystematicsError {
     #[error("Builder error: {reason}")]
     Builder { reason: String },
     
-    #[error("Serialization error: {source}")]
-    Serialization { source: String },
+    #[error("Serialization error: {0}")]
+    Serialization(String),
     
-    #[error("Deserialization error: {source}")]
-    Deserialization { source: String },
+    #[error("Deserialization error: {0}")]
+    Deserialization(String),
     
     #[error("IO error: {source}")]
     Io {
@@ -33,6 +33,7 @@ pub enum SystematicsError {
         source: std::io::Error,
     },
     
+    #[cfg(feature = "serde_support")]
     #[error("JSON error: {source}")]
     Json {
         #[from]

@@ -55,15 +55,15 @@ impl SystematicsBuilder {
         Self
     }
     
-    pub fn monad() -> structures::monad::MonadBuilder {
+    pub fn monad(&self) -> structures::monad::MonadBuilder {
         structures::monad::MonadBuilder::new()
     }
     
-    pub fn dyad() -> structures::dyad::DyadBuilder {
+    pub fn dyad(&self) -> structures::dyad::DyadBuilder {
         structures::dyad::DyadBuilder::new()
     }
     
-    pub fn triad() -> structures::triad::TriadBuilder {
+    pub fn triad(&self) -> structures::triad::TriadBuilder {
         structures::triad::TriadBuilder::new()
     }
     
@@ -80,11 +80,11 @@ impl SystematicsApi {
         Self {}
     }
     
-    pub fn builder() -> SystematicsBuilder {
+    pub fn builder(&self) -> SystematicsBuilder {
         SystematicsBuilder::new()
     }
     
-    pub fn permutations<T: Clone>(terms: [T; 3]) -> PermutationSet<T> {
+    pub fn permutations<T: Clone>(&self, terms: [T; 3]) -> PermutationSet<T> {
         PermutationSet::new(terms)
     }
 }

@@ -61,6 +61,7 @@ impl SchemaProvider for BennettSchemas {
 }
 
 // Schema implementations
+#[derive(Debug, Clone)]
 pub struct MonadSchema;
 impl Schema for MonadSchema {
     fn term_count(&self) -> usize { 1 }
@@ -69,6 +70,7 @@ impl Schema for MonadSchema {
     fn connectives(&self) -> Vec<Connective> { vec![] }
 }
 
+#[derive(Debug, Clone)]
 pub struct DyadSchema;
 impl Schema for DyadSchema {
     fn term_count(&self) -> usize { 2 }
@@ -86,6 +88,7 @@ impl Schema for DyadSchema {
     }
 }
 
+#[derive(Debug, Clone)]
 pub struct TriadSchema;
 impl Schema for TriadSchema {
     fn term_count(&self) -> usize { 3 }
@@ -118,6 +121,7 @@ impl Schema for TriadSchema {
 // Placeholder schemas for higher-order structures
 macro_rules! create_schema {
     ($name:ident, $count:expr, $canonical:expr, $schema_name:expr) => {
+        #[derive(Debug, Clone)]
         pub struct $name;
         impl Schema for $name {
             fn term_count(&self) -> usize { $count }
