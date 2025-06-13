@@ -254,27 +254,17 @@ impl HeptadicStructure {
 
     /// Display structure details
     pub fn display(&self) {
-        let schema_name = self.schema.as_ref()
-            .map(|s| s.get_schema_name())
-            .unwrap_or("No Schema");
-        let attribute = self.schema.as_ref()
-            .map(|s| s.get_attribute_description())
-            .unwrap_or("Sevenfold structure");
-
         println!("\n--- Heptad Details ---");
-        println!("Heptad Name: {}", self.name);
-        println!("Schema: {}", schema_name);
-        println!("Core Attribute: {}", attribute);
+        println!("Name: {}", self.name);
         
         if let Some(ref schema) = self.schema {
             let labels = schema.get_canonical_labels();
             for (i, &label) in labels.iter().enumerate() {
-                println!("{}: {}", label, self.positions[i]);
+                println!("{} ({}): {}", label, i + 1, self.positions[i]);
             }
         } else {
             for (i, position) in self.positions.iter().enumerate() {
-                let pos_char = char::from(b'A' + i as u8);
-                println!("{}: {}", pos_char, position);
+                println!("Position {}: {}", i + 1, position);
             }
         }
         println!("---------------------");
@@ -301,7 +291,7 @@ impl HeptadicStructure {
         if let Some(ref schema) = self.schema {
             schema.get_canonical_labels().iter().map(|&s| s.to_string()).collect()
         } else {
-            vec!["A".to_string(), "B".to_string(), "C".to_string(), "D".to_string(), "E".to_string(), "F".to_string(), "G".to_string()]
+            vec!["1".to_string(), "2".to_string(), "3".to_string(), "4".to_string(), "5".to_string(), "6".to_string(), "7".to_string()]  // Base layer uses 1-based numbers
         }
     }
 

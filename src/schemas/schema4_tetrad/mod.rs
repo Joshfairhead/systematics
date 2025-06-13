@@ -6,6 +6,7 @@ use crate::schemas::StructureSchema;
 
 
 /// Available tetrad schemas for dynamic selection
+#[allow(dead_code)]
 pub fn get_available_tetrad_schemas() -> Vec<Box<dyn StructureSchema>> {
     vec![
         Box::new(BennettTetradSchema),
@@ -14,6 +15,5 @@ pub fn get_available_tetrad_schemas() -> Vec<Box<dyn StructureSchema>> {
 
 /// Interactive schema selection for tetrads
 pub fn select_tetrad_schema() -> Box<dyn StructureSchema> {
-    println!("\nUsing Bennett's Tetrad Schema (Ground, Ideal, Instrumental, Directive)");
     Box::new(BennettTetradSchema)
 } 

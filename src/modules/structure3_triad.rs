@@ -4,8 +4,13 @@ use crate::schemas::{StructureSchema, select_triad_schema};
 
 pub struct TriadicStructure {
     pub name: String,
+    // Three position instances (1, 2, 3)
     pub positions: [String; 3],
+    // Additional user attributes for the triad
+    pub attributes: Vec<String>,
+    // Connectives stored as HashMap for scalability
     pub connectives: HashMap<(usize, usize), String>,
+    // Current schema (optional, can be applied later)
     pub schema: Option<Box<dyn StructureSchema>>,
 }
 
@@ -15,6 +20,7 @@ impl TriadicStructure {
         TriadicStructure {
             name: name.to_string(),
             positions: [String::new(), String::new(), String::new()],
+            attributes: Vec::new(),
             connectives: HashMap::new(),
             schema: None,
         }
@@ -25,6 +31,7 @@ impl TriadicStructure {
         let mut structure = TriadicStructure {
             name: name.to_string(),
             positions: [pos_0.to_string(), pos_1.to_string(), pos_2.to_string()],
+            attributes: Vec::new(),
             connectives: HashMap::new(),
             schema: None,
         };
@@ -49,7 +56,7 @@ impl TriadicStructure {
     pub fn create_interactive() -> Result<Self, Box<dyn std::error::Error>> {
         println!("\n--- Creating a Triad ---");
         let schema = select_triad_schema();
-        println!("Selected schema: {}", schema.get_schema_name());
+        println!("Schema: {}", schema.get_schema_name());
         let get_optional_input = |prompt: &str, default: &str| -> Result<String, Box<dyn std::error::Error>> {
             let mut input = String::new();
             print!("{}", prompt);
@@ -87,6 +94,7 @@ impl TriadicStructure {
         let structure = TriadicStructure {
             name,
             positions,
+            attributes: Vec::new(),
             connectives: HashMap::new(),
             schema: Some(schema),
         };
@@ -96,22 +104,31 @@ impl TriadicStructure {
 
     /// Display structure details
     pub fn display(&self) {
-        let schema_name = self.schema.as_ref().map(|s| s.get_schema_name()).unwrap_or("No Schema");
-        let attribute = self.schema.as_ref().map(|s| s.get_attribute_description()).unwrap_or("Dynamism, relation, will");
         println!("\n--- Triad Details ---");
-        println!("Triad Name: {}", self.name);
-        println!("Schema: {}", schema_name);
-        println!("Core Attribute: {}", attribute);
+        println!("Name: {}", self.name);
         if let Some(ref schema) = self.schema {
             let labels = schema.get_canonical_labels();
             for i in 0..3 {
-                println!("{}: {}", labels[i], self.positions[i]);
+                println!("{} ({}): {}", labels[i], i + 1, self.positions[i]);
             }
         } else {
-            println!("A: {}", self.positions[0]);
-            println!("B: {}", self.positions[1]);
-            println!("C: {}", self.positions[2]);
+            println!("Position 1: {}", self.positions[0]);
+            println!("Position 2: {}", self.positions[1]);
+            println!("Position 3: {}", self.positions[2]);
         }
+        
+        // Display attributes if any
+        if !self.attributes.is_empty() {
+            print!("Attributes: ");
+            for (i, attribute) in self.attributes.iter().enumerate() {
+                if i > 0 {
+                    print!(", ");
+                }
+                print!("{}", attribute);
+            }
+            println!();
+        }
+        
         println!("----------------------");
     }
 
@@ -120,7 +137,7 @@ impl TriadicStructure {
         if let Some(ref schema) = self.schema {
             schema.get_canonical_labels().iter().map(|&s| s.to_string()).collect()
         } else {
-            vec!["A".to_string(), "B".to_string(), "C".to_string()]
+            vec!["1".to_string(), "2".to_string(), "3".to_string()]  // Base layer uses 1-based numbers
         }
     }
 

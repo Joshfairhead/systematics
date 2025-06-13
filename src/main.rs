@@ -5,7 +5,7 @@ use crate::modules::{MonadicStructure, DyadicStructure, TriadicStructure, Tetrad
 use crate::modules::permutations;
 use std::io; // Import for input/output
 
-fn main() {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("How many terms in your system? (1, 2, 3, 4, 5, 6, 7, 8, 12, or P for permutations)");
     println!("Note: All systems now use the new schema-based implementation");
     let mut choice_input = String::new();
@@ -19,7 +19,7 @@ fn main() {
             Ok(_) => {}, // Successfully created
             Err(e) => eprintln!("Error creating permutations: {}", e),
         }
-        return;
+        return Ok(());
     }
     
     // Handle numeric choices
@@ -87,6 +87,7 @@ fn main() {
             println!("Invalid input. Please enter a number (1-12) or 'P' for permutations.");
         }
     }
+    Ok(())
 }
 
 

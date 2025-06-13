@@ -21,22 +21,20 @@ impl StructureSchema for BennettDodecadSchema {
         ]
     }
     
-    fn get_position_description(&self, pos: usize) -> Option<&'static str> {
-        // TODO: In future implementations, these descriptions should link to specific sections
-        // of Bennett's work that describe each category in detail.
-        match pos {
-            0 => Some("Autocracy"),
-            1 => Some("Domination"),
-            2 => Some("Creativity"),
-            3 => Some("Pattern"),
-            4 => Some("Individuality"),
-            5 => Some("Structure"),
-            6 => Some("Repetition"),
-            7 => Some("Potentiality"),
-            8 => Some("Subsistence"),
-            9 => Some("Relatedness"),
-            10 => Some("Polarity"),
-            11 => Some("Wholeness"),
+    fn get_position_description(&self, position: usize) -> Option<&'static str> {
+        match position {
+            0 => Some("Self-governing principle, independence"),
+            1 => Some("Power over others, control"),
+            2 => Some("Bringing forth the new, innovation"),
+            3 => Some("Recurring structure, template"),
+            4 => Some("Unique identity, distinctiveness"),
+            5 => Some("Organized form, framework"),
+            6 => Some("Cyclical recurrence, rhythm"),
+            7 => Some("Latent possibility, capacity"),
+            8 => Some("Underlying support, foundation"),
+            9 => Some("Connection, relationship"),
+            10 => Some("Complementary opposition, duality"),
+            11 => Some("Complete unity, integration"),
             _ => None,
         }
     }

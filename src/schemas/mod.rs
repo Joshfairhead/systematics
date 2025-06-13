@@ -4,6 +4,7 @@ pub trait StructureSchema {
     fn get_canonical_labels(&self) -> &[&'static str];
     
     /// Get a description for a specific position
+    #[allow(dead_code)]
     fn get_position_description(&self, pos: usize) -> Option<&'static str>;
     
     /// Get a semantic label for a connective between two positions

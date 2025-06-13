@@ -145,23 +145,31 @@ cargo test permutations       # Run permutations-specific tests
 
 ### 🌐 **Future Development Roadmap**
 
-#### **Phase 1: Core Enhancements**
-1. **Missing Structures**: Implement Enneagram (9), Decad (10), Hendecad (11)
-2. **Additional Schemas**: Multiple schema options per structure type
-3. **Export/Import**: Save and load structures to/from files
-4. **Enhanced Validation**: More sophisticated input validation and error handling
+#### **Phase 1: API Restructuring**
+1. **Library/Binary Split**: Separate core library from CLI application
+2. **Unified Structure API**: Generic `SystematicStructure<N>` with type aliases
+3. **Clean Builder Pattern**: Consistent API across all structure types
+4. **Error Handling**: Proper error types with `thiserror` integration
+5. **Feature Flags**: Optional CLI, serde support, etc.
+6. **API Documentation**: Comprehensive rustdoc with examples
 
-#### **Phase 2: Advanced Features**
-5. **Database Integration**: Persistent storage for created structures
-6. **Relationship Mapping**: Advanced connective relationship analysis
-7. **Structure Comparison**: Compare different instances of same structure type
-8. **Batch Operations**: Create multiple structures from templates
+#### **Phase 2: Core Enhancements**
+7. **Missing Structures**: Implement Enneagram (9), Decad (10), Hendecad (11)
+8. **Additional Schemas**: Multiple schema options per structure type
+9. **Export/Import**: Save and load structures to/from files (JSON/YAML)
+10. **Enhanced Validation**: More sophisticated input validation and error handling
 
-#### **Phase 3: Web Interface**
-9. **Frontend Revival**: Modern web interface using the existing Yew foundation
-10. **Interactive Creation**: Browser-based structure creation and editing
-11. **Visualization**: Graphical representation of structures and relationships
-12. **Collaborative Features**: Multi-user editing and sharing capabilities
+#### **Phase 3: Advanced Features**
+11. **Database Integration**: Persistent storage for created structures
+12. **Relationship Mapping**: Advanced connective relationship analysis
+13. **Structure Comparison**: Compare different instances of same structure type
+14. **Batch Operations**: Create multiple structures from templates
+
+#### **Phase 4: Web Interface**
+15. **Frontend Revival**: Modern web interface using the existing Yew foundation
+16. **Interactive Creation**: Browser-based structure creation and editing
+17. **Visualization**: Graphical representation of structures and relationships
+18. **Collaborative Features**: Multi-user editing and sharing capabilities
 
 ## Systematic Structures
 

@@ -5,6 +5,7 @@ pub use jgb_heptad::BennettHeptadSchema;
 use crate::schemas::StructureSchema;
 
 /// Available heptad schemas for dynamic selection
+#[allow(dead_code)]
 pub fn get_available_heptad_schemas() -> Vec<Box<dyn StructureSchema>> {
     vec![
         Box::new(BennettHeptadSchema),
@@ -13,6 +14,5 @@ pub fn get_available_heptad_schemas() -> Vec<Box<dyn StructureSchema>> {
 
 /// Interactive schema selection for heptads
 pub fn select_heptad_schema() -> Box<dyn StructureSchema> {
-    println!("\nUsing Bennett's Heptad Schema (Insight, Research, Design, Synthesis, Application, Delivery, Value)");
     Box::new(BennettHeptadSchema)
 } 

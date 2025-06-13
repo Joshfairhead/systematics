@@ -119,7 +119,7 @@ impl TetradicStructure {
         
         // Schema selection first
         let schema = select_tetrad_schema();
-        println!("Selected schema: {}", schema.get_schema_name());
+        println!("Schema: {}", schema.get_schema_name());
         
         // Helper for optional input with default
         let get_optional_input = |prompt: &str, default: &str| -> Result<String, Box<dyn std::error::Error>> {
@@ -247,27 +247,17 @@ impl TetradicStructure {
 
     /// Display structure details
     pub fn display(&self) {
-        let schema_name = self.schema.as_ref()
-            .map(|s| s.get_schema_name())
-            .unwrap_or("No Schema");
-        let attribute = self.schema.as_ref()
-            .map(|s| s.get_attribute_description())
-            .unwrap_or("Fourfold structure");
-
         println!("\n--- Tetrad Details ---");
-        println!("Tetrad Name: {}", self.name);
-        println!("Schema: {}", schema_name);
-        println!("Core Attribute: {}", attribute);
+        println!("Name: {}", self.name);
         
         if let Some(ref schema) = self.schema {
             let labels = schema.get_canonical_labels();
             for (i, &label) in labels.iter().enumerate() {
-                println!("{}: {}", label, self.positions[i]);
+                println!("{} ({}): {}", label, i + 1, self.positions[i]);
             }
         } else {
             for (i, position) in self.positions.iter().enumerate() {
-                let pos_char = char::from(b'A' + i as u8);
-                println!("{}: {}", pos_char, position);
+                println!("Position {}: {}", i + 1, position);
             }
         }
         println!("---------------------");
@@ -294,7 +284,7 @@ impl TetradicStructure {
         if let Some(ref schema) = self.schema {
             schema.get_canonical_labels().iter().map(|&s| s.to_string()).collect()
         } else {
-            vec!["A".to_string(), "B".to_string(), "C".to_string(), "D".to_string()]
+            vec!["1".to_string(), "2".to_string(), "3".to_string(), "4".to_string()]  // Base layer uses 1-based numbers
         }
     }
 

@@ -4,8 +4,13 @@ use crate::schemas::{StructureSchema, select_dyad_schema};
 
 pub struct DyadicStructure {
     pub name: String,
+    // Two position instances (1, 2)
     pub positions: [String; 2],
+    // Additional user attributes for the dyad
+    pub attributes: Vec<String>,
+    // Connectives stored as HashMap for scalability
     pub connectives: HashMap<(usize, usize), String>,
+    // Current schema (optional, can be applied later)
     pub schema: Option<Box<dyn StructureSchema>>,
 }
 
@@ -15,6 +20,7 @@ impl DyadicStructure {
         DyadicStructure {
             name: name.to_string(),
             positions: [String::new(), String::new()],
+            attributes: Vec::new(),
             connectives: HashMap::new(),
             schema: None,
         }
@@ -25,6 +31,7 @@ impl DyadicStructure {
         let mut structure = DyadicStructure {
             name: name.to_string(),
             positions: [pos_0.to_string(), pos_1.to_string()],
+            attributes: Vec::new(),
             connectives: HashMap::new(),
             schema: None,
         };
@@ -49,7 +56,7 @@ impl DyadicStructure {
     pub fn create_interactive() -> Result<Self, Box<dyn std::error::Error>> {
         println!("\n--- Creating a Dyad ---");
         let schema = select_dyad_schema();
-        println!("Selected schema: {}", schema.get_schema_name());
+        println!("Schema: {}", schema.get_schema_name());
         let get_optional_input = |prompt: &str, default: &str| -> Result<String, Box<dyn std::error::Error>> {
             let mut input = String::new();
             print!("{}", prompt);
@@ -87,6 +94,7 @@ impl DyadicStructure {
         let structure = DyadicStructure {
             name,
             positions,
+            attributes: Vec::new(),
             connectives: HashMap::new(),
             schema: Some(schema),
         };
@@ -96,20 +104,16 @@ impl DyadicStructure {
 
     /// Display structure details
     pub fn display(&self) {
-        let schema_name = self.schema.as_ref().map(|s| s.get_schema_name()).unwrap_or("No Schema");
-        let attribute = self.schema.as_ref().map(|s| s.get_attribute_description()).unwrap_or("Complementarity, polarity or force");
         println!("\n--- Dyad Details ---");
-        println!("Dyad Name: {}", self.name);
-        println!("Schema: {}", schema_name);
-        println!("Core Attribute: {}", attribute);
+        println!("Name: {}", self.name);
         if let Some(ref schema) = self.schema {
             let labels = schema.get_canonical_labels();
             for i in 0..2 {
-                println!("{}: {}", labels[i], self.positions[i]);
+                println!("{} ({}): {}", labels[i], i + 1, self.positions[i]);
             }
         } else {
-            println!("A: {}", self.positions[0]);
-            println!("B: {}", self.positions[1]);
+            println!("Position 1: {}", self.positions[0]);
+            println!("Position 2: {}", self.positions[1]);
         }
         println!("----------------------");
     }
@@ -119,7 +123,7 @@ impl DyadicStructure {
         if let Some(ref schema) = self.schema {
             schema.get_canonical_labels().iter().map(|&s| s.to_string()).collect()
         } else {
-            vec!["A".to_string(), "B".to_string()]
+            vec!["1".to_string(), "2".to_string()]  // Base layer uses 1-based numbers
         }
     }
 

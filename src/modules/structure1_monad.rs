@@ -26,22 +26,54 @@ impl MonadicStructure {
         }
     }
 
-    /// Creates a new MonadicStructure with specific position value
-    pub fn new_with_positions(name: &str, pos_a: &str) -> Self {
-        let mut structure = MonadicStructure {
-            name: name.to_string(),
-            positions: [pos_a.to_string()],
-            attributes: Vec::new(),
-            connectives: HashMap::new(),
-            schema: None,
-        };
-
-        // Initialize default connectives (none for monad)
-        structure.initialize_default_connectives();
-        structure
+    /// Apply a schema to this structure (builder pattern) - must be done first
+    pub fn with_schema(mut self, schema: Box<dyn StructureSchema>) -> Self {
+        if schema.get_position_count() != 1 {
+            panic!("Schema must support exactly 1 position for MonadicStructure");
+        }
+        self.schema = Some(schema);
+        self
     }
 
-    /// Apply a schema to this structure
+    /// Set content by semantic label (requires schema to be applied first)
+    pub fn with_content(mut self, semantic_label: &str, content: &str) -> Self {
+        if let Some(ref schema) = self.schema {
+            let labels = schema.get_canonical_labels();
+            if let Some(position) = labels.iter().position(|&label| label == semantic_label) {
+                self.positions[position] = content.to_string();
+                self.initialize_default_connectives();
+            } else {
+                panic!("Unknown semantic label '{}'. Available labels: {:?}", semantic_label, labels);
+            }
+        } else {
+            panic!("Schema must be applied before adding content. Use .with_schema() first.");
+        }
+        self
+    }
+
+    /// Set content by numeric position (1-based) - for direct access
+    pub fn with_position(mut self, position: usize, content: &str) -> Self {
+        if position < 1 || position > self.positions.len() {
+            panic!("Position {} out of bounds for monad (valid range: 1-{})", position, self.positions.len());
+        }
+        self.positions[position - 1] = content.to_string();
+        self.initialize_default_connectives();
+        self
+    }
+
+    /// Add an attribute (builder pattern)
+    pub fn with_attribute(mut self, attribute: &str) -> Self {
+        self.attributes.push(attribute.to_string());
+        self
+    }
+
+    /// Creates a new MonadicStructure with specific position value (legacy method)
+    #[deprecated(note = "Use new().with_schema().with_content() or new().with_position() instead")]
+    pub fn new_with_positions(name: &str, pos_1: &str) -> Self {
+        Self::new(name).with_position(1, pos_1)
+    }
+
+    /// Apply a schema to this structure (mutable method)
     pub fn apply_schema(&mut self, schema: Box<dyn StructureSchema>) {
         if schema.get_position_count() != 1 {
             panic!("Schema must support exactly 1 position for MonadicStructure");
@@ -78,9 +110,9 @@ impl MonadicStructure {
     pub fn create_interactive() -> Result<Self, Box<dyn std::error::Error>> {
         println!("\n--- Creating a Monad ---");
         
-        // Schema selection first
+        // Schema selection and display first
         let schema = select_monad_schema();
-        println!("Selected schema: {}", schema.get_schema_name());
+        println!("Schema: {}", schema.get_schema_name());
         
         // Helper for optional input with default
         let get_optional_input = |prompt: &str, default: &str| -> Result<String, Box<dyn std::error::Error>> {
@@ -117,7 +149,7 @@ impl MonadicStructure {
             }
         };
 
-        // Get monad name
+        // Get monad name after schema display
         let name = get_optional_input("Enter a name for your Monad (or press Enter for 'Unnamed Monad'): ", "Unnamed Monad")?;
         let labels = schema.get_canonical_labels();
         let positions = [labels[0].to_string()]; // Use the canonical label directly
@@ -165,17 +197,16 @@ impl MonadicStructure {
 
     /// Display structure details
     pub fn display(&self) {
-        let schema_name = self.schema.as_ref()
-            .map(|s| s.get_schema_name())
-            .unwrap_or("No Schema");
-        let core_attribute = self.schema.as_ref()
-            .map(|s| s.get_attribute_description())
-            .unwrap_or("Unity");
-
         println!("\n--- Monad Details ---");
         println!("Name: {}", self.name);
-        println!("Schema: {}", schema_name);
-        println!("Core attribute: {}", core_attribute);
+        
+        // Display position with three-layer architecture
+        if let Some(ref schema) = self.schema {
+            let labels = schema.get_canonical_labels();
+            println!("{} (1): {}", labels[0], self.positions[0]);
+        } else {
+            println!("Position 1: {}", self.positions[0]);
+        }
         
         // Display attributes if any
         if !self.attributes.is_empty() {
@@ -197,7 +228,7 @@ impl MonadicStructure {
         if let Some(ref schema) = self.schema {
             schema.get_canonical_labels().iter().map(|&s| s.to_string()).collect()
         } else {
-            vec!["A".to_string()]
+            vec!["1".to_string()]  // Base layer uses 1-based numbers
         }
     }
 
@@ -230,10 +261,8 @@ mod tests {
 
     #[test]
     fn test_monadic_structure_creation() {
-        let structure = MonadicStructure::new_with_positions(
-            "Test Monad",
-            "Unity Instance"
-        );
+        let structure = MonadicStructure::new("Test Monad")
+            .with_position(1, "Unity Instance");
         
         assert_eq!(structure.name, "Test Monad");
         assert_eq!(structure.positions[0], "Unity Instance");
@@ -244,19 +273,23 @@ mod tests {
 
     #[test]
     fn test_schema_application() {
-        let mut structure = MonadicStructure::new("Test");
-        let schema = Box::new(BennettMonadSchema);
+        // Test builder pattern
+        let structure = MonadicStructure::new("Test")
+            .with_schema(Box::new(BennettMonadSchema));
         
-        structure.apply_schema(schema);
         assert!(structure.schema.is_some());
         assert_eq!(structure.schema.as_ref().unwrap().get_schema_name(), "Bennett's Monad");
+        
+        // Test mutable method still works
+        let mut structure2 = MonadicStructure::new("Test2");
+        structure2.apply_schema(Box::new(BennettMonadSchema));
+        assert!(structure2.schema.is_some());
     }
 
     #[test]
     fn test_canonical_terms() {
-        let mut structure = MonadicStructure::new("Test");
-        let schema = Box::new(BennettMonadSchema);
-        structure.apply_schema(schema);
+        let structure = MonadicStructure::new("Test")
+            .with_schema(Box::new(BennettMonadSchema));
         
         let terms = structure.get_canonical_terms();
         assert_eq!(terms, vec!["Unity"]);
@@ -264,10 +297,8 @@ mod tests {
 
     #[test]
     fn test_instances() {
-        let structure = MonadicStructure::new_with_positions(
-            "Test",
-            "Unity Instance"
-        );
+        let structure = MonadicStructure::new("Test")
+            .with_position(1, "Unity Instance");
         
         let instances = structure.get_instances();
         assert_eq!(instances, vec!["Unity Instance"]);
@@ -307,5 +338,60 @@ mod tests {
         let structure = MonadicStructure::new("Test");
         assert_eq!(structure.get_attributes().len(), 0);
         assert!(!structure.has_attribute("anything"));
+    }
+
+    #[test]
+    fn test_builder_pattern_with_schema() {
+        // Test the new semantic workflow: schema first, then content by semantic label
+        let structure = MonadicStructure::new("Complete Monad")
+            .with_schema(Box::new(BennettMonadSchema))
+            .with_content("Unity", "Universal Unity")
+            .with_attribute("infinite")
+            .with_attribute("eternal")
+            .with_attribute("indivisible");
+        
+        assert_eq!(structure.name, "Complete Monad");
+        assert_eq!(structure.positions[0], "Universal Unity");
+        assert!(structure.schema.is_some());
+        assert_eq!(structure.schema.as_ref().unwrap().get_schema_name(), "Bennett's Monad");
+        assert_eq!(structure.attributes.len(), 3);
+        assert!(structure.has_attribute("infinite"));
+        assert!(structure.has_attribute("eternal"));
+        assert!(structure.has_attribute("indivisible"));
+    }
+
+    #[test]
+    fn test_builder_pattern_direct_position() {
+        // Test direct position access (without schema)
+        let structure = MonadicStructure::new("Direct Monad")
+            .with_position(1, "Direct Unity")
+            .with_attribute("simple");
+        
+        assert_eq!(structure.name, "Direct Monad");
+        assert_eq!(structure.positions[0], "Direct Unity");
+        assert!(structure.schema.is_none());
+        assert_eq!(structure.attributes.len(), 1);
+        assert!(structure.has_attribute("simple"));
+    }
+
+    #[test]
+    fn test_semantic_content_validation() {
+        // Test that content requires schema
+        let result = std::panic::catch_unwind(|| {
+            MonadicStructure::new("Test")
+                .with_content("Unity", "Should fail");
+        });
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_invalid_semantic_label() {
+        // Test invalid semantic label
+        let result = std::panic::catch_unwind(|| {
+            MonadicStructure::new("Test")
+                .with_schema(Box::new(BennettMonadSchema))
+                .with_content("InvalidLabel", "Should fail");
+        });
+        assert!(result.is_err());
     }
 } 
