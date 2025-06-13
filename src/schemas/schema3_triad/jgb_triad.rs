@@ -8,10 +8,12 @@ impl StructureSchema for BennettTriadSchema {
         &["Will", "Function", "Being"]
     }
     fn get_position_description(&self, pos: usize) -> Option<&'static str> {
+        // TODO: Replace with authentic Bennett descriptions from original source
+        // Research needed: Find Bennett's specific descriptions of Function, Being, and Will in the Triad
         match pos {
-            0 => Some("The active, initiating principle"),
-            1 => Some("The passive, receptive principle"),
-            2 => Some("The reconciling, harmonizing principle"),
+            0 => Some("[Research needed: Bennett's description of Function]"),
+            1 => Some("[Research needed: Bennett's description of Being]"),
+            2 => Some("[Research needed: Bennett's description of Will]"),
             _ => None,
         }
     }

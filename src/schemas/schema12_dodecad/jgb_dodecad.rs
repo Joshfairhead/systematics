@@ -22,19 +22,21 @@ impl StructureSchema for BennettDodecadSchema {
     }
     
     fn get_position_description(&self, position: usize) -> Option<&'static str> {
+        // TODO: Replace with authentic Bennett descriptions from original source
+        // Research needed: Find Bennett's specific descriptions of all twelve Dodecad positions
         match position {
-            0 => Some("Self-governing principle, independence"),
-            1 => Some("Power over others, control"),
-            2 => Some("Bringing forth the new, innovation"),
-            3 => Some("Recurring structure, template"),
-            4 => Some("Unique identity, distinctiveness"),
-            5 => Some("Organized form, framework"),
-            6 => Some("Cyclical recurrence, rhythm"),
-            7 => Some("Latent possibility, capacity"),
-            8 => Some("Underlying support, foundation"),
-            9 => Some("Connection, relationship"),
-            10 => Some("Complementary opposition, duality"),
-            11 => Some("Complete unity, integration"),
+            0 => Some("[Research needed: Bennett's description of Autocracy]"),
+            1 => Some("[Research needed: Bennett's description of Domination]"),
+            2 => Some("[Research needed: Bennett's description of Creativity]"),
+            3 => Some("[Research needed: Bennett's description of Pattern]"),
+            4 => Some("[Research needed: Bennett's description of Individuality]"),
+            5 => Some("[Research needed: Bennett's description of Structure]"),
+            6 => Some("[Research needed: Bennett's description of Repetition]"),
+            7 => Some("[Research needed: Bennett's description of Potentiality]"),
+            8 => Some("[Research needed: Bennett's description of Subsistence]"),
+            9 => Some("[Research needed: Bennett's description of Relatedness]"),
+            10 => Some("[Research needed: Bennett's description of Polarity]"),
+            11 => Some("[Research needed: Bennett's description of Wholeness]"),
             _ => None,
         }
     }

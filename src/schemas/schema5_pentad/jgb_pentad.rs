@@ -9,12 +9,14 @@ impl StructureSchema for BennettPentadSchema {
     }
     
     fn get_position_description(&self, pos: usize) -> Option<&'static str> {
+        // TODO: Replace with authentic Bennett descriptions from original source
+        // Research needed: Find Bennett's specific descriptions of all five Pentad positions
         match pos {
-            0 => Some("The essential nature or intrinsic limit"),
-            1 => Some("The higher capacity or inner upper limit"),
-            2 => Some("The lower capacity or inner lower limit"),
-            3 => Some("The intended goal or outer upper limit"),
-            4 => Some("The origin or outer lower limit"),
+            0 => Some("[Research needed: Bennett's description of Existence]"),
+            1 => Some("[Research needed: Bennett's description of Relatedness]"),
+            2 => Some("[Research needed: Bennett's description of Significance]"),
+            3 => Some("[Research needed: Bennett's description of Ableness-to-be]"),
+            4 => Some("[Research needed: Bennett's description of Coalescence]"),
             _ => None,
         }
     }

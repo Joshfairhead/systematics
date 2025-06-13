@@ -18,15 +18,17 @@ impl StructureSchema for BennettOctadSchema {
     }
     
     fn get_position_description(&self, pos: usize) -> Option<&'static str> {
+        // TODO: Replace with authentic Bennett descriptions from original source
+        // Research needed: Find Bennett's specific descriptions of all eight Octad positions
         match pos {
-            0 => Some("The smallest significant holon"),
-            1 => Some("Critical functions and processes"),
-            2 => Some("Supportive platform and foundation"),
-            3 => Some("Necessary resourcing and support"),
-            4 => Some("Integrative totality and wholeness"),
-            5 => Some("Inherent values and principles"),
-            6 => Some("Intrinsic nature and essence"),
-            7 => Some("Organisational modes and structures"),
+            0 => Some("[Research needed: Bennett's description of Existence]"),
+            1 => Some("[Research needed: Bennett's description of Relatedness]"),
+            2 => Some("[Research needed: Bennett's description of Significance]"),
+            3 => Some("[Research needed: Bennett's description of Ableness-to-be]"),
+            4 => Some("[Research needed: Bennett's description of Coalescence]"),
+            5 => Some("[Research needed: Bennett's description of Potentiality]"),
+            6 => Some("[Research needed: Bennett's description of Creativity]"),
+            7 => Some("[Research needed: Bennett's description of Sensitivity]"),
             _ => None,
         }
     }

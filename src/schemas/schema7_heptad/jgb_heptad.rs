@@ -9,14 +9,16 @@ impl StructureSchema for BennettHeptadSchema {
     }
     
     fn get_position_description(&self, pos: usize) -> Option<&'static str> {
+        // TODO: Replace with authentic Bennett descriptions from original source
+        // Research needed: Find Bennett's specific descriptions of all seven Heptad positions
         match pos {
-            0 => Some("Core insight and understanding"),
-            1 => Some("Research and investigation"),
-            2 => Some("Design and planning"),
-            3 => Some("Synthesis and integration"),
-            4 => Some("Application and implementation"),
-            5 => Some("Delivery and execution"),
-            6 => Some("Value and outcome"),
+            0 => Some("[Research needed: Bennett's description of Existence]"),
+            1 => Some("[Research needed: Bennett's description of Relatedness]"),
+            2 => Some("[Research needed: Bennett's description of Significance]"),
+            3 => Some("[Research needed: Bennett's description of Ableness-to-be]"),
+            4 => Some("[Research needed: Bennett's description of Coalescence]"),
+            5 => Some("[Research needed: Bennett's description of Potentiality]"),
+            6 => Some("[Research needed: Bennett's description of Creativity]"),
             _ => None,
         }
     }

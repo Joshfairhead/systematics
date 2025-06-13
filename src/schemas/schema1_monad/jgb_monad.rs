@@ -9,10 +9,10 @@ impl StructureSchema for BennettMonadSchema {
     }
     
     fn get_position_description(&self, pos: usize) -> Option<&'static str> {
-        // TODO: In future implementations, this description should link to specific sections
-        // of Bennett's work that describe the Unity category in detail.
+        // TODO: Replace with authentic Bennett description from original source
+        // Research needed: Find Bennett's specific description of Unity in the Monad
         match pos {
-            0 => Some("Unity"),
+            0 => Some("[Research needed: Bennett's description of Unity]"),
             _ => None,
         }
     }

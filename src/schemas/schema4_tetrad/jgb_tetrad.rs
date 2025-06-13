@@ -9,11 +9,13 @@ impl StructureSchema for BennettTetradSchema {
     }
     
     fn get_position_description(&self, pos: usize) -> Option<&'static str> {
+        // TODO: Replace with authentic Bennett descriptions from original source
+        // Research needed: Find Bennett's specific descriptions of Ground, Ideal, Instrumental, and Directive
         match pos {
-            0 => Some("The foundational basis or substrate"),
-            1 => Some("The perfect form or aspiration"),
-            2 => Some("The means or tools for transformation"),
-            3 => Some("The guiding purpose or direction"),
+            0 => Some("[Research needed: Bennett's description of Ground]"),
+            1 => Some("[Research needed: Bennett's description of Ideal]"),
+            2 => Some("[Research needed: Bennett's description of Instrumental]"),
+            3 => Some("[Research needed: Bennett's description of Directive]"),
             _ => None,
         }
     }

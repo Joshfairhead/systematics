@@ -8,9 +8,11 @@ impl StructureSchema for BennettDyadSchema {
         &["Essence", "Existence"]
     }
     fn get_position_description(&self, pos: usize) -> Option<&'static str> {
+        // TODO: Replace with authentic Bennett descriptions from original source
+        // Research needed: Find Bennett's specific descriptions of Being and Will in the Dyad
         match pos {
-            0 => Some("The essential nature or being of a thing"),
-            1 => Some("The state of being, actuality, or manifestation"),
+            0 => Some("[Research needed: Bennett's description of Being]"),
+            1 => Some("[Research needed: Bennett's description of Will]"),
             _ => None,
         }
     }

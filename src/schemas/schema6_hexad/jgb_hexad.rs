@@ -9,13 +9,15 @@ impl StructureSchema for BennettHexadSchema {
     }
     
     fn get_position_description(&self, pos: usize) -> Option<&'static str> {
+        // TODO: Replace with authentic Bennett descriptions from original source
+        // Research needed: Find Bennett's specific descriptions of all six Hexad positions
         match pos {
-            0 => Some("Available resources and assets"),
-            1 => Some("Core values and principles"),
-            2 => Some("Possible options and alternatives"),
-            3 => Some("Selection criteria and standards"),
-            4 => Some("Known facts and information"),
-            5 => Some("Key priorities and importance"),
+            0 => Some("[Research needed: Bennett's description of Existence]"),
+            1 => Some("[Research needed: Bennett's description of Relatedness]"),
+            2 => Some("[Research needed: Bennett's description of Significance]"),
+            3 => Some("[Research needed: Bennett's description of Ableness-to-be]"),
+            4 => Some("[Research needed: Bennett's description of Coalescence]"),
+            5 => Some("[Research needed: Bennett's description of Potentiality]"),
             _ => None,
         }
     }

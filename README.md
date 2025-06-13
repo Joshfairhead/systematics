@@ -152,6 +152,8 @@ cargo test permutations       # Run permutations-specific tests
 4. **Error Handling**: Proper error types with `thiserror` integration
 5. **Feature Flags**: Optional CLI, serde support, etc.
 6. **API Documentation**: Comprehensive rustdoc with examples
+7. **Position Descriptions**: Add position descriptions and rename function to indicate if the positions are terms, sources, influences etc.
+8. **Semantic Alignment**: Align semantic positionality between numbers and terms. Once aligned remove number from CLI output
 
 #### **Phase 2: Core Enhancements**
 7. **Missing Structures**: Implement Enneagram (9), Decad (10), Hendecad (11)
