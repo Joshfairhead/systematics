@@ -42,42 +42,47 @@ All systematic structures now use a unified schema-based architecture:
 ## Project Structure
 
 ```
-systematics/
-├── src/
-│   ├── main.rs                           # CLI entry point
-│   ├── modules/
-│   │   ├── structure1_monad.rs          # Monad with attributes system ✅
-│   │   ├── structure2_dyad.rs           # Dyadic structures ✅
-│   │   ├── structure3_triad.rs          # Triadic structures ✅
-│   │   ├── structure4_tetrad.rs         # Tetradic structures ✅
-│   │   ├── structure5_pentad.rs         # Pentadic structures ✅
-│   │   ├── structure6_hexad.rs          # Hexadic structures ✅
-│   │   ├── structure7_heptad.rs         # Heptadic structures ✅
-│   │   ├── structure8_octad.rs          # Octadic structures ✅
-│   │   ├── structure12_dodecad.rs       # Dodecadic structures ✅
-│   │   ├── permutations.rs              # Six permutations generator ✅
-│   │   └── mod.rs                       # Module declarations
-│   └── schemas/
-│       ├── schema1_monad/               # Monad schemas ✅
-│       ├── schema2_dyad/                # Dyad schemas ✅
-│       ├── schema3_triad/               # Triad schemas ✅
-│       ├── schema4_tetrad/              # Tetrad schemas ✅
-│       ├── schema5_pentad/              # Pentad schemas ✅
-│       ├── schema6_hexad/               # Hexad schemas ✅
-│       ├── schema7_heptad/              # Heptad schemas ✅
-│       ├── schema8_octad/               # Octad schemas ✅
-│       ├── schema12_dodecad/            # Dodecad schemas ✅
-│       └── mod.rs                       # Schema trait and exports
-├── rust_yew_frontend/                   # Web interface (future development)
-├── Cargo.toml                          # Project configuration
-└── README.md                           # This file
+SysteMaster/
+├── cli/                                 # Command-line interface application
+│   ├── src/
+│   │   ├── main.rs                      # CLI entry point
+│   │   ├── modules/
+│   │   │   ├── structure1_monad.rs     # Monad with attributes system ✅
+│   │   │   ├── structure2_dyad.rs      # Dyadic structures ✅
+│   │   │   ├── structure3_triad.rs     # Triadic structures ✅
+│   │   │   ├── structure4_tetrad.rs    # Tetradic structures ✅
+│   │   │   ├── structure5_pentad.rs    # Pentadic structures ✅
+│   │   │   ├── structure6_hexad.rs     # Hexadic structures ✅
+│   │   │   ├── structure7_heptad.rs    # Heptadic structures ✅
+│   │   │   ├── structure8_octad.rs     # Octadic structures ✅
+│   │   │   ├── structure12_dodecad.rs  # Dodecadic structures ✅
+│   │   │   ├── permutations.rs         # Six permutations generator ✅
+│   │   │   └── mod.rs                  # Module declarations
+│   │   └── schemas/
+│   │       ├── schema1_monad/          # Monad schemas ✅
+│   │       ├── schema2_dyad/           # Dyad schemas ✅
+│   │       ├── schema3_triad/          # Triad schemas ✅
+│   │       ├── schema4_tetrad/         # Tetrad schemas ✅
+│   │       ├── schema5_pentad/         # Pentad schemas ✅
+│   │       ├── schema6_hexad/          # Hexad schemas ✅
+│   │       ├── schema7_heptad/         # Heptad schemas ✅
+│   │       ├── schema8_octad/          # Octad schemas ✅
+│   │       ├── schema12_dodecad/       # Dodecad schemas ✅
+│   │       └── mod.rs                  # Schema trait and exports
+│   ├── Cargo.toml                      # CLI package configuration
+│   └── README.md                       # CLI documentation
+├── frontend/                           # Web interface application
+│   ├── Cargo.toml                      # Frontend package configuration
+│   └── README.md                       # Frontend documentation
+├── Cargo.toml                          # Workspace configuration
+└── README.md                           # Project overview
 ```
 
 ## Usage
 
 ### CLI Interface
 ```bash
-cargo run
+cargo run --bin systematics
 ```
 
 Select the number of terms in your system (1, 2, 3, 4, 5, 6, 7, 8, 12) or enter 'P' for the permutations generator.
@@ -120,10 +125,10 @@ Choose 'P' from the main menu to access the permutations generator:
 
 ### Testing
 ```bash
-cargo test                    # Run all tests (44 tests)
-cargo test structure1_monad   # Run monad-specific tests
-cargo test structure2_dyad    # Run dyad-specific tests
-cargo test permutations       # Run permutations-specific tests
+cargo test --package systematics-cli     # Run all CLI tests (48 tests)
+cargo test structure1_monad              # Run monad-specific tests
+cargo test structure2_dyad               # Run dyad-specific tests
+cargo test permutations                  # Run permutations-specific tests
 # ... similarly for other modules
 ```
 
@@ -158,8 +163,9 @@ cargo test permutations       # Run permutations-specific tests
 #### **Phase 2: Core Enhancements**
 7. **Missing Structures**: Implement Enneagram (9), Decad (10), Hendecad (11)
 8. **Additional Schemas**: Multiple schema options per structure type
-9. **Export/Import**: Save and load structures to/from files (JSON/YAML)
-10. **Enhanced Validation**: More sophisticated input validation and error handling
+9. **Alternative Schemas**: Create alternative schemas beyond Bennett's canonical ones
+10. **Export/Import**: Save and load structures to/from files (JSON/YAML)
+11. **Enhanced Validation**: More sophisticated input validation and error handling
 
 #### **Phase 3: Advanced Features**
 11. **Database Integration**: Persistent storage for created structures
@@ -195,8 +201,8 @@ cargo test permutations       # Run permutations-specific tests
 ### Development Setup
 1. Install Rust: https://rustup.rs/
 2. Clone the repository
-3. Run `cargo test` to ensure everything works (should see 44 tests pass)
-4. Run `cargo run` to test the CLI interface
+3. Run `cargo test --package systematics-cli` to ensure everything works (should see 48 tests pass)
+4. Run `cargo run --bin systematics` to test the CLI interface
 
 ### Code Quality Standards
 - **Schema-Based Design**: All new structures must use the unified schema architecture
@@ -209,7 +215,7 @@ cargo test permutations       # Run permutations-specific tests
 - Unit tests for individual functions and methods
 - Integration tests for schema and structure interactions
 - Test both successful operations and error conditions
-- Maintain current test coverage standards (44+ tests)
+- Maintain current test coverage standards (48+ tests)
 - Test schema-aware connective generation
 
 ## Architecture
