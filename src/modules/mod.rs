@@ -1,10 +1,2 @@
 pub mod systematic_structures;
-pub mod dyad;
-pub mod triad;
-pub mod tetrad;
-pub mod pentad;
-pub mod hexad;
-pub mod heptad;
-pub mod octad;
-pub mod dodecad;
 pub mod permutations; 

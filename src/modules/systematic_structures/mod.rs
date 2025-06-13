@@ -1,5 +1,19 @@
-pub mod monad;
+pub mod monad_structure;
+pub mod dyadic_structure;
+pub mod triadic_structure;
 pub mod tetradic_structure;
+pub mod pentadic_structure;
+pub mod hexadic_structure;
+pub mod heptadic_structure;
+pub mod octadic_structure;
+pub mod dodecadic_structure;
 
-pub use monad::*;
-pub use tetradic_structure::*; 
+pub use monad_structure::*;
+pub use dyadic_structure::*;
+pub use triadic_structure::*;
+pub use tetradic_structure::*;
+pub use pentadic_structure::*;
+pub use hexadic_structure::*;
+pub use heptadic_structure::*;
+pub use octadic_structure::*;
+pub use dodecadic_structure::*; 

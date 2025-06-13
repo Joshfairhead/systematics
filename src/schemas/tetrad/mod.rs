@@ -1,6 +1,6 @@
-pub mod bennett;
+pub mod jgb_tetrad;
 
-pub use bennett::BennettTetradSchema;
+pub use jgb_tetrad::BennettTetradSchema;
 
 use crate::schemas::StructureSchema;
 

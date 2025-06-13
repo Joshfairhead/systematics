@@ -42,17 +42,13 @@ impl Dodecad {
         polarity: &str,
         wholeness: &str,
     ) -> Self {
-        let terms = [
-            "autocracy", "domination", "creativity", "pattern", "individuality", "structure",
-            "repetition", "potentiality", "subsistence", "relatedness", "polarity", "wholeness"
-        ];
         let positions = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
         
-        // Generate all connectives automatically
+        // Generate all connectives automatically using just position letters
         let mut connectives = HashMap::new();
         for i in 0..12 {
             for j in (i + 1)..12 {
-                let connective_name = format!("{}{}_{}_{}", positions[i], positions[j], terms[i], terms[j]);
+                let connective_name = format!("{}{}", positions[i], positions[j]);
                 connectives.insert((i, j), connective_name);
             }
         }
@@ -179,7 +175,7 @@ impl Dodecad {
             
             for i in 0..12 {
                 for j in (i + 1)..12 {
-                    let current_name = format!("{}{}_{}_{}", positions[i], positions[j], terms[i], terms[j]);
+                    let current_name = format!("{}{}", positions[i], positions[j]);
                     let prompt = format!("{}: ", current_name);
                     let new_value = get_optional_input(&prompt, &current_name)?;
                     dodecad.connectives.insert((i, j), new_value);
@@ -448,10 +444,10 @@ mod tests {
         
         // Should start with positional-semantic connectives
         assert!(dodecad.has_connectives());
-        assert_eq!(dodecad.connectives.get(&(0, 1)).unwrap(), "AB_autocracy_domination");
-        assert_eq!(dodecad.connectives.get(&(2, 3)).unwrap(), "CD_creativity_pattern");
-        assert_eq!(dodecad.connectives.get(&(4, 5)).unwrap(), "EF_individuality_structure");
-        assert_eq!(dodecad.connectives.get(&(10, 11)).unwrap(), "KL_polarity_wholeness");
+        assert_eq!(dodecad.connectives.get(&(0, 1)).unwrap(), "AB");
+        assert_eq!(dodecad.connectives.get(&(2, 3)).unwrap(), "CD");
+        assert_eq!(dodecad.connectives.get(&(4, 5)).unwrap(), "EF");
+        assert_eq!(dodecad.connectives.get(&(10, 11)).unwrap(), "KL");
     }
 
     #[test]
@@ -465,8 +461,8 @@ mod tests {
         assert_eq!(dodecad.connectives.get(&(0, 1)).unwrap(), "custom connection");
         
         // Other connectives should still have defaults
-        assert_eq!(dodecad.connectives.get(&(2, 3)).unwrap(), "CD_creativity_pattern");
-        assert_eq!(dodecad.connectives.get(&(4, 5)).unwrap(), "EF_individuality_structure");
+        assert_eq!(dodecad.connectives.get(&(2, 3)).unwrap(), "CD");
+        assert_eq!(dodecad.connectives.get(&(4, 5)).unwrap(), "EF");
     }
 
     #[test]
