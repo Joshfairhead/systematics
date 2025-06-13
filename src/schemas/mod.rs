@@ -22,22 +22,22 @@ pub trait StructureSchema {
     fn get_position_count(&self) -> usize;
 }
 
-pub mod monad;
-pub mod tetrad;
-pub mod pentad;
-pub mod hexad;
-pub mod heptad;
-pub mod octad;
-pub mod dodecad;
-pub mod dyad;
-pub mod triad;
+pub mod schema1_monad;
+pub mod schema2_dyad;
+pub mod schema3_triad;
+pub mod schema4_tetrad;
+pub mod schema5_pentad;
+pub mod schema6_hexad;
+pub mod schema7_heptad;
+pub mod schema8_octad;
+pub mod schema12_dodecad;
 
-pub use monad::*;
-pub use tetrad::*;
-pub use pentad::*;
-pub use hexad::*;
-pub use heptad::*;
-pub use octad::*;
-pub use dodecad::*;
-pub use dyad::*;
-pub use triad::*; 
+pub use schema1_monad::*;
+pub use schema2_dyad::*;
+pub use schema3_triad::*;
+pub use schema4_tetrad::*;
+pub use schema5_pentad::*;
+pub use schema6_hexad::*;
+pub use schema7_heptad::*;
+pub use schema8_octad::*;
+pub use schema12_dodecad::*; 

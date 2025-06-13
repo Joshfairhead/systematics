@@ -1,6 +1,6 @@
 use crate::schemas::StructureSchema;
 
-/// JGB's Octad Schema - Smallest Significant Holon, Critical Functions, Supportive Platform, Necessary Resourcing, Integrative Totality, Inherent Values, Intrinsic Nature, Organisational Modes
+/// Bennett's Octad Schema - Smallest Significant Holon, Critical Functions, Supportive Platform, Necessary Resourcing, Integrative Totality, Inherent Values, Intrinsic Nature, Organisational Modes
 pub struct BennettOctadSchema;
 
 impl StructureSchema for BennettOctadSchema {
@@ -70,7 +70,7 @@ impl StructureSchema for BennettOctadSchema {
     }
     
     fn get_schema_name(&self) -> &'static str {
-        "JGB's Octad"
+        "Bennett's Octad"
     }
     
     fn get_structure_name(&self) -> &'static str {

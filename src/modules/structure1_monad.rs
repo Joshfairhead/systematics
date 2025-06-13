@@ -226,7 +226,7 @@ impl std::fmt::Debug for MonadicStructure {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::schemas::monad::BennettMonadSchema;
+    use crate::schemas::schema1_monad::BennettMonadSchema;
 
     #[test]
     fn test_monadic_structure_creation() {

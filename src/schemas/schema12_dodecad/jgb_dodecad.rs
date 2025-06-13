@@ -1,6 +1,6 @@
 use crate::schemas::StructureSchema;
 
-/// JGB's Dodecad Schema - Autocracy, Domination, Creativity, Pattern, Individuality, Structure, Repetition, Potentiality, Subsistence, Relatedness, Polarity, Wholeness
+/// Bennett's Dodecad Schema - Autocracy, Domination, Creativity, Pattern, Individuality, Structure, Repetition, Potentiality, Subsistence, Relatedness, Polarity, Wholeness
 pub struct BennettDodecadSchema;
 
 impl StructureSchema for BennettDodecadSchema {
@@ -141,7 +141,7 @@ impl StructureSchema for BennettDodecadSchema {
     }
     
     fn get_schema_name(&self) -> &'static str {
-        "JGB's Dodecad"
+        "Bennett's Dodecad"
     }
     
     fn get_structure_name(&self) -> &'static str {

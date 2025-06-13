@@ -1,6 +1,6 @@
 use crate::schemas::StructureSchema;
 
-/// JGB's Heptad Schema - Insight, Research, Design, Synthesis, Application, Delivery, Value
+/// Bennett's Heptad Schema - Insight, Research, Design, Synthesis, Application, Delivery, Value
 pub struct BennettHeptadSchema;
 
 impl StructureSchema for BennettHeptadSchema {
@@ -53,7 +53,7 @@ impl StructureSchema for BennettHeptadSchema {
     }
     
     fn get_schema_name(&self) -> &'static str {
-        "JGB's Heptad"
+        "Bennett's Heptad"
     }
     
     fn get_structure_name(&self) -> &'static str {

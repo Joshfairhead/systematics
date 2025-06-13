@@ -1,24 +1,23 @@
 use std::io::{self, Write};
 use std::collections::HashMap;
-use crate::schemas::{StructureSchema, select_dodecad_schema};
+use crate::schemas::{StructureSchema, select_octad_schema};
 
-pub struct DodecadicStructure {
+pub struct OctadicStructure {
     pub name: String,
-    // Positional instances (A through L)
-    pub positions: [String; 12],
+    // Positional instances (A, B, C, D, E, F, G, H)
+    pub positions: [String; 8],
     // Connectives stored as HashMap for scalability
     pub connectives: HashMap<(usize, usize), String>,
     // Current schema (optional, can be applied later)
     pub schema: Option<Box<dyn StructureSchema>>,
 }
 
-impl DodecadicStructure {
-    /// Creates a new DodecadicStructure with empty positions
+impl OctadicStructure {
+    /// Creates a new OctadicStructure with empty positions
     pub fn new(name: &str) -> Self {
-        DodecadicStructure {
+        OctadicStructure {
             name: name.to_string(),
             positions: [
-                String::new(), String::new(), String::new(), String::new(),
                 String::new(), String::new(), String::new(), String::new(),
                 String::new(), String::new(), String::new(), String::new(),
             ],
@@ -27,20 +26,17 @@ impl DodecadicStructure {
         }
     }
 
-    /// Creates a new DodecadicStructure with specific position values
-    #[allow(clippy::too_many_arguments)]
+    /// Creates a new OctadicStructure with specific position values
     pub fn new_with_positions(
         name: &str,
         pos_a: &str, pos_b: &str, pos_c: &str, pos_d: &str,
         pos_e: &str, pos_f: &str, pos_g: &str, pos_h: &str,
-        pos_i: &str, pos_j: &str, pos_k: &str, pos_l: &str,
     ) -> Self {
-        let mut structure = DodecadicStructure {
+        let mut structure = OctadicStructure {
             name: name.to_string(),
             positions: [
                 pos_a.to_string(), pos_b.to_string(), pos_c.to_string(), pos_d.to_string(),
                 pos_e.to_string(), pos_f.to_string(), pos_g.to_string(), pos_h.to_string(),
-                pos_i.to_string(), pos_j.to_string(), pos_k.to_string(), pos_l.to_string(),
             ],
             connectives: HashMap::new(),
             schema: None,
@@ -53,8 +49,8 @@ impl DodecadicStructure {
 
     /// Apply a schema to this structure
     pub fn apply_schema(&mut self, schema: Box<dyn StructureSchema>) {
-        if schema.get_position_count() != 12 {
-            panic!("Schema must support exactly 12 positions for DodecadicStructure");
+        if schema.get_position_count() != 8 {
+            panic!("Schema must support exactly 8 positions for OctadicStructure");
         }
         self.schema = Some(schema);
         self.refresh_connectives_with_schema();
@@ -62,11 +58,19 @@ impl DodecadicStructure {
 
     /// Initialize default connectives
     fn initialize_default_connectives(&mut self) {
-        for i in 0..12 {
-            for j in (i + 1)..12 {
-                let connective_name = format!("{}{}", 
-                    char::from(b'A' + i as u8), 
-                    char::from(b'A' + j as u8));
+        for i in 0..8 {
+            for j in (i + 1)..8 {
+                let connective_name = if let Some(ref schema) = self.schema {
+                    schema.get_connective_label(i, j)
+                        .unwrap_or(&format!("{}<>{}", 
+                            char::from(b'A' + i as u8), 
+                            char::from(b'A' + j as u8)))
+                        .to_string()
+                } else {
+                    format!("{}<>{}", 
+                        char::from(b'A' + i as u8), 
+                        char::from(b'A' + j as u8))
+                };
                 self.connectives.insert((i, j), connective_name);
             }
         }
@@ -103,10 +107,10 @@ impl DodecadicStructure {
 
     /// Interactive creation method with schema selection
     pub fn create_interactive() -> Result<Self, Box<dyn std::error::Error>> {
-        println!("\n--- Creating a Dodecad ---");
+        println!("\n--- Creating an Octad ---");
         
         // Schema selection first
-        let schema = select_dodecad_schema();
+        let schema = select_octad_schema();
         println!("Selected schema: {}", schema.get_schema_name());
         
         // Helper for optional input with default
@@ -186,7 +190,6 @@ impl DodecadicStructure {
         let mut positions = [
             String::new(), String::new(), String::new(), String::new(),
             String::new(), String::new(), String::new(), String::new(),
-            String::new(), String::new(), String::new(), String::new(),
         ];
         let labels = schema.get_canonical_labels();
         
@@ -196,7 +199,7 @@ impl DodecadicStructure {
         }
 
         // Create structure with schema
-        let mut structure = DodecadicStructure {
+        let mut structure = OctadicStructure {
             name,
             positions,
             connectives: HashMap::new(),
@@ -211,7 +214,7 @@ impl DodecadicStructure {
         
         if modify_connectives.starts_with('y') {
             println!("\nModifying connectives (press Enter to keep default, or input new value):");
-            println!("Note: Dodecad has 66 connectives - this will take several moments to review.");
+            println!("Note: Octad has 28 connectives.");
             
             // Get all connective keys and sort them for consistent ordering
             let mut keys: Vec<_> = structure.connectives.keys().cloned().collect();
@@ -244,10 +247,10 @@ impl DodecadicStructure {
             .unwrap_or("No Schema");
         let attribute = self.schema.as_ref()
             .map(|s| s.get_attribute_description())
-            .unwrap_or("Twelvefold structure");
+            .unwrap_or("Eightfold structure");
 
-        println!("\n--- Dodecad Details ---");
-        println!("Dodecad Name: {}", self.name);
+        println!("\n--- Octad Details ---");
+        println!("Octad Name: {}", self.name);
         println!("Schema: {}", schema_name);
         println!("Core Attribute: {}", attribute);
         
@@ -262,7 +265,7 @@ impl DodecadicStructure {
                 println!("{}: {}", pos_char, position);
             }
         }
-        println!("----------------------");
+        println!("---------------------");
     }
 
     /// Display all connectives
@@ -287,8 +290,7 @@ impl DodecadicStructure {
             schema.get_canonical_labels().iter().map(|&s| s.to_string()).collect()
         } else {
             vec!["A".to_string(), "B".to_string(), "C".to_string(), "D".to_string(), 
-                 "E".to_string(), "F".to_string(), "G".to_string(), "H".to_string(),
-                 "I".to_string(), "J".to_string(), "K".to_string(), "L".to_string()]
+                 "E".to_string(), "F".to_string(), "G".to_string(), "H".to_string()]
         }
     }
 
@@ -298,13 +300,13 @@ impl DodecadicStructure {
     }
 }
 
-impl std::fmt::Debug for DodecadicStructure {
+impl std::fmt::Debug for OctadicStructure {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let schema_name = self.schema.as_ref()
             .map(|s| s.get_schema_name())
             .unwrap_or("No Schema");
         
-        f.debug_struct("DodecadicStructure")
+        f.debug_struct("OctadicStructure")
             .field("name", &self.name)
             .field("positions", &self.positions)
             .field("connectives", &self.connectives)
@@ -316,39 +318,39 @@ impl std::fmt::Debug for DodecadicStructure {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::schemas::BennettDodecadSchema;
+    use crate::schemas::BennettOctadSchema;
 
     #[test]
-    fn test_dodecadic_structure_creation() {
-        let structure = DodecadicStructure::new_with_positions(
-            "Test Dodecad",
-            "Self-Rule", "Control", "Innovation", "Design", "Uniqueness", "Framework",
-            "Recurrence", "Possibility", "Existence", "Connection", "Opposition", "Completeness"
+    fn test_octadic_structure_creation() {
+        let structure = OctadicStructure::new_with_positions(
+            "Test Octad",
+            "Core Element", "Key Processes", "Foundation", "Resources",
+            "Whole System", "Core Values", "Essential Nature", "Operating Modes"
         );
         
-        assert_eq!(structure.name, "Test Dodecad");
-        assert_eq!(structure.positions[0], "Self-Rule");
-        assert_eq!(structure.positions[11], "Completeness");
+        assert_eq!(structure.name, "Test Octad");
+        assert_eq!(structure.positions[0], "Core Element");
+        assert_eq!(structure.positions[7], "Operating Modes");
         
-        // Should have default connectives (12 choose 2 = 66)
+        // Should have default connectives (8 choose 2 = 28)
         assert!(structure.has_connectives());
-        assert_eq!(structure.connectives_count(), 66);
+        assert_eq!(structure.connectives_count(), 28);
     }
 
     #[test]
     fn test_schema_application() {
-        let mut structure = DodecadicStructure::new("Test");
-        let schema = Box::new(BennettDodecadSchema);
+        let mut structure = OctadicStructure::new("Test");
+        let schema = Box::new(BennettOctadSchema);
         
         structure.apply_schema(schema);
         assert!(structure.schema.is_some());
-        assert_eq!(structure.schema.as_ref().unwrap().get_schema_name(), "JGB's Dodecad");
+        assert_eq!(structure.schema.as_ref().unwrap().get_schema_name(), "Bennett's Octad");
     }
 
     #[test]
     fn test_connective_operations() {
-        let mut structure = DodecadicStructure::new_with_positions(
-            "Test", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"
+        let mut structure = OctadicStructure::new_with_positions(
+            "Test", "A", "B", "C", "D", "E", "F", "G", "H"
         );
         
         // Test get/set connective methods
@@ -363,24 +365,25 @@ mod tests {
 
     #[test]
     fn test_schema_aware_connectives() {
-        let mut structure = DodecadicStructure::new("Test");
-        let schema = Box::new(BennettDodecadSchema);
+        let mut structure = OctadicStructure::new("Test");
+        let schema = Box::new(BennettOctadSchema);
         structure.apply_schema(schema);
         structure.initialize_default_connectives();
         
         // Should use schema-defined connective labels
-        assert_eq!(structure.get_connective(0, 1).unwrap(), "Autocracy <> Domination");
-        assert_eq!(structure.get_connective(2, 3).unwrap(), "Creativity <> Pattern");
+        assert_eq!(structure.get_connective(0, 1).unwrap(), "Smallest Significant Holon <> Critical Functions");
+        assert_eq!(structure.get_connective(2, 3).unwrap(), "Supportive Platform <> Necessary Resourcing");
     }
 
     #[test]
     fn test_jgb_schema() {
-        let mut structure = DodecadicStructure::new("JGB Test");
-        structure.apply_schema(Box::new(BennettDodecadSchema));
+        let mut structure = OctadicStructure::new("JGB Test");
+        structure.apply_schema(Box::new(BennettOctadSchema));
         structure.initialize_default_connectives();
         
-        // Should use JGB's schema connective labels
-        assert_eq!(structure.get_connective(0, 1).unwrap(), "Autocracy <> Domination");
-        assert_eq!(structure.get_connective(10, 11).unwrap(), "Polarity <> Wholeness");
+        // Should use Bennett's schema connective labels
+        assert_eq!(structure.get_connective(0, 1).unwrap(), "Smallest Significant Holon <> Critical Functions");
+        assert_eq!(structure.get_connective(4, 5).unwrap(), "Integrative Totality <> Inherent Values");
+        assert_eq!(structure.get_connective(6, 7).unwrap(), "Intrinsic Nature <> Organisational Modes");
     }
 } 

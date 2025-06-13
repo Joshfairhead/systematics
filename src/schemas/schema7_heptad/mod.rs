@@ -13,6 +13,6 @@ pub fn get_available_heptad_schemas() -> Vec<Box<dyn StructureSchema>> {
 
 /// Interactive schema selection for heptads
 pub fn select_heptad_schema() -> Box<dyn StructureSchema> {
-    println!("\nUsing JGB's Heptad Schema (Insight, Research, Design, Synthesis, Application, Delivery, Value)");
+    println!("\nUsing Bennett's Heptad Schema (Insight, Research, Design, Synthesis, Application, Delivery, Value)");
     Box::new(BennettHeptadSchema)
 } 

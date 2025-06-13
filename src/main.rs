@@ -1,7 +1,7 @@
 mod modules;
 mod schemas; 
 
-use crate::modules::systematic_structures::{MonadicStructure, DyadicStructure, TriadicStructure, TetradicStructure, PentadicStructure, HexadicStructure, HeptadicStructure, OctadicStructure, DodecadicStructure};
+use crate::modules::{MonadicStructure, DyadicStructure, TriadicStructure, TetradicStructure, PentadicStructure, HexadicStructure, HeptadicStructure, OctadicStructure, DodecadicStructure};
 use crate::modules::permutations;
 use std::io; // Import for input/output
 

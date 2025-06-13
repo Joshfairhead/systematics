@@ -365,7 +365,7 @@ mod tests {
         
         structure.apply_schema(schema);
         assert!(structure.schema.is_some());
-        assert_eq!(structure.schema.as_ref().unwrap().get_schema_name(), "JGB's Heptad");
+        assert_eq!(structure.schema.as_ref().unwrap().get_schema_name(), "Bennett's Heptad");
     }
 
     #[test]
@@ -403,7 +403,7 @@ mod tests {
         structure.apply_schema(Box::new(BennettHeptadSchema));
         structure.initialize_default_connectives();
         
-        // Should use JGB's schema connective labels
+        // Should use Bennett's schema connective labels
         assert_eq!(structure.get_connective(0, 1).unwrap(), "Insight <> Research");
         assert_eq!(structure.get_connective(0, 2).unwrap(), "Insight <> Design");
         assert_eq!(structure.get_connective(1, 3).unwrap(), "Research <> Synthesis");
