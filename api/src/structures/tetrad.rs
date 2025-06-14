@@ -17,9 +17,6 @@ pub struct Tetrad {
     // User's terms for each index position (tetrad has 4 term indices)
     user_term_index: [String; 4],
     
-    // User-defined attributes
-    attributes: Vec<String>,
-    
     // Connective relationships between terms (from_index, to_index) -> relationship
     connectives: HashMap<(usize, usize), String>,
     
@@ -28,8 +25,8 @@ pub struct Tetrad {
 }
 
 impl Tetrad {
-    /// Create a new tetrad with default empty terms
-    pub fn new(name: String) -> Self {
+    /// Create a new tetrad with the given name and terms
+    pub fn new(name: String, ground: String, ideal: String, instrumental: String, directive: String) -> Self {
         let connectives = HashMap::new();
         
         // TODO: Add proper Bennett framework connective relationships
@@ -37,8 +34,7 @@ impl Tetrad {
         Self {
             id: Uuid::new_v4().to_string(),
             name,
-            user_term_index: [String::new(), String::new(), String::new(), String::new()],
-            attributes: Vec::new(),
+            user_term_index: [ground, ideal, instrumental, directive],
             connectives,
             schema: TetradSchema,
         }
@@ -67,23 +63,6 @@ impl Tetrad {
     /// Get all terms as a tuple
     pub fn terms_tuple(&self) -> (&str, &str, &str, &str) {
         (&self.user_term_index[0], &self.user_term_index[1], &self.user_term_index[2], &self.user_term_index[3])
-    }
-    
-    /// Add an attribute to the tetrad
-    pub fn add_attribute(&mut self, attribute: String) {
-        if !self.attributes.contains(&attribute) {
-            self.attributes.push(attribute);
-        }
-    }
-    
-    /// Remove an attribute from the tetrad
-    pub fn remove_attribute(&mut self, attribute: &str) {
-        self.attributes.retain(|attr| attr != attribute);
-    }
-    
-    /// Get attributes
-    pub fn attributes(&self) -> &[String] {
-        &self.attributes
     }
     
     /// Get connective relationship between two terms
@@ -193,8 +172,8 @@ impl SystematicStructure for Tetrad {
     }
     
     fn display(&self) {
-        println!("=== {} ===", self.name);
-        println!("Type: Tetrad ({} terms)", Self::TERM_COUNT);
+        println!("\n=== {} ===", self.name);
+        println!("Type: Tetrad (4 terms)");
         println!("Terms: {} → {} → {} → {}", 
                  self.user_term_index[0], 
                  self.user_term_index[1], 
@@ -225,9 +204,6 @@ impl SystematicStructure for Tetrad {
             }
         }
         
-        if !self.attributes.is_empty() {
-            println!("Attributes: {}", self.attributes.join(", "));
-        }
         println!("Schema: {}", self.schema.name());
         println!("ID: {}", &self.id[..8]);
         println!("{}", "=".repeat(self.name.len() + 8));
@@ -237,57 +213,69 @@ impl SystematicStructure for Tetrad {
 
 /// Builder for creating Tetrad structures
 pub struct TetradBuilder {
-    name: String,
-    terms: [String; 4],
-    attributes: Vec<String>,
-    connectives: Option<HashMap<(usize, usize), String>>,
+    name: Option<String>,
+    ground: Option<String>,
+    ideal: Option<String>,
+    instrumental: Option<String>,
+    directive: Option<String>,
 }
 
 impl TetradBuilder {
     pub fn new() -> Self {
         Self {
-            name: String::new(),
-            terms: [String::new(), String::new(), String::new(), String::new()],
-            attributes: Vec::new(),
-            connectives: None,
+            name: None,
+            ground: None,
+            ideal: None,
+            instrumental: None,
+            directive: None,
         }
     }
     
     /// Set the name for the tetrad
-    pub fn name(mut self, name: String) -> Self {
-        self.name = name;
+    pub fn name<S: Into<String>>(mut self, name: S) -> Self {
+        self.name = Some(name.into());
         self
     }
     
     /// Set the terms for the tetrad
-    pub fn terms(mut self, first: String, second: String, third: String, fourth: String) -> Self {
-        self.terms = [first, second, third, fourth];
+    pub fn terms<S1: Into<String>, S2: Into<String>, S3: Into<String>, S4: Into<String>>(
+        mut self, 
+        ground: S1, 
+        ideal: S2, 
+        instrumental: S3, 
+        directive: S4
+    ) -> Self {
+        self.ground = Some(ground.into());
+        self.ideal = Some(ideal.into());
+        self.instrumental = Some(instrumental.into());
+        self.directive = Some(directive.into());
         self
     }
     
-    /// Add attributes to the tetrad
-    pub fn attributes(mut self, attributes: Vec<String>) -> Self {
-        self.attributes = attributes;
-        self
-    }
-    
-    /// Set custom connectives
-    pub fn connectives(mut self, connectives: HashMap<(usize, usize), String>) -> Self {
-        self.connectives = Some(connectives);
+    /// Set custom connectives (placeholder for future use)
+    pub fn connectives(self, _connectives: HashMap<(usize, usize), String>) -> Self {
+        // This method is kept for compatibility but doesn't modify anything yet
         self
     }
     
     /// Build the tetrad
     pub fn build(self) -> Result<Tetrad> {
-        let mut tetrad = Tetrad::new(self.name);
-        tetrad.user_term_index = self.terms;
-        tetrad.attributes = self.attributes;
+        let name = self.name.unwrap_or_else(|| "Unnamed Tetrad".to_string());
+        let ground = self.ground.ok_or_else(|| SystematicsError::Builder {
+            reason: "Tetrad requires a ground term".to_string(),
+        })?;
+        let ideal = self.ideal.ok_or_else(|| SystematicsError::Builder {
+            reason: "Tetrad requires an ideal term".to_string(),
+        })?;
+        let instrumental = self.instrumental.ok_or_else(|| SystematicsError::Builder {
+            reason: "Tetrad requires an instrumental term".to_string(),
+        })?;
+        let directive = self.directive.ok_or_else(|| SystematicsError::Builder {
+            reason: "Tetrad requires a directive term".to_string(),
+        })?;
         
-        if let Some(custom_connectives) = self.connectives {
-            tetrad.connectives = custom_connectives;
-        }
+        let tetrad = Tetrad::new(name, ground, ideal, instrumental, directive);
         
-        // Validate before returning
         tetrad.validate()?;
         Ok(tetrad)
     }
@@ -300,24 +288,25 @@ mod tests {
     #[test]
     fn test_tetrad_creation() {
         let tetrad = TetradBuilder::new()
-            .name("Test Tetrad".to_string())
-            .terms("Origin".to_string(), "Path".to_string(), "Drive".to_string(), "Governance".to_string())
+            .name("Test Tetrad")
+            .terms("Foundation", "Vision", "Method", "Guide")
             .build()
             .unwrap();
         
         assert_eq!(tetrad.name(), "Test Tetrad");
-        assert_eq!(tetrad.first_term(), "Origin");
-        assert_eq!(tetrad.second_term(), "Path");
-        assert_eq!(tetrad.third_term(), "Drive");
-        assert_eq!(tetrad.fourth_term(), "Governance");
-        assert_eq!(tetrad.terms_tuple(), ("Origin", "Path", "Drive", "Governance"));
+        assert_eq!(tetrad.first_term(), "Foundation");
+        assert_eq!(tetrad.second_term(), "Vision");
+        assert_eq!(tetrad.third_term(), "Method");
+        assert_eq!(tetrad.fourth_term(), "Guide");
+        assert_eq!(tetrad.terms_tuple(), ("Foundation", "Vision", "Method", "Guide"));
+        assert!(tetrad.validate().is_ok());
     }
 
     #[test]
     fn test_canonical_terms() {
         let tetrad = TetradBuilder::new()
-            .name("Test Tetrad".to_string())
-            .terms("A".to_string(), "B".to_string(), "C".to_string(), "D".to_string())
+            .name("Test Tetrad")
+            .terms("A", "B", "C", "D")
             .build()
             .unwrap();
         
@@ -326,27 +315,10 @@ mod tests {
     }
 
     #[test]
-    fn test_attribute_management() {
-        let mut tetrad = TetradBuilder::new()
-            .name("Test Tetrad".to_string())
-            .terms("A".to_string(), "B".to_string(), "C".to_string(), "D".to_string())
-            .build()
-            .unwrap();
-        
-        tetrad.add_attribute("complex".to_string());
-        tetrad.add_attribute("structured".to_string());
-        assert_eq!(tetrad.attributes().len(), 2);
-        
-        tetrad.remove_attribute("complex");
-        assert_eq!(tetrad.attributes().len(), 1);
-        assert_eq!(tetrad.attributes()[0], "structured");
-    }
-
-    #[test]
     fn test_connective_relationships() {
         let tetrad = TetradBuilder::new()
-            .name("Test Tetrad".to_string())
-            .terms("Ground".to_string(), "Ideal".to_string(), "Instrumental".to_string(), "Directive".to_string())
+            .name("Test Tetrad")
+            .terms("Ground", "Ideal", "Instrumental", "Directive")
             .build()
             .unwrap();
         
@@ -361,22 +333,22 @@ mod tests {
     fn test_tetrad_validation() {
         // Valid tetrad
         let valid_tetrad = TetradBuilder::new()
-            .name("Valid".to_string())
-            .terms("A".to_string(), "B".to_string(), "C".to_string(), "D".to_string())
+            .name("Valid")
+            .terms("A", "B", "C", "D")
             .build();
         assert!(valid_tetrad.is_ok());
         
         // Empty term should fail
         let invalid_tetrad = TetradBuilder::new()
-            .name("Invalid".to_string())
-            .terms("A".to_string(), "".to_string(), "C".to_string(), "D".to_string())
+            .name("Invalid")
+            .terms("A", "", "C", "D")
             .build();
         assert!(invalid_tetrad.is_err());
         
         // Duplicate terms should fail
         let duplicate_tetrad = TetradBuilder::new()
-            .name("Duplicate".to_string())
-            .terms("Same".to_string(), "Same".to_string(), "Different".to_string(), "Another".to_string())
+            .name("Duplicate")
+            .terms("Same", "Same", "Different", "Another")
             .build();
         assert!(duplicate_tetrad.is_err());
     }
@@ -384,8 +356,8 @@ mod tests {
     #[test]
     fn test_tetrad_terms_method() {
         let tetrad = TetradBuilder::new()
-            .name("Test".to_string())
-            .terms("One".to_string(), "Two".to_string(), "Three".to_string(), "Four".to_string())
+            .name("Test")
+            .terms("One", "Two", "Three", "Four")
             .build()
             .unwrap();
         
@@ -400,8 +372,8 @@ mod tests {
     #[test]
     fn test_trait_compliance() {
         let tetrad = TetradBuilder::new()
-            .name("Test".to_string())
-            .terms("A".to_string(), "B".to_string(), "C".to_string(), "D".to_string())
+            .name("Test")
+            .terms("A", "B", "C", "D")
             .build()
             .unwrap();
         

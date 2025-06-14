@@ -25,8 +25,7 @@ pub struct Dyad {
     // User's terms for each index position (dyad has 2 term indices)  
     user_term_index: [String; 2],
     
-    // User-defined attributes
-    attributes: Vec<String>,
+
     
     // Connective relationships (consistent with larger structures)
     connectives: HashMap<(usize, usize), String>,
@@ -50,7 +49,6 @@ impl Dyad {
             id: Uuid::new_v4().to_string(),
             name,
             user_term_index: [first_term, second_term],
-            attributes: Vec::new(),
             connectives,
             schema: DyadSchema,
         }
@@ -75,33 +73,9 @@ impl Dyad {
         (&self.user_term_index[0], &self.user_term_index[1])
     }
     
-    /// Get all attributes
-    pub fn attributes(&self) -> &[String] {
-        &self.attributes
-    }
-    
     /// Get the connective relationship
     pub fn connective(&self) -> Option<&String> {
         self.connectives.get(&(0, 1))
-    }
-    
-    // -------------------------------------------------------------------------
-    // Attribute Management Methods
-    // -------------------------------------------------------------------------
-    
-    /// Add a single attribute
-    pub fn add_attribute(&mut self, attribute: String) {
-        self.attributes.push(attribute);
-    }
-    
-    /// Remove an attribute by value
-    pub fn remove_attribute(&mut self, attribute: &str) {
-        self.attributes.retain(|attr| attr != attribute);
-    }
-    
-    /// Check if dyad has a specific attribute
-    pub fn has_attribute(&self, attribute: &str) -> bool {
-        self.attributes.contains(&attribute.to_string())
     }
 }
 
@@ -210,11 +184,7 @@ impl SystematicStructure for Dyad {
             println!("Relationship: {} {} {}", self.first_term(), connective, self.second_term());
         }
         
-        if !self.attributes.is_empty() {
-            println!("Attributes: {}", self.attributes.join(", "));
-        } else {
-            println!("Attributes: None");
-        }
+
         
         println!("Schema: {}", self.schema.name());
         println!("ID: {}", &self.id[..8]); // Short ID for readability
@@ -245,7 +215,6 @@ pub struct DyadBuilder {
     name: Option<String>,
     first_term: Option<String>,
     second_term: Option<String>,
-    attributes: Vec<String>,
 }
 
 impl DyadBuilder {
@@ -254,7 +223,6 @@ impl DyadBuilder {
             name: None,
             first_term: None,
             second_term: None,
-            attributes: Vec::new(),
         }
     }
     
@@ -283,21 +251,7 @@ impl DyadBuilder {
         self
     }
     
-    /// Add a single attribute
-    pub fn attribute<S: Into<String>>(mut self, attribute: S) -> Self {
-        self.attributes.push(attribute.into());
-        self
-    }
-    
-    /// Add multiple attributes
-    pub fn attributes<I, S>(mut self, attributes: I) -> Self 
-    where 
-        I: IntoIterator<Item = S>,
-        S: Into<String>,
-    {
-        self.attributes.extend(attributes.into_iter().map(|s| s.into()));
-        self
-    }
+
     
     /// Build the dyad structure
     pub fn build(self) -> Result<Dyad> {
@@ -311,8 +265,7 @@ impl DyadBuilder {
             reason: "Dyad requires a second term (Existence)".to_string(),
         })?;
         
-        let mut dyad = Dyad::new(name, first_term, second_term);
-        dyad.attributes = self.attributes;
+        let dyad = Dyad::new(name, first_term, second_term);
             
         dyad.validate()?;
         Ok(dyad)
@@ -339,15 +292,12 @@ mod tests {
             .name("Test Dyad")
             .first_term("Spirit")
             .second_term("Matter")
-            .attribute("fundamental")
-            .attribute("universal")
             .build()
             .unwrap();
             
         assert_eq!(dyad.name(), "Test Dyad");
         assert_eq!(dyad.first_term(), "Spirit");
         assert_eq!(dyad.second_term(), "Matter");
-        assert_eq!(dyad.attributes().len(), 2);
         assert!(dyad.validate().is_ok());
     }
     
@@ -388,24 +338,7 @@ mod tests {
         assert!(result.is_err());
     }
     
-    #[test]
-    fn test_attribute_management() {
-        let mut dyad = DyadBuilder::new()
-            .name("Test")
-            .terms("Spirit", "Matter")
-            .build()
-            .unwrap();
-            
-        assert_eq!(dyad.attributes().len(), 0);
-        
-        dyad.add_attribute("eternal".to_string());
-        assert_eq!(dyad.attributes().len(), 1);
-        assert!(dyad.has_attribute("eternal"));
-        
-        dyad.remove_attribute("eternal");
-        assert_eq!(dyad.attributes().len(), 0);
-        assert!(!dyad.has_attribute("eternal"));
-    }
+
     
     #[test]
     fn test_canonical_terms() {

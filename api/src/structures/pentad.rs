@@ -8,36 +8,28 @@ use crate::{SystematicStructure, schemas::{Schema, PentadSchema}, error::{Result
 /// relationships with canonical terms: Quintessence, Higher Potential, Lower Potential, Purpose, Source
 #[derive(Debug, Clone)]
 pub struct Pentad {
-    // Unique identifier for this structure instance
+    // Core identity
     id: String,
-    
-    // User-defined name for this structure
     name: String,
     
     // User's terms for each index position (pentad has 5 term indices)
     user_term_index: [String; 5],
     
-    // User-defined attributes
-    attributes: Vec<String>,
-    
-    // Connective relationships between terms (from_index, to_index) -> relationship
+    // Connective relationships
     connectives: HashMap<(usize, usize), String>,
     
-    // Schema reference
+    // Schema definition
     schema: PentadSchema,
 }
 
 impl Pentad {
     /// Create a new pentad with default empty terms
-    pub fn new(name: String) -> Self {
-        let connectives = HashMap::new();
-        
+    pub fn new(name: String, terms: [String; 5]) -> Self {
         Self {
             id: Uuid::new_v4().to_string(),
             name,
-            user_term_index: [String::new(), String::new(), String::new(), String::new(), String::new()],
-            attributes: Vec::new(),
-            connectives,
+            user_term_index: terms,
+            connectives: HashMap::new(),
             schema: PentadSchema,
         }
     }
@@ -70,23 +62,6 @@ impl Pentad {
     /// Get all terms as a tuple
     pub fn terms_tuple(&self) -> (&str, &str, &str, &str, &str) {
         (&self.user_term_index[0], &self.user_term_index[1], &self.user_term_index[2], &self.user_term_index[3], &self.user_term_index[4])
-    }
-    
-    /// Add an attribute to the pentad
-    pub fn add_attribute(&mut self, attribute: String) {
-        if !self.attributes.contains(&attribute) {
-            self.attributes.push(attribute);
-        }
-    }
-    
-    /// Remove an attribute from the pentad
-    pub fn remove_attribute(&mut self, attribute: &str) {
-        self.attributes.retain(|attr| attr != attribute);
-    }
-    
-    /// Get attributes
-    pub fn attributes(&self) -> &[String] {
-        &self.attributes
     }
     
     /// Get connective relationship between two terms
@@ -191,82 +166,70 @@ impl SystematicStructure for Pentad {
     }
     
     fn display(&self) {
-        println!("=== {} ===", self.name);
-        println!("Type: Pentad ({} terms)", Self::TERM_COUNT);
-        println!("Terms: {} → {} → {} → {} → {}", 
-                 self.user_term_index[0], 
-                 self.user_term_index[1], 
-                 self.user_term_index[2], 
-                 self.user_term_index[3], 
-                 self.user_term_index[4]);
+        println!("\n=== {} ===", self.name);
+        println!("Type: Pentad (5 terms)");
         
-        if !self.attributes.is_empty() {
-            println!("Attributes: {}", self.attributes.join(", "));
-        }
-        
-        if !self.connectives.is_empty() {
-            println!("Connectives:");
-            for ((from, to), relationship) in &self.connectives {
-                println!("  {} → {}: {}", 
-                    self.user_term_index[*from], 
-                    self.user_term_index[*to], 
-                    relationship);
+        // Display terms with arrows
+        for (i, term) in self.user_term_index.iter().enumerate() {
+            if i < self.user_term_index.len() - 1 {
+                print!("{} → ", term);
+            } else {
+                println!("{}", term);
             }
         }
+        
+        println!("Schema: {}", self.schema.name());
+        println!("ID: {}", &self.id[..8]);
+        println!("{}", "=".repeat(self.name.len() + 8));
     }
 }
 
 /// Builder for creating Pentad instances
 pub struct PentadBuilder {
-    name: String,
-    terms: [String; 5],
-    attributes: Vec<String>,
-    connectives: Option<HashMap<(usize, usize), String>>,
+    name: Option<String>,
+    terms: Option<[String; 5]>,
 }
 
 impl PentadBuilder {
     pub fn new() -> Self {
         Self {
-            name: String::new(),
-            terms: [String::new(), String::new(), String::new(), String::new(), String::new()],
-            attributes: Vec::new(),
-            connectives: None,
+            name: None,
+            terms: None,
         }
     }
     
-    pub fn name(mut self, name: String) -> Self {
-        self.name = name;
+    pub fn name<S: Into<String>>(mut self, name: S) -> Self {
+        self.name = Some(name.into());
         self
     }
     
-    pub fn terms(mut self, first: String, second: String, third: String, fourth: String, fifth: String) -> Self {
-        self.terms = [first, second, third, fourth, fifth];
-        self
-    }
-    
-    pub fn attributes(mut self, attributes: Vec<String>) -> Self {
-        self.attributes = attributes;
-        self
-    }
-    
-    pub fn connectives(mut self, connectives: HashMap<(usize, usize), String>) -> Self {
-        self.connectives = Some(connectives);
+    pub fn terms<S1: Into<String>, S2: Into<String>, S3: Into<String>, S4: Into<String>, S5: Into<String>>(
+        mut self, 
+        first: S1, 
+        second: S2, 
+        third: S3, 
+        fourth: S4, 
+        fifth: S5
+    ) -> Self {
+        self.terms = Some([
+            first.into(),
+            second.into(),
+            third.into(),
+            fourth.into(),
+            fifth.into(),
+        ]);
         self
     }
     
     pub fn build(self) -> Result<Pentad> {
-        let pentad = Pentad {
-            id: Uuid::new_v4().to_string(),
-            name: self.name,
-            user_term_index: self.terms,
-            attributes: self.attributes,
-            connectives: self.connectives.unwrap_or_else(HashMap::new),
-            schema: PentadSchema,
-        };
+        let name = self.name.unwrap_or_else(|| "Unnamed Pentad".to_string());
+        let terms = self.terms.ok_or_else(|| SystematicsError::Builder {
+            reason: "Pentad requires 5 terms".to_string(),
+        })?;
         
-        // Validate the built pentad
+        let pentad = Pentad::new(name, terms);
+        
         pentad.validate()?;
-        
         Ok(pentad)
     }
 }
@@ -278,29 +241,30 @@ mod tests {
     #[test]
     fn test_pentad_creation() {
         let pentad = PentadBuilder::new()
-            .name("Test Pentad".to_string())
+            .name("Test Pentad")
             .terms(
-                "Essence".to_string(),
-                "Higher Aspect".to_string(), 
-                "Lower Aspect".to_string(),
-                "Goal".to_string(),
-                "Origin".to_string()
+                "Quintessence",
+                "Higher Potential",
+                "Lower Potential",
+                "Purpose",
+                "Source"
             )
             .build()
             .unwrap();
         
         assert_eq!(pentad.name(), "Test Pentad");
-        assert_eq!(pentad.first_term(), "Essence");
-        assert_eq!(pentad.second_term(), "Higher Aspect");
-        assert_eq!(pentad.third_term(), "Lower Aspect");
-        assert_eq!(pentad.fourth_term(), "Goal");
-        assert_eq!(pentad.fifth_term(), "Origin");
+        assert_eq!(pentad.first_term(), "Quintessence");
+        assert_eq!(pentad.second_term(), "Higher Potential");
+        assert_eq!(pentad.third_term(), "Lower Potential");
+        assert_eq!(pentad.fourth_term(), "Purpose");
+        assert_eq!(pentad.fifth_term(), "Source");
+        assert!(pentad.validate().is_ok());
     }
 
     #[test]
     fn test_canonical_terms() {
         let pentad = PentadBuilder::new()
-            .name("Test".to_string())
+            .name("Test")
             .terms("A".to_string(), "B".to_string(), "C".to_string(), "D".to_string(), "E".to_string())
             .build()
             .unwrap();
@@ -315,25 +279,9 @@ mod tests {
     }
 
     #[test]
-    fn test_attribute_management() {
-        let mut pentad = PentadBuilder::new()
-            .name("Test".to_string())
-            .terms("A".to_string(), "B".to_string(), "C".to_string(), "D".to_string(), "E".to_string())
-            .build()
-            .unwrap();
-        
-        pentad.add_attribute("Test Attribute".to_string());
-        assert_eq!(pentad.attributes().len(), 1);
-        assert_eq!(pentad.attributes()[0], "Test Attribute");
-        
-        pentad.remove_attribute("Test Attribute");
-        assert_eq!(pentad.attributes().len(), 0);
-    }
-
-    #[test]
     fn test_connective_relationships() {
         let mut pentad = PentadBuilder::new()
-            .name("Test".to_string())
+            .name("Test")
             .terms("A".to_string(), "B".to_string(), "C".to_string(), "D".to_string(), "E".to_string())
             .build()
             .unwrap();
@@ -347,28 +295,28 @@ mod tests {
     fn test_pentad_validation() {
         // Test empty name
         let result = PentadBuilder::new()
-            .name("".to_string())
+            .name("")
             .terms("A".to_string(), "B".to_string(), "C".to_string(), "D".to_string(), "E".to_string())
             .build();
         assert!(result.is_err());
         
         // Test empty term
         let result = PentadBuilder::new()
-            .name("Test".to_string())
+            .name("Test")
             .terms("".to_string(), "B".to_string(), "C".to_string(), "D".to_string(), "E".to_string())
             .build();
         assert!(result.is_err());
         
         // Test duplicate terms
         let result = PentadBuilder::new()
-            .name("Test".to_string())
+            .name("Test")
             .terms("A".to_string(), "A".to_string(), "C".to_string(), "D".to_string(), "E".to_string())
             .build();
         assert!(result.is_err());
         
         // Test valid pentad
         let result = PentadBuilder::new()
-            .name("Valid".to_string())
+            .name("Valid")
             .terms("A".to_string(), "B".to_string(), "C".to_string(), "D".to_string(), "E".to_string())
             .build();
         assert!(result.is_ok());
@@ -377,7 +325,7 @@ mod tests {
     #[test]
     fn test_pentad_terms_method() {
         let pentad = PentadBuilder::new()
-            .name("Test".to_string())
+            .name("Test")
             .terms("First".to_string(), "Second".to_string(), "Third".to_string(), "Fourth".to_string(), "Fifth".to_string())
             .build()
             .unwrap();
@@ -397,7 +345,7 @@ mod tests {
     #[test]
     fn test_trait_compliance() {
         let pentad = PentadBuilder::new()
-            .name("Test".to_string())
+            .name("Test")
             .terms("A".to_string(), "B".to_string(), "C".to_string(), "D".to_string(), "E".to_string())
             .build()
             .unwrap();

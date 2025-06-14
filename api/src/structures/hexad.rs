@@ -17,8 +17,7 @@ pub struct Hexad {
     // User's terms for each index position (hexad has 6 term indices)
     user_term_index: [String; 6],
     
-    // User-defined attributes
-    attributes: Vec<String>,
+
     
     // Connective relationships between terms (from_index, to_index) -> relationship
     connectives: HashMap<(usize, usize), String>,
@@ -36,7 +35,6 @@ impl Hexad {
             id: Uuid::new_v4().to_string(),
             name,
             user_term_index: [String::new(), String::new(), String::new(), String::new(), String::new(), String::new()],
-            attributes: Vec::new(),
             connectives,
             schema: HexadSchema,
         }
@@ -53,22 +51,7 @@ impl Hexad {
          &self.user_term_index[3], &self.user_term_index[4], &self.user_term_index[5])
     }
     
-    /// Add an attribute to the hexad
-    pub fn add_attribute(&mut self, attribute: String) {
-        if !self.attributes.contains(&attribute) {
-            self.attributes.push(attribute);
-        }
-    }
-    
-    /// Remove an attribute from the hexad
-    pub fn remove_attribute(&mut self, attribute: &str) {
-        self.attributes.retain(|attr| attr != attribute);
-    }
-    
-    /// Get attributes
-    pub fn attributes(&self) -> &[String] {
-        &self.attributes
-    }
+
     
     /// Get connective relationship between two terms
     pub fn get_connective(&self, from_index: usize, to_index: usize) -> Option<&String> {
@@ -168,9 +151,7 @@ impl SystematicStructure for Hexad {
                  self.user_term_index[0], self.user_term_index[1], self.user_term_index[2],
                  self.user_term_index[3], self.user_term_index[4], self.user_term_index[5]);
         
-        if !self.attributes.is_empty() {
-            println!("Attributes: {}", self.attributes.join(", "));
-        }
+
         
         if !self.connectives.is_empty() {
             println!("Connectives:");
@@ -186,34 +167,30 @@ impl SystematicStructure for Hexad {
 
 /// Builder for creating Hexad instances
 pub struct HexadBuilder {
-    name: String,
-    terms: [String; 6],
-    attributes: Vec<String>,
+    name: Option<String>,
+    terms: Option<[String; 6]>,
     connectives: Option<HashMap<(usize, usize), String>>,
 }
 
 impl HexadBuilder {
     pub fn new() -> Self {
         Self {
-            name: String::new(),
-            terms: [String::new(), String::new(), String::new(), String::new(), String::new(), String::new()],
-            attributes: Vec::new(),
+            name: None,
+            terms: None,
             connectives: None,
         }
     }
     
-    pub fn name(mut self, name: String) -> Self {
-        self.name = name;
+    pub fn name<S: Into<String>>(mut self, name: S) -> Self {
+        self.name = Some(name.into());
         self
     }
     
-    pub fn terms(mut self, t1: String, t2: String, t3: String, t4: String, t5: String, t6: String) -> Self {
-        self.terms = [t1, t2, t3, t4, t5, t6];
-        self
-    }
-    
-    pub fn attributes(mut self, attributes: Vec<String>) -> Self {
-        self.attributes = attributes;
+    pub fn terms<S1: Into<String>, S2: Into<String>, S3: Into<String>, S4: Into<String>, S5: Into<String>, S6: Into<String>>(
+        mut self, 
+        t1: S1, t2: S2, t3: S3, t4: S4, t5: S5, t6: S6
+    ) -> Self {
+        self.terms = Some([t1.into(), t2.into(), t3.into(), t4.into(), t5.into(), t6.into()]);
         self
     }
     
@@ -223,11 +200,15 @@ impl HexadBuilder {
     }
     
     pub fn build(self) -> Result<Hexad> {
+        let name = self.name.unwrap_or_else(|| "Unnamed Hexad".to_string());
+        let terms = self.terms.ok_or_else(|| SystematicsError::Builder {
+            reason: "Hexad requires 6 terms".to_string(),
+        })?;
+        
         let hexad = Hexad {
             id: Uuid::new_v4().to_string(),
-            name: self.name,
-            user_term_index: self.terms,
-            attributes: self.attributes,
+            name,
+            user_term_index: terms,
             connectives: self.connectives.unwrap_or_else(HashMap::new),
             schema: HexadSchema,
         };

@@ -17,9 +17,6 @@ pub struct Triad {
     // User's terms for each index position (triad has 3 term indices)
     user_term_index: [String; 3],
     
-    // User-defined attributes
-    attributes: Vec<String>,
-    
     // Connective relationships between terms (from_index, to_index) -> relationship
     connectives: HashMap<(usize, usize), String>,
     
@@ -28,8 +25,8 @@ pub struct Triad {
 }
 
 impl Triad {
-    /// Create a new triad with default empty terms
-    pub fn new(name: String) -> Self {
+    /// Create a new triad with the given name and terms
+    pub fn new(name: String, first_term: String, second_term: String, third_term: String) -> Self {
         let connectives = HashMap::new();
         
         // TODO: Add proper Bennett framework connective relationships
@@ -40,8 +37,7 @@ impl Triad {
         Self {
             id: Uuid::new_v4().to_string(),
             name,
-            user_term_index: [String::new(), String::new(), String::new()],
-            attributes: Vec::new(),
+            user_term_index: [first_term, second_term, third_term],
             connectives,
             schema: TriadSchema,
         }
@@ -65,23 +61,6 @@ impl Triad {
     /// Get all terms as a tuple
     pub fn terms_tuple(&self) -> (&str, &str, &str) {
         (&self.user_term_index[0], &self.user_term_index[1], &self.user_term_index[2])
-    }
-    
-    /// Add an attribute to the triad
-    pub fn add_attribute(&mut self, attribute: String) {
-        if !self.attributes.contains(&attribute) {
-            self.attributes.push(attribute);
-        }
-    }
-    
-    /// Remove an attribute from the triad
-    pub fn remove_attribute(&mut self, attribute: &str) {
-        self.attributes.retain(|attr| attr != attribute);
-    }
-    
-    /// Get attributes
-    pub fn attributes(&self) -> &[String] {
-        &self.attributes
     }
     
     /// Get connective relationship between two terms
@@ -183,12 +162,9 @@ impl SystematicStructure for Triad {
     }
     
     fn display(&self) {
-        println!("=== {} ===", self.name);
-        println!("Type: Triad ({} terms)", Self::TERM_COUNT);
-        println!("Terms: {} → {} → {}", 
-                 self.user_term_index[0], 
-                 self.user_term_index[1], 
-                 self.user_term_index[2]);
+        println!("\n=== {} ===", self.name);
+        println!("Type: Triad (3 terms)");
+        println!("Terms: {} ↔ {} ↔ {}", self.first_term(), self.second_term(), self.third_term());
         
         // Show key relationships
         if let Some(rel1) = self.get_connective(0, 1) {
@@ -204,49 +180,48 @@ impl SystematicStructure for Triad {
                     self.user_term_index[2], rel3, self.user_term_index[0]);
         }
         
-        if !self.attributes.is_empty() {
-            println!("Attributes: {}", self.attributes.join(", "));
-        }
         println!("Schema: {}", self.schema.name());
         println!("ID: {}", &self.id[..8]);
         println!("{}", "=".repeat(self.name.len() + 8));
-        println!();
     }
 }
 
 /// Builder for creating Triad structures
 pub struct TriadBuilder {
-    name: String,
-    terms: [String; 3],
-    attributes: Vec<String>,
+    name: Option<String>,
+    first_term: Option<String>,
+    second_term: Option<String>,
+    third_term: Option<String>,
     connectives: Option<HashMap<(usize, usize), String>>,
 }
 
 impl TriadBuilder {
     pub fn new() -> Self {
         Self {
-            name: String::new(),
-            terms: [String::new(), String::new(), String::new()],
-            attributes: Vec::new(),
+            name: None,
+            first_term: None,
+            second_term: None,
+            third_term: None,
             connectives: None,
         }
     }
     
     /// Set the name for the triad
-    pub fn name(mut self, name: String) -> Self {
-        self.name = name;
+    pub fn name<S: Into<String>>(mut self, name: S) -> Self {
+        self.name = Some(name.into());
         self
     }
     
     /// Set the terms for the triad
-    pub fn terms(mut self, first: String, second: String, third: String) -> Self {
-        self.terms = [first, second, third];
-        self
-    }
-    
-    /// Add attributes to the triad
-    pub fn attributes(mut self, attributes: Vec<String>) -> Self {
-        self.attributes = attributes;
+    pub fn terms<S1: Into<String>, S2: Into<String>, S3: Into<String>>(
+        mut self, 
+        first: S1, 
+        second: S2, 
+        third: S3
+    ) -> Self {
+        self.first_term = Some(first.into());
+        self.second_term = Some(second.into());
+        self.third_term = Some(third.into());
         self
     }
     
@@ -258,15 +233,23 @@ impl TriadBuilder {
     
     /// Build the triad
     pub fn build(self) -> Result<Triad> {
-        let mut triad = Triad::new(self.name);
-        triad.user_term_index = self.terms;
-        triad.attributes = self.attributes;
+        let name = self.name.unwrap_or_else(|| "Unnamed Triad".to_string());
+        let first_term = self.first_term.ok_or_else(|| SystematicsError::Builder {
+            reason: "Triad requires a first term".to_string(),
+        })?;
+        let second_term = self.second_term.ok_or_else(|| SystematicsError::Builder {
+            reason: "Triad requires a second term".to_string(),
+        })?;
+        let third_term = self.third_term.ok_or_else(|| SystematicsError::Builder {
+            reason: "Triad requires a third term".to_string(),
+        })?;
+        
+        let mut triad = Triad::new(name, first_term, second_term, third_term);
         
         if let Some(custom_connectives) = self.connectives {
             triad.connectives = custom_connectives;
         }
         
-        // Validate before returning
         triad.validate()?;
         Ok(triad)
     }
@@ -279,23 +262,24 @@ mod tests {
     #[test]
     fn test_triad_creation() {
         let triad = TriadBuilder::new()
-            .name("Test Triad".to_string())
-            .terms("Intention".to_string(), "Action".to_string(), "Result".to_string())
+            .name("Test Triad")
+            .terms("Will", "Function", "Being")
             .build()
             .unwrap();
         
         assert_eq!(triad.name(), "Test Triad");
-        assert_eq!(triad.first_term(), "Intention");
-        assert_eq!(triad.second_term(), "Action");
-        assert_eq!(triad.third_term(), "Result");
-        assert_eq!(triad.terms_tuple(), ("Intention", "Action", "Result"));
+        assert_eq!(triad.first_term(), "Will");
+        assert_eq!(triad.second_term(), "Function");
+        assert_eq!(triad.third_term(), "Being");
+        assert_eq!(triad.terms_tuple(), ("Will", "Function", "Being"));
+        assert!(triad.validate().is_ok());
     }
 
     #[test]
     fn test_canonical_terms() {
         let triad = TriadBuilder::new()
-            .name("Test Triad".to_string())
-            .terms("A".to_string(), "B".to_string(), "C".to_string())
+            .name("Test Triad")
+            .terms("A", "B", "C")
             .build()
             .unwrap();
         
@@ -304,27 +288,10 @@ mod tests {
     }
 
     #[test]
-    fn test_attribute_management() {
-        let mut triad = TriadBuilder::new()
-            .name("Test Triad".to_string())
-            .terms("A".to_string(), "B".to_string(), "C".to_string())
-            .build()
-            .unwrap();
-        
-        triad.add_attribute("dynamic".to_string());
-        triad.add_attribute("structured".to_string());
-        assert_eq!(triad.attributes().len(), 2);
-        
-        triad.remove_attribute("dynamic");
-        assert_eq!(triad.attributes().len(), 1);
-        assert_eq!(triad.attributes()[0], "structured");
-    }
-
-    #[test]
     fn test_connective_relationships() {
         let triad = TriadBuilder::new()
-            .name("Test Triad".to_string())
-            .terms("Will".to_string(), "Function".to_string(), "Being".to_string())
+            .name("Test Triad")
+            .terms("Will", "Function", "Being")
             .build()
             .unwrap();
         
@@ -338,22 +305,22 @@ mod tests {
     fn test_triad_validation() {
         // Valid triad
         let valid_triad = TriadBuilder::new()
-            .name("Valid".to_string())
-            .terms("A".to_string(), "B".to_string(), "C".to_string())
+            .name("Valid")
+            .terms("A", "B", "C")
             .build();
         assert!(valid_triad.is_ok());
         
         // Empty term should fail
         let invalid_triad = TriadBuilder::new()
-            .name("Invalid".to_string())
-            .terms("A".to_string(), "".to_string(), "C".to_string())
+            .name("Invalid")
+            .terms("A", "", "C")
             .build();
         assert!(invalid_triad.is_err());
         
         // Duplicate terms should fail
         let duplicate_triad = TriadBuilder::new()
-            .name("Duplicate".to_string())
-            .terms("Same".to_string(), "Same".to_string(), "Different".to_string())
+            .name("Duplicate")
+            .terms("Same", "Same", "Different")
             .build();
         assert!(duplicate_triad.is_err());
     }
@@ -361,8 +328,8 @@ mod tests {
     #[test]
     fn test_triad_terms_method() {
         let triad = TriadBuilder::new()
-            .name("Test".to_string())
-            .terms("One".to_string(), "Two".to_string(), "Three".to_string())
+            .name("Test")
+            .terms("One", "Two", "Three")
             .build()
             .unwrap();
         
@@ -376,8 +343,8 @@ mod tests {
     #[test]
     fn test_trait_compliance() {
         let triad = TriadBuilder::new()
-            .name("Test".to_string())
-            .terms("A".to_string(), "B".to_string(), "C".to_string())
+            .name("Test")
+            .terms("A", "B", "C")
             .build()
             .unwrap();
         
