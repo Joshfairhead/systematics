@@ -4,86 +4,188 @@
 //! 
 //! This library provides a clean API for working with systematic structures from monad (1 term) 
 //! to dodecad (12 terms), plus permutation generation.
+//!
+//! ## Quick Start
+//! 
+//! ```rust
+//! use systematics_api::{SystematicsApi, SystematicStructure};
+//! 
+//! let api = SystematicsApi::new();
+//! let monad = api.create_monad()
+//!     .name("Unity")
+//!     .term("Absolute")
+//!     .build()?;
+//!     
+//! println!("Created: {}", monad.name());
+//! monad.validate()?;
+//! ```
+
+// =============================================================================
+// Module Declarations
+// =============================================================================
 
 pub mod error;
 pub mod structures;
 pub mod schemas;
-pub mod builder;
 pub mod permutations;
 
-// Re-export key types
+// =============================================================================
+// Public Re-exports
+// =============================================================================
+
 pub use error::{SystematicsError, Result};
 pub use structures::*;
 pub use schemas::{Schema, SchemaProvider};
-pub use builder::StructureBuilder;
 pub use permutations::{Permutation, PermutationSet};
 
-/// Core trait for all systematic structures
+// =============================================================================
+// Core Traits
+// =============================================================================
+
+/// Core trait that all systematic structures must implement
+/// 
+/// This trait provides a unified interface for working with any systematic structure,
+/// regardless of its complexity (monad to dodecad). It ensures consistent behavior
+/// across all structure types.
 pub trait SystematicStructure {
-    /// The number of terms in this structure
-    const TERM_COUNT: usize;
+    // -------------------------------------------------------------------------
+    // Core Identity & Structure
+    // -------------------------------------------------------------------------
     
-    /// Get the structure's unique identifier
+    /// Unique identifier for this structure instance: Used for database storage, DHT addressing, or other unique identification needs.
     fn id(&self) -> &str;
     
-    /// Get the structure's name/title
+    /// Human-readable name for this structure
     fn name(&self) -> &str;
     
-    /// Get all terms in the structure
-    fn terms(&self) -> &[String];
+    /// The number of terms in this structure type
+    const TERM_COUNT: usize;
+    
+    // -------------------------------------------------------------------------
+    // Content Access
+    // -------------------------------------------------------------------------
+    
+    /// Get semantic coordinates/positions for this structure
+    /// Returns the coordinate indices (0, 1, 2, etc.) that map to term positions.
+    fn semantic_coordinates(&self) -> Vec<usize> {
+        (0..Self::TERM_COUNT).collect()
+    }
+    
+    /// Get canonical term labels from the schema file
+    /// For a monad: `["Unity"]`, for a dyad: `["Essence", "Existence"]`.
+    fn canonical_terms(&self) -> Vec<String>;
+    
+    /// Get current user-provided term values for each position
+    fn user_terms(&self) -> &[String];
+    
+    // -------------------------------------------------------------------------
+    // Schema & Structure
+    // -------------------------------------------------------------------------
     
     /// Get the schema used for this structure
     fn schema(&self) -> &dyn Schema;
     
+    // -------------------------------------------------------------------------
+    // Validation & Integrity
+    // -------------------------------------------------------------------------
+    
     /// Validate the structure's internal consistency
+    /// Checks that all terms are valid, relationships are consistent,
+    /// and the structure follows Bennett's systematic principles.
     fn validate(&self) -> Result<()>;
     
-    /// Export to JSON representation
+    // -------------------------------------------------------------------------
+    // Display & Output
+    // -------------------------------------------------------------------------
+    
+    /// Display structure details in a human-readable format
+    fn display(&self);
+    
+    // -------------------------------------------------------------------------
+    // Serialization (Optional Feature)
+    // -------------------------------------------------------------------------
+    
+    /// Export structure to JSON representation
     #[cfg(feature = "serde_support")]
     fn to_json(&self) -> Result<String>;
     
-    /// Import from JSON representation
+    /// Import structure from JSON representation  
     #[cfg(feature = "serde_support")]
     fn from_json(json: &str) -> Result<Self> where Self: Sized;
 }
 
-/// Builder pattern for creating structures
-pub struct SystematicsBuilder;
+// =============================================================================
+// Main API Entry Point
+// =============================================================================
 
-impl SystematicsBuilder {
-    pub fn new() -> Self {
-        Self
-    }
-    
-    pub fn monad(&self) -> structures::monad::MonadBuilder {
-        structures::monad::MonadBuilder::new()
-    }
-    
-    pub fn dyad(&self) -> structures::dyad::DyadBuilder {
-        structures::dyad::DyadBuilder::new()
-    }
-    
-    pub fn triad(&self) -> structures::triad::TriadBuilder {
-        structures::triad::TriadBuilder::new()
-    }
-    
-    // ... additional structure builders
-}
-
-/// Main API entry point
+/// Main API entry point for creating and managing systematic structures 
 pub struct SystematicsApi {
-    // Future: could hold configuration, database connections, etc.
+    // Future expansion: configuration, database connections, caching, etc.
 }
 
 impl SystematicsApi {
+    /// Create a new API instance
     pub fn new() -> Self {
         Self {}
     }
     
-    pub fn builder(&self) -> SystematicsBuilder {
-        SystematicsBuilder::new()
+    // -------------------------------------------------------------------------
+    // Structure Creation Methods
+    // -------------------------------------------------------------------------
+    
+    /// Create a new monad structure
+    pub fn create_monad(&self) -> structures::monad::MonadBuilder {
+        structures::monad::MonadBuilder::new()
     }
     
+    /// Create a new dyad structure  
+    pub fn create_dyad(&self) -> structures::dyad::DyadBuilder {
+        structures::dyad::DyadBuilder::new()
+    }
+    
+    /// Create a new triad structure
+    pub fn create_triad(&self) -> structures::triad::TriadBuilder {
+        structures::triad::TriadBuilder::new()
+    }
+    
+    /// Create a new tetrad structure
+    pub fn create_tetrad(&self) -> structures::tetrad::TetradBuilder {
+        structures::tetrad::TetradBuilder::new()
+    }
+    
+    /// Create a new pentad structure
+    pub fn create_pentad(&self) -> structures::pentad::PentadBuilder {
+        structures::pentad::PentadBuilder::new()
+    }
+    
+    /// Create a new hexad structure
+    pub fn create_hexad(&self) -> structures::hexad::HexadBuilder {
+        structures::hexad::HexadBuilder::new()
+    }
+    
+    /// Create a new heptad structure
+    pub fn create_heptad(&self) -> structures::heptad::HeptadBuilder {
+        structures::heptad::HeptadBuilder::new()
+    }
+    
+    /// Create a new octad structure
+    pub fn create_octad(&self) -> structures::octad::OctadBuilder {
+        structures::octad::OctadBuilder::new()
+    }
+    
+    /// Create a new dodecad structure
+    pub fn create_dodecad(&self) -> structures::dodecad::DodecadBuilder {
+        structures::dodecad::DodecadBuilder::new()
+    }
+    
+    // -------------------------------------------------------------------------
+    // Permutation Utilities
+    // -------------------------------------------------------------------------
+    
+    /// Generate all six permutations for three terms
+    /// 
+    /// Creates the six fundamental permutation patterns (Expansion, Interaction,
+    /// Order, Concentration, Identity, Freedom) for any three terms.
     pub fn permutations<T: Clone>(&self, terms: [T; 3]) -> PermutationSet<T> {
         PermutationSet::new(terms)
     }

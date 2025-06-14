@@ -1,0 +1,294 @@
+use std::collections::HashMap;
+use uuid::Uuid;
+use crate::{SystematicStructure, schemas::{Schema, HexadSchema}, error::{Result, SystematicsError}};
+
+/// Hexad: Six-term systematic structure representing hexadic relationships
+/// 
+/// Based on Bennett's systematic structures, the hexad represents six-fold
+/// relationships with canonical terms: Resources, Values, Options, Criteria, Facts, Priorities
+#[derive(Debug, Clone)]
+pub struct Hexad {
+    // Unique identifier for this structure instance
+    id: String,
+    
+    // User-defined name for this structure
+    name: String,
+    
+    // User's terms for each index position (hexad has 6 term indices)
+    user_term_index: [String; 6],
+    
+    // User-defined attributes
+    attributes: Vec<String>,
+    
+    // Connective relationships between terms (from_index, to_index) -> relationship
+    connectives: HashMap<(usize, usize), String>,
+    
+    // Schema reference
+    schema: HexadSchema,
+}
+
+impl Hexad {
+    /// Create a new hexad with default empty terms
+    pub fn new(name: String) -> Self {
+        let connectives = HashMap::new();
+        
+        Self {
+            id: Uuid::new_v4().to_string(),
+            name,
+            user_term_index: [String::new(), String::new(), String::new(), String::new(), String::new(), String::new()],
+            attributes: Vec::new(),
+            connectives,
+            schema: HexadSchema,
+        }
+    }
+    
+    /// Get term by index (0-5)
+    pub fn get_term(&self, index: usize) -> Option<&str> {
+        self.user_term_index.get(index).map(|s| s.as_str())
+    }
+    
+    /// Get all terms as a tuple
+    pub fn terms_tuple(&self) -> (&str, &str, &str, &str, &str, &str) {
+        (&self.user_term_index[0], &self.user_term_index[1], &self.user_term_index[2], 
+         &self.user_term_index[3], &self.user_term_index[4], &self.user_term_index[5])
+    }
+    
+    /// Add an attribute to the hexad
+    pub fn add_attribute(&mut self, attribute: String) {
+        if !self.attributes.contains(&attribute) {
+            self.attributes.push(attribute);
+        }
+    }
+    
+    /// Remove an attribute from the hexad
+    pub fn remove_attribute(&mut self, attribute: &str) {
+        self.attributes.retain(|attr| attr != attribute);
+    }
+    
+    /// Get attributes
+    pub fn attributes(&self) -> &[String] {
+        &self.attributes
+    }
+    
+    /// Get connective relationship between two terms
+    pub fn get_connective(&self, from_index: usize, to_index: usize) -> Option<&String> {
+        self.connectives.get(&(from_index, to_index))
+    }
+    
+    /// Set connective relationship between two terms
+    pub fn set_connective(&mut self, from_index: usize, to_index: usize, relationship: String) {
+        if from_index < 6 && to_index < 6 && from_index != to_index {
+            self.connectives.insert((from_index, to_index), relationship);
+        }
+    }
+    
+    /// Get all connectives
+    pub fn connectives(&self) -> &HashMap<(usize, usize), String> {
+        &self.connectives
+    }
+}
+
+impl SystematicStructure for Hexad {
+    const TERM_COUNT: usize = 6;
+    
+    fn id(&self) -> &str {
+        &self.id
+    }
+    
+    fn name(&self) -> &str {
+        &self.name
+    }
+    
+    fn canonical_terms(&self) -> Vec<String> {
+        self.schema.canonical_terms().iter().map(|s| s.to_string()).collect()
+    }
+    
+    fn user_terms(&self) -> &[String] {
+        &self.user_term_index
+    }
+    
+    fn schema(&self) -> &dyn Schema {
+        &self.schema
+    }
+    
+    fn validate(&self) -> Result<()> {
+        // Validate name is not empty
+        if self.name.trim().is_empty() {
+            return Err(SystematicsError::StructureValidation {
+                reason: "Hexad name cannot be empty".to_string(),
+            });
+        }
+        
+        // Validate all six terms are not empty
+        let term_names = ["Resources", "Values", "Options", "Criteria", "Facts", "Priorities"];
+        for (i, term) in self.user_term_index.iter().enumerate() {
+            if term.trim().is_empty() {
+                return Err(SystematicsError::StructureValidation {
+                    reason: format!("Term {} ({}) cannot be empty", i + 1, term_names[i]),
+                });
+            }
+        }
+        
+        // Validate term lengths
+        for (i, term) in self.user_term_index.iter().enumerate() {
+            if term.len() > 100 {
+                return Err(SystematicsError::StructureValidation {
+                    reason: format!("Term {} is too long (max 100 characters)", i + 1),
+                });
+            }
+        }
+        
+        // Validate terms contain only allowed characters
+        for (i, term) in self.user_term_index.iter().enumerate() {
+            if !term.chars().all(|c| c.is_alphanumeric() || c.is_whitespace() || ".,!?'-()".contains(c)) {
+                return Err(SystematicsError::StructureValidation {
+                    reason: format!("Term {} contains invalid characters", i + 1),
+                });
+            }
+        }
+        
+        // Validate terms are all different
+        for i in 0..6 {
+            for j in (i + 1)..6 {
+                if self.user_term_index[i].trim().to_lowercase() == self.user_term_index[j].trim().to_lowercase() {
+                    return Err(SystematicsError::StructureValidation {
+                        reason: format!("Terms {} and {} should be different to represent distinct aspects", i + 1, j + 1),
+                    });
+                }
+            }
+        }
+        
+        Ok(())
+    }
+    
+    fn display(&self) {
+        println!("=== {} ===", self.name);
+        println!("Type: Hexad ({} terms)", Self::TERM_COUNT);
+        println!("Terms: {} → {} → {} → {} → {} → {}", 
+                 self.user_term_index[0], self.user_term_index[1], self.user_term_index[2],
+                 self.user_term_index[3], self.user_term_index[4], self.user_term_index[5]);
+        
+        if !self.attributes.is_empty() {
+            println!("Attributes: {}", self.attributes.join(", "));
+        }
+        
+        if !self.connectives.is_empty() {
+            println!("Connectives:");
+            for ((from, to), relationship) in &self.connectives {
+                println!("  {} → {}: {}", 
+                    self.user_term_index[*from], 
+                    self.user_term_index[*to], 
+                    relationship);
+            }
+        }
+    }
+}
+
+/// Builder for creating Hexad instances
+pub struct HexadBuilder {
+    name: String,
+    terms: [String; 6],
+    attributes: Vec<String>,
+    connectives: Option<HashMap<(usize, usize), String>>,
+}
+
+impl HexadBuilder {
+    pub fn new() -> Self {
+        Self {
+            name: String::new(),
+            terms: [String::new(), String::new(), String::new(), String::new(), String::new(), String::new()],
+            attributes: Vec::new(),
+            connectives: None,
+        }
+    }
+    
+    pub fn name(mut self, name: String) -> Self {
+        self.name = name;
+        self
+    }
+    
+    pub fn terms(mut self, t1: String, t2: String, t3: String, t4: String, t5: String, t6: String) -> Self {
+        self.terms = [t1, t2, t3, t4, t5, t6];
+        self
+    }
+    
+    pub fn attributes(mut self, attributes: Vec<String>) -> Self {
+        self.attributes = attributes;
+        self
+    }
+    
+    pub fn connectives(mut self, connectives: HashMap<(usize, usize), String>) -> Self {
+        self.connectives = Some(connectives);
+        self
+    }
+    
+    pub fn build(self) -> Result<Hexad> {
+        let hexad = Hexad {
+            id: Uuid::new_v4().to_string(),
+            name: self.name,
+            user_term_index: self.terms,
+            attributes: self.attributes,
+            connectives: self.connectives.unwrap_or_else(HashMap::new),
+            schema: HexadSchema,
+        };
+        
+        // Validate the built hexad
+        hexad.validate()?;
+        
+        Ok(hexad)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_hexad_creation() {
+        let hexad = HexadBuilder::new()
+            .name("Test Hexad".to_string())
+            .terms(
+                "Resource1".to_string(), "Value1".to_string(), "Option1".to_string(),
+                "Criteria1".to_string(), "Fact1".to_string(), "Priority1".to_string()
+            )
+            .build()
+            .unwrap();
+        
+        assert_eq!(hexad.name(), "Test Hexad");
+        assert_eq!(hexad.get_term(0), Some("Resource1"));
+        assert_eq!(hexad.get_term(5), Some("Priority1"));
+    }
+
+    #[test]
+    fn test_canonical_terms() {
+        let hexad = HexadBuilder::new()
+            .name("Test".to_string())
+            .terms("A".to_string(), "B".to_string(), "C".to_string(), "D".to_string(), "E".to_string(), "F".to_string())
+            .build()
+            .unwrap();
+        
+        let canonical = hexad.canonical_terms();
+        assert_eq!(canonical.len(), 6);
+        assert_eq!(canonical[0], "Resources");
+        assert_eq!(canonical[1], "Values");
+        assert_eq!(canonical[2], "Options");
+        assert_eq!(canonical[3], "Criteria");
+        assert_eq!(canonical[4], "Facts");
+        assert_eq!(canonical[5], "Priorities");
+    }
+
+    #[test]
+    fn test_trait_compliance() {
+        let hexad = HexadBuilder::new()
+            .name("Test".to_string())
+            .terms("A".to_string(), "B".to_string(), "C".to_string(), "D".to_string(), "E".to_string(), "F".to_string())
+            .build()
+            .unwrap();
+        
+        assert_eq!(Hexad::TERM_COUNT, 6);
+        assert!(!hexad.id().is_empty());
+        assert_eq!(hexad.name(), "Test");
+        assert_eq!(hexad.user_terms().len(), 6);
+        assert!(hexad.validate().is_ok());
+    }
+} 
