@@ -57,7 +57,21 @@ SysteMaster/
 │   │   │   ├── octad.rs                 # Octad implementation ✅
 │   │   │   ├── dodecad.rs               # Dodecad implementation ✅
 │   │   │   └── mod.rs                   # Structure exports
-│   │   ├── schemas.rs                   # Bennett's authentic schemas with connectives ✅
+│   │   ├── schemas/                     # 🔄 Modular schema architecture ✅
+│   │   │   ├── mod.rs                   # Core schema traits and re-exports
+│   │   │   ├── canonical/               # Bennett's canonical schemas
+│   │   │   │   ├── mod.rs               # Schema module exports
+│   │   │   │   ├── monad.rs             # MonadSchema implementation
+│   │   │   │   ├── dyad.rs              # DyadSchema implementation
+│   │   │   │   ├── triad.rs             # TriadSchema implementation
+│   │   │   │   ├── tetrad.rs            # TetradSchema implementation
+│   │   │   │   ├── pentad.rs            # PentadSchema implementation
+│   │   │   │   ├── hexad.rs             # HexadSchema implementation
+│   │   │   │   ├── heptad.rs            # HeptadSchema implementation
+│   │   │   │   ├── octad.rs             # OctadSchema implementation
+│   │   │   │   └── dodecad.rs           # DodecadSchema implementation
+│   │   │   └── providers/               # Schema provider implementations
+│   │   │       └── mod.rs               # BennettSchemas provider
 │   │   ├── error.rs                     # Comprehensive error handling ✅
 │   │   └── permutations.rs              # Six-fold permutation patterns ✅
 │   ├── Cargo.toml                       # API package configuration
@@ -144,7 +158,8 @@ Choose 'P' from the main menu to access the permutations generator:
 
 ### Testing
 ```bash
-cargo test --package systematics-cli     # Run all CLI tests (48 tests)
+cargo test --package systematics-api      # Run all API tests (49 tests)
+cargo test --package systematics-cli     # Run all CLI tests  
 cargo test structure1_monad              # Run monad-specific tests
 cargo test structure2_dyad               # Run dyad-specific tests
 cargo test permutations                  # Run permutations-specific tests
@@ -154,19 +169,22 @@ cargo test permutations                  # Run permutations-specific tests
 ## Development Status
 
 ### 🎯 **Recent Major Achievements**
-- ✅ **Complete Schema-Based Refactor**: All structures now use unified schema architecture
+- ✅ **Modular Schema Architecture**: Refactored monolithic `schemas.rs` (332 lines) into clean modular structure
+- ✅ **Complete Bidirectional Mapping API**: 8-method bidirectional API across all structures (Tetrad-Dodecad)
 - ✅ **Enhanced Monad System**: Unlimited custom attributes with streamlined input flow
 - ✅ **Reorganized Codebase**: Numerical organization with clear structure naming
-- ✅ **Fixed All Tests**: 44/44 tests passing with comprehensive coverage
+- ✅ **All Tests Passing**: 49/49 tests passing with comprehensive coverage
 - ✅ **Schema-Aware Connectives**: Meaningful relationship labels throughout
 
 ### 🔧 **Current Capabilities**
 1. **Complete CLI Implementation**: All systematic structures (1-12 terms) fully functional
 2. **✅ Complete API Library**: Type-safe Rust library with builder pattern and comprehensive error handling
-3. **Authentic Bennett Schemas**: Proper canonical terminology and relationships with 100+ connectives
-4. **Robust Architecture**: Unified schema-based design patterns across CLI and API
-5. **Comprehensive Testing**: 45+ tests passing across all API structures
-6. **User-Friendly Interface**: Intuitive prompts with canonical defaults
+3. **🧩 Modular Schema System**: Clean separation of canonical schemas, providers, and core traits
+4. **🔄 Bidirectional Mapping API**: Position ↔ Term navigation across all structures (49 methods total)
+5. **Authentic Bennett Schemas**: Proper canonical terminology and relationships with 100+ connectives
+6. **Robust Architecture**: Unified schema-based design patterns across CLI and API
+7. **Comprehensive Testing**: 49 tests passing across all API structures
+8. **User-Friendly Interface**: Intuitive prompts with canonical defaults
 
 ### 🌐 **Future Development Roadmap**
 
@@ -177,29 +195,31 @@ cargo test permutations                  # Run permutations-specific tests
 4. ✅ **Error Handling**: Proper error types with `thiserror` integration
 5. ✅ **Feature Flags**: Modular design ready for optional features
 6. ✅ **API Documentation**: Comprehensive rustdoc with examples in lib.rs
-7. 🚧 **Position Descriptions**: Add position descriptions and rename function to indicate if the positions are terms, sources, influences etc.
-8. 🚧 **Semantic Alignment**: Align semantic positionality between numbers and terms. Once aligned remove number from CLI output
+7. ✅ **Modular Schema Architecture**: Broke monolithic `schemas.rs` into clean directory structure
+8. ✅ **Complete Bidirectional Mapping**: 8-method API for position ↔ term navigation across all structures
+9. 🚧 **Position Descriptions**: Add position descriptions and rename function to indicate if the positions are terms, sources, influences etc.
+10. 🚧 **Semantic Alignment**: Align semantic positionality between numbers and terms. Once aligned remove number from CLI output
 
 #### **Phase 2: CLI Modernization**
 
 #### **Phase 2: Core Enhancements**
-7. **Missing Structures**: Implement Enneagram (9), Decad (10), Hendecad (11)
-8. **Additional Schemas**: Multiple schema options per structure type
-9. **Alternative Schemas**: Create alternative schemas beyond Bennett's canonical ones
-10. **Export/Import**: Save and load structures to/from files (JSON/YAML)
-11. **Enhanced Validation**: More sophisticated input validation and error handling
+11. **Missing Structures**: Implement Enneagram (9), Decad (10), Hendecad (11)
+12. **Additional Schemas**: Multiple schema options per structure type
+13. **Alternative Schemas**: Create alternative schemas beyond Bennett's canonical ones (now easy with modular structure)
+14. **Export/Import**: Save and load structures to/from files (JSON/YAML)
+15. **Enhanced Validation**: More sophisticated input validation and error handling
 
 #### **Phase 3: Advanced Features**
-11. **Database Integration**: Persistent storage for created structures
-12. **Relationship Mapping**: Advanced connective relationship analysis
-13. **Structure Comparison**: Compare different instances of same structure type
-14. **Batch Operations**: Create multiple structures from templates
+16. **Database Integration**: Persistent storage for created structures
+17. **Relationship Mapping**: Advanced connective relationship analysis
+18. **Structure Comparison**: Compare different instances of same structure type
+19. **Batch Operations**: Create multiple structures from templates
 
 #### **Phase 4: Web Interface**
-15. **Frontend Revival**: Modern web interface using the existing Yew foundation
-16. **Interactive Creation**: Browser-based structure creation and editing
-17. **Visualization**: Graphical representation of structures and relationships
-18. **Collaborative Features**: Multi-user editing and sharing capabilities
+20. **Frontend Revival**: Modern web interface using the existing Yew foundation
+21. **Interactive Creation**: Browser-based structure creation and editing
+22. **Visualization**: Graphical representation of structures and relationships
+23. **Collaborative Features**: Multi-user editing and sharing capabilities
 
 ## Systematic Structures
 
@@ -223,12 +243,14 @@ cargo test permutations                  # Run permutations-specific tests
 ### Development Setup
 1. Install Rust: https://rustup.rs/
 2. Clone the repository
-3. Run `cargo test --package systematics-cli` to ensure everything works (should see 48 tests pass)
-4. Run `cargo run --bin systematics` to test the CLI interface
+3. Run `cargo test --package systematics-api` to ensure API works (should see 49 tests pass)
+4. Run `cargo test --package systematics-cli` to ensure CLI works
+5. Run `cargo run --bin systematics` to test the CLI interface
 
 ### Code Quality Standards
-- **Schema-Based Design**: All new structures must use the unified schema architecture
+- **Modular Schema Design**: All schemas organized in `api/src/schemas/canonical/` directory structure
 - **Bennett's Terminology**: Use authentic canonical terms and relationships
+- **Bidirectional API Compliance**: New structures must implement full 8-method bidirectional mapping API
 - **Comprehensive Testing**: All new features must include thorough test coverage
 - **Input Validation**: Robust validation with clear, actionable error messages
 - **Documentation**: Clear comments and documentation for all public APIs
@@ -237,34 +259,47 @@ cargo test permutations                  # Run permutations-specific tests
 - Unit tests for individual functions and methods
 - Integration tests for schema and structure interactions
 - Test both successful operations and error conditions
-- Maintain current test coverage standards (48+ tests)
+- Maintain current test coverage standards (49+ API tests)
+- Test bidirectional mapping methods and aliases
 - Test schema-aware connective generation
 
 ## Architecture
 
 ### Design Principles
-1. **Schema-Based Architecture**: Unified design using StructureSchema trait
-2. **Authentic Implementation**: Bennett's canonical terms and relationships
-3. **Robust Validation**: Comprehensive input validation with clear feedback
-4. **Modular Design**: Clear separation between structures and schemas
-5. **User Experience**: Intuitive CLI with helpful prompts and canonical defaults
-6. **Comprehensive Testing**: High test coverage ensuring reliability
+1. **Modular Schema Architecture**: Clean separation of canonical schemas, providers, and core traits
+2. **Bidirectional Navigation**: Complete position ↔ term mapping across all systematic structures
+3. **Authentic Implementation**: Bennett's canonical terms and relationships
+4. **Robust Validation**: Comprehensive input validation with clear feedback
+5. **Extensible Design**: Easy addition of alternative schemas and providers
+6. **User Experience**: Intuitive CLI with helpful prompts and canonical defaults
+7. **Comprehensive Testing**: High test coverage ensuring reliability
 
 ### Technical Highlights
-- **Unified Schema System**: StructureSchema trait provides consistent interface
+- **🧩 Modular Schema System**: Clean directory structure (`api/src/schemas/canonical/`, `providers/`)
+- **🔄 Complete Bidirectional Mapping**: 8-method API for position ↔ term navigation (49 total methods)
 - **Schema-Aware Connectives**: Meaningful relationship labels (e.g., "Autocracy <> Domination")
 - **Enhanced Monad System**: Unlimited custom attributes with streamlined input
+- **Extensible Architecture**: Easy addition of alternative schemas and custom providers
 - **Numerical Organization**: Clear structure naming (structure1_monad, structure2_dyad, etc.)
 - **Clean Rust Architecture**: Leverages Rust's type system for safety and performance
 - **Interactive CLI**: User-friendly command-line interface with validation loops
 - **Named Permutations**: Semantic labeling of permutation patterns
 - **Canonical Defaults**: Press Enter to use authentic Bennett terminology
-- **Test-Driven Development**: Comprehensive test suite ensures reliability
+- **Test-Driven Development**: Comprehensive test suite ensures reliability (49 API tests)
 
 ### Schema Architecture
-Each systematic structure is supported by:
-- **Schema Definition**: Canonical terms and relationships
-- **Interactive Selection**: Automatic schema application
-- **Connective Generation**: Schema-aware relationship labels
-- **Position Descriptions**: Detailed explanations for each term position
-- **Attribute Descriptions**: Core characteristics of each structure type
+The modular schema system provides:
+- **🏗️ Canonical Schema Directory**: Individual files for each systematic structure (`monad.rs` through `dodecad.rs`)
+- **🔄 Bidirectional Mapping**: Complete position ↔ term navigation with aliases
+- **🏢 Schema Providers**: Extensible provider system for different schema sets
+- **⚡ Interactive Selection**: Automatic schema application
+- **🔗 Connective Generation**: Schema-aware relationship labels
+- **📍 Position Descriptions**: Detailed explanations for each term position
+- **🎯 Attribute Descriptions**: Core characteristics of each structure type
+
+**Modular Benefits:**
+- **Maintainability**: Each schema in separate file for easy editing
+- **Extensibility**: Future schema variants can be added as new directories
+- **Clarity**: Individual schema files focus on single concern
+- **Collaboration**: Multiple developers can work on different schemas simultaneously
+- **Versioning**: Individual schema changes tracked separately
