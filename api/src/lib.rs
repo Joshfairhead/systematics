@@ -38,7 +38,7 @@ pub mod permutations;
 
 pub use error::{SystematicsError, Result};
 pub use structures::*;
-pub use schemas::{Schema, SchemaProvider};
+pub use schemas::{Schema, SchemaProvider, BennettSchemas};
 pub use permutations::{Permutation, PermutationSet};
 
 // =============================================================================
