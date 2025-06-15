@@ -10,14 +10,17 @@
 //! ```rust
 //! use systematics_api::{SystematicsApi, SystematicStructure};
 //! 
-//! let api = SystematicsApi::new();
-//! let monad = api.create_monad()
-//!     .name("Unity")
-//!     .term("Absolute")
-//!     .build()?;
-//!     
-//! println!("Created: {}", monad.name());
-//! monad.validate()?;
+//! fn main() -> Result<(), Box<dyn std::error::Error>> {
+//!     let api = SystematicsApi::new();
+//!     let monad = api.create_monad()
+//!         .name("Unity")
+//!         .term("Absolute")
+//!         .build()?;
+//!         
+//!     println!("Created: {}", monad.name());
+//!     monad.validate()?;
+//!     Ok(())
+//! }
 //! ```
 
 // =============================================================================

@@ -40,21 +40,17 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let dyad = api.create_dyad()
         .name("My First Dyad")
         .terms("Spirit", "Matter")
-        .attribute("fundamental")
-        .attribute("complementary")
         .build()?;
     
     // Display the dyad
     println!("✓ Created: {}", dyad.name());
-    println!("  Terms: {} ↔ {}", dyad.first_term(), dyad.second_term());
+    println!("  Terms: {} ↔ {}", dyad.first_instance(), dyad.second_instance());
     
     if let Some(connective) = dyad.connective() {
-        println!("  Relationship: {} {} {}", dyad.first_term(), connective, dyad.second_term());
+        println!("  Relationship: {} {} {}", dyad.first_instance(), connective, dyad.second_instance());
     }
     
-    if !dyad.attributes().is_empty() {
-        println!("  Attributes: {}", dyad.attributes().join(", "));
-    }
+
     
     println!("  Schema: {}", dyad.schema().name());
     println!("  ID: {}", &dyad.id()[..8]);
@@ -72,27 +68,24 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let triad = api.create_triad()
         .name("My First Triad".to_string())
         .terms("Will".to_string(), "Function".to_string(), "Being".to_string())
-        .attributes(vec!["dynamic".to_string(), "triadic".to_string()])
         .build()?;
     
     // Display the triad
     println!("✓ Created: {}", triad.name());
-    println!("  Terms: {} → {} → {}", triad.first_term(), triad.second_term(), triad.third_term());
+    println!("  Terms: {} → {} → {}", triad.first_instance(), triad.second_instance(), triad.third_instance());
     
     // Show relationships
     if let Some(rel1) = triad.get_connective(0, 1) {
-        println!("  Relationship: {} {} {}", triad.first_term(), rel1, triad.second_term());
+        println!("  Relationship: {} {} {}", triad.first_instance(), rel1, triad.second_instance());
     }
     if let Some(rel2) = triad.get_connective(1, 2) {
-        println!("               {} {} {}", triad.second_term(), rel2, triad.third_term());
+        println!("               {} {} {}", triad.second_instance(), rel2, triad.third_instance());
     }
     if let Some(rel3) = triad.get_connective(2, 0) {
-        println!("               {} {} {}", triad.third_term(), rel3, triad.first_term());
+        println!("               {} {} {}", triad.third_instance(), rel3, triad.first_instance());
     }
     
-    if !triad.attributes().is_empty() {
-        println!("  Attributes: {}", triad.attributes().join(", "));
-    }
+
     
     println!("  Schema: {}", triad.schema().name());
     println!("  ID: {}", &triad.id()[..8]);
@@ -110,7 +103,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let tetrad = api.create_tetrad()
         .name("My First Tetrad".to_string())
         .terms("Foundation".to_string(), "Vision".to_string(), "Method".to_string(), "Guidance".to_string())
-        .attributes(vec!["foundational".to_string(), "systematic".to_string()])
         .build()?;
     
     // Display the tetrad
@@ -118,9 +110,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("  Terms: {} → {} → {} → {}", 
              tetrad.first_term(), tetrad.second_term(), tetrad.third_term(), tetrad.fourth_term());
     
-    if !tetrad.attributes().is_empty() {
-        println!("  Attributes: {}", tetrad.attributes().join(", "));
-    }
+
     
     println!("  Schema: {}", tetrad.schema().name());
     println!("  ID: {}", &tetrad.id()[..8]);

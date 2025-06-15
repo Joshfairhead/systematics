@@ -81,6 +81,61 @@ impl Tetrad {
     pub fn connectives(&self) -> &HashMap<(usize, usize), String> {
         &self.connectives
     }
+    
+    /// Get the number of positional coordinates in this structure
+    pub fn position_count(&self) -> usize {
+        4
+    }
+    
+    /// Map a canonical term to its positional coordinate
+    /// Returns the 0-based index for the given canonical term
+    pub fn canonical_term_to_position(&self, canonical_term: &str) -> Option<usize> {
+        let canonical_terms = self.schema.canonical_terms();
+        canonical_terms.iter().position(|&term| term == canonical_term)
+    }
+    
+    /// Map a positional coordinate to its canonical term
+    /// Returns the canonical term for the given 0-based position index
+    pub fn canonical_term_from_position(&self, position: usize) -> Option<&str> {
+        let canonical_terms = self.schema.canonical_terms();
+        canonical_terms.get(position).copied()
+    }
+    
+    /// Map a user instance to its positional coordinate
+    /// Returns the 0-based index for the given user instance
+    pub fn instance_to_position(&self, instance: &str) -> Option<usize> {
+        self.user_term_index.iter().position(|inst| inst == instance)
+    }
+    
+    /// Map a positional coordinate to its user instance
+    /// Returns the user instance for the given 0-based position index
+    pub fn instance_from_position(&self, position: usize) -> Option<&str> {
+        self.user_term_index.get(position).map(|s| s.as_str())
+    }
+    
+    /// Map a position to its canonical term (alias for canonical_term_from_position)
+    /// Returns the canonical term for the given 0-based position index
+    pub fn position_to_canonical_term(&self, position: usize) -> Option<&str> {
+        self.canonical_term_from_position(position)
+    }
+    
+    /// Map a canonical term to its position (alias for canonical_term_to_position)
+    /// Returns the 0-based index for the given canonical term
+    pub fn position_from_canonical_term(&self, canonical_term: &str) -> Option<usize> {
+        self.canonical_term_to_position(canonical_term)
+    }
+    
+    /// Map a position to its user term (alias for instance_from_position)
+    /// Returns the user instance for the given 0-based position index
+    pub fn position_to_user_term(&self, position: usize) -> Option<&str> {
+        self.instance_from_position(position)
+    }
+    
+    /// Map a user term to its position (alias for instance_to_position)
+    /// Returns the 0-based index for the given user instance
+    pub fn position_from_user_term(&self, user_term: &str) -> Option<usize> {
+        self.instance_to_position(user_term)
+    }
 }
 
 impl SystematicStructure for Tetrad {
@@ -381,5 +436,86 @@ mod tests {
         assert!(!tetrad.id().is_empty());
         assert_eq!(tetrad.name(), "Test");
         assert!(tetrad.validate().is_ok());
+    }
+    
+    #[test]
+    fn test_positional_coordinate_mapping() {
+        let tetrad = TetradBuilder::new()
+            .name("Test")
+            .terms("MyGround", "MyIdeal", "MyInstrumental", "MyDirective")
+            .build()
+            .unwrap();
+        
+        // Test canonical term to position mapping
+        assert_eq!(tetrad.canonical_term_to_position("Ground"), Some(0));
+        assert_eq!(tetrad.canonical_term_to_position("Ideal"), Some(1));
+        assert_eq!(tetrad.canonical_term_to_position("Instrumental"), Some(2));
+        assert_eq!(tetrad.canonical_term_to_position("Directive"), Some(3));
+        assert_eq!(tetrad.canonical_term_to_position("Invalid"), None);
+        
+        // Test position to canonical term mapping
+        assert_eq!(tetrad.canonical_term_from_position(0), Some("Ground"));
+        assert_eq!(tetrad.canonical_term_from_position(1), Some("Ideal"));
+        assert_eq!(tetrad.canonical_term_from_position(2), Some("Instrumental"));
+        assert_eq!(tetrad.canonical_term_from_position(3), Some("Directive"));
+        assert_eq!(tetrad.canonical_term_from_position(4), None);
+        
+        // Test position count
+        assert_eq!(tetrad.position_count(), 4);
+        
+        // Test user instance to position mapping
+        assert_eq!(tetrad.instance_to_position("MyGround"), Some(0));
+        assert_eq!(tetrad.instance_to_position("MyIdeal"), Some(1));
+        assert_eq!(tetrad.instance_to_position("MyInstrumental"), Some(2));
+        assert_eq!(tetrad.instance_to_position("MyDirective"), Some(3));
+        assert_eq!(tetrad.instance_to_position("Invalid"), None);
+        
+        // Test position to user instance mapping
+        assert_eq!(tetrad.instance_from_position(0), Some("MyGround"));
+        assert_eq!(tetrad.instance_from_position(1), Some("MyIdeal"));
+        assert_eq!(tetrad.instance_from_position(2), Some("MyInstrumental"));
+        assert_eq!(tetrad.instance_from_position(3), Some("MyDirective"));
+        assert_eq!(tetrad.instance_from_position(4), None);
+    }
+    
+    #[test]
+    fn test_position_alias_methods() {
+        let tetrad = TetradBuilder::new()
+            .name("Test")
+            .terms("MyGround", "MyIdeal", "MyInstrumental", "MyDirective")
+            .build()
+            .unwrap();
+        
+        // Test canonical term position aliases
+        assert_eq!(tetrad.position_to_canonical_term(0), Some("Ground"));
+        assert_eq!(tetrad.position_to_canonical_term(1), Some("Ideal"));
+        assert_eq!(tetrad.position_to_canonical_term(2), Some("Instrumental"));
+        assert_eq!(tetrad.position_to_canonical_term(3), Some("Directive"));
+        assert_eq!(tetrad.position_to_canonical_term(4), None);
+        
+        assert_eq!(tetrad.position_from_canonical_term("Ground"), Some(0));
+        assert_eq!(tetrad.position_from_canonical_term("Ideal"), Some(1));
+        assert_eq!(tetrad.position_from_canonical_term("Instrumental"), Some(2));
+        assert_eq!(tetrad.position_from_canonical_term("Directive"), Some(3));
+        assert_eq!(tetrad.position_from_canonical_term("NonExistent"), None);
+        
+        // Test user term position aliases
+        assert_eq!(tetrad.position_to_user_term(0), Some("MyGround"));
+        assert_eq!(tetrad.position_to_user_term(1), Some("MyIdeal"));
+        assert_eq!(tetrad.position_to_user_term(2), Some("MyInstrumental"));
+        assert_eq!(tetrad.position_to_user_term(3), Some("MyDirective"));
+        assert_eq!(tetrad.position_to_user_term(4), None);
+        
+        assert_eq!(tetrad.position_from_user_term("MyGround"), Some(0));
+        assert_eq!(tetrad.position_from_user_term("MyIdeal"), Some(1));
+        assert_eq!(tetrad.position_from_user_term("MyInstrumental"), Some(2));
+        assert_eq!(tetrad.position_from_user_term("MyDirective"), Some(3));
+        assert_eq!(tetrad.position_from_user_term("Unknown"), None);
+        
+        // Verify aliases return same results as original methods
+        assert_eq!(tetrad.position_to_canonical_term(0), tetrad.canonical_term_from_position(0));
+        assert_eq!(tetrad.position_from_canonical_term("Ground"), tetrad.canonical_term_to_position("Ground"));
+        assert_eq!(tetrad.position_to_user_term(0), tetrad.instance_from_position(0));
+        assert_eq!(tetrad.position_from_user_term("MyGround"), tetrad.instance_to_position("MyGround"));
     }
 } 

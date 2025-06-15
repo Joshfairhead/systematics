@@ -84,6 +84,61 @@ impl Dodecad {
     pub fn connectives(&self) -> &HashMap<(usize, usize), String> {
         &self.connectives
     }
+    
+    /// Get the number of positional coordinates in this structure
+    pub fn position_count(&self) -> usize {
+        12
+    }
+    
+    /// Map a canonical term to its positional coordinate
+    /// Returns the 0-based index for the given canonical term
+    pub fn canonical_term_to_position(&self, canonical_term: &str) -> Option<usize> {
+        let canonical_terms = self.schema.canonical_terms();
+        canonical_terms.iter().position(|&term| term == canonical_term)
+    }
+    
+    /// Map a positional coordinate to its canonical term
+    /// Returns the canonical term for the given 0-based position index
+    pub fn canonical_term_from_position(&self, position: usize) -> Option<&str> {
+        let canonical_terms = self.schema.canonical_terms();
+        canonical_terms.get(position).copied()
+    }
+    
+    /// Map a user instance to its positional coordinate
+    /// Returns the 0-based index for the given user instance
+    pub fn instance_to_position(&self, instance: &str) -> Option<usize> {
+        self.user_term_index.iter().position(|inst| inst == instance)
+    }
+    
+    /// Map a positional coordinate to its user instance
+    /// Returns the user instance for the given 0-based position index
+    pub fn instance_from_position(&self, position: usize) -> Option<&str> {
+        self.user_term_index.get(position).map(|s| s.as_str())
+    }
+    
+    /// Map a position to its canonical term (alias for canonical_term_from_position)
+    /// Returns the canonical term for the given 0-based position index
+    pub fn position_to_canonical_term(&self, position: usize) -> Option<&str> {
+        self.canonical_term_from_position(position)
+    }
+    
+    /// Map a canonical term to its position (alias for canonical_term_to_position)
+    /// Returns the 0-based index for the given canonical term
+    pub fn position_from_canonical_term(&self, canonical_term: &str) -> Option<usize> {
+        self.canonical_term_to_position(canonical_term)
+    }
+    
+    /// Map a position to its user term (alias for instance_from_position)
+    /// Returns the user instance for the given 0-based position index
+    pub fn position_to_user_term(&self, position: usize) -> Option<&str> {
+        self.instance_from_position(position)
+    }
+    
+    /// Map a user term to its position (alias for instance_to_position)
+    /// Returns the 0-based index for the given user instance
+    pub fn position_from_user_term(&self, user_term: &str) -> Option<usize> {
+        self.instance_to_position(user_term)
+    }
 }
 
 impl SystematicStructure for Dodecad {
