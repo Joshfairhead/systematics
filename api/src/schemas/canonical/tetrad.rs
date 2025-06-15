@@ -9,12 +9,24 @@ impl crate::schemas::Schema for TetradSchema {
         4 
     }
     
+    fn name(&self) -> &'static str { 
+        "Tetrad" 
+    }
+    
+    fn coherence_attribute(&self) -> &'static str {
+        "Activity Field"
+    }
+    
+    fn term_designation(&self) -> &'static str {
+        "Sources"
+    }
+    
     fn canonical_terms(&self) -> &'static [&'static str] { 
         &["Ground", "Ideal", "Instrumental", "Directive"] 
     }
     
-    fn name(&self) -> &'static str { 
-        "Tetrad Schema" 
+    fn first_order_connectives_name(&self) -> &'static str {
+        "Interplays"
     }
     
     fn connectives(&self) -> Vec<Connective> {

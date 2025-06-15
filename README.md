@@ -37,7 +37,16 @@ All systematic structures now use a unified schema-based architecture:
 - **Streamlined Input**: Press Enter to use canonical terms, or provide custom instances
 - **Attribute Management**: Add unlimited descriptive attributes to monadic structures
 - **Schema Selection**: Automatic application of appropriate Bennett schemas
-- **Comprehensive Testing**: 44 tests passing with excellent coverage across all modules
+- **Comprehensive Testing**: 51 tests passing with excellent coverage across all modules
+
+### ✅ **Six-Component Schema Architecture**
+Each systematic structure now implements a comprehensive six-component schema:
+1. **System Name**: Canonical name (Monad, Dyad, Triad, etc.)
+2. **Coherence Attribute**: Internal consistency principle (e.g., Universality, Complimentarity, Dynamism)
+3. **Term Designation**: What individual elements are called (e.g., Totality, Poles, Impulses)
+4. **Term Characteristics**: Canonical terms from Bennett's frameworks
+5. **First-Order Connectives Names**: Categorical names for relationships (e.g., Connectionless unity, Force, Acts)
+6. **Actual Connectives**: Specific relationship mappings between terms
 
 ## Project Structure
 
@@ -158,32 +167,34 @@ Choose 'P' from the main menu to access the permutations generator:
 
 ### Testing
 ```bash
-cargo test --package systematics-api      # Run all API tests (49 tests)
+cargo test --package systematics-api      # Run all API tests (51 tests)
 cargo test --package systematics-cli     # Run all CLI tests  
 cargo test structure1_monad              # Run monad-specific tests
 cargo test structure2_dyad               # Run dyad-specific tests
 cargo test permutations                  # Run permutations-specific tests
+cargo test schemas                       # Run schema refactoring tests
 # ... similarly for other modules
 ```
 
 ## Development Status
 
 ### 🎯 **Recent Major Achievements**
+- ✅ **Schema Refactoring & Enhancement**: Added coherence attributes, term designations, and first-order connectives names to all schemas and structures
 - ✅ **Modular Schema Architecture**: Refactored monolithic `schemas.rs` (332 lines) into clean modular structure
 - ✅ **Complete Bidirectional Mapping API**: 8-method bidirectional API across all structures (Tetrad-Dodecad)
 - ✅ **Enhanced Monad System**: Unlimited custom attributes with streamlined input flow
 - ✅ **Reorganized Codebase**: Numerical organization with clear structure naming
-- ✅ **All Tests Passing**: 49/49 tests passing with comprehensive coverage
+- ✅ **All Tests Passing**: 51/51 tests passing with comprehensive coverage
 - ✅ **Schema-Aware Connectives**: Meaningful relationship labels throughout
 
 ### 🔧 **Current Capabilities**
 1. **Complete CLI Implementation**: All systematic structures (1-12 terms) fully functional
 2. **✅ Complete API Library**: Type-safe Rust library with builder pattern and comprehensive error handling
-3. **🧩 Modular Schema System**: Clean separation of canonical schemas, providers, and core traits
+3. **🧩 Enhanced Schema System**: Six-component schema architecture with coherence attributes, term designations, and connectives naming
 4. **🔄 Bidirectional Mapping API**: Position ↔ Term navigation across all structures (49 methods total)
 5. **Authentic Bennett Schemas**: Proper canonical terminology and relationships with 100+ connectives
 6. **Robust Architecture**: Unified schema-based design patterns across CLI and API
-7. **Comprehensive Testing**: 49 tests passing across all API structures
+7. **Comprehensive Testing**: 51 tests passing across all API structures and schemas
 8. **User-Friendly Interface**: Intuitive prompts with canonical defaults
 
 ### 🌐 **Future Development Roadmap**
@@ -197,8 +208,9 @@ cargo test permutations                  # Run permutations-specific tests
 6. ✅ **API Documentation**: Comprehensive rustdoc with examples in lib.rs
 7. ✅ **Modular Schema Architecture**: Broke monolithic `schemas.rs` into clean directory structure
 8. ✅ **Complete Bidirectional Mapping**: 8-method API for position ↔ term navigation across all structures
-9. 🚧 **Position Descriptions**: Add position descriptions and rename function to indicate if the positions are terms, sources, influences etc.
-10. 🚧 **Semantic Alignment**: Align semantic positionality between numbers and terms. Once aligned remove number from CLI output
+9. ✅ **Six-Component Schema Enhancement**: Added coherence attributes, term designations, and first-order connectives names to all schemas and structures
+10. 🚧 **Position Descriptions**: Add position descriptions and rename function to indicate if the positions are terms, sources, influences etc.
+11. 🚧 **Semantic Alignment**: Align semantic positionality between numbers and terms. Once aligned remove number from CLI output
 
 #### **Phase 2: CLI Modernization**
 
@@ -275,7 +287,7 @@ cargo test permutations                  # Run permutations-specific tests
 7. **Comprehensive Testing**: High test coverage ensuring reliability
 
 ### Technical Highlights
-- **🧩 Modular Schema System**: Clean directory structure (`api/src/schemas/canonical/`, `providers/`)
+- **🧩 Enhanced Schema System**: Six-component architecture with coherence attributes, term designations, and connectives naming
 - **🔄 Complete Bidirectional Mapping**: 8-method API for position ↔ term navigation (49 total methods)
 - **Schema-Aware Connectives**: Meaningful relationship labels (e.g., "Autocracy <> Domination")
 - **Enhanced Monad System**: Unlimited custom attributes with streamlined input
@@ -285,7 +297,7 @@ cargo test permutations                  # Run permutations-specific tests
 - **Interactive CLI**: User-friendly command-line interface with validation loops
 - **Named Permutations**: Semantic labeling of permutation patterns
 - **Canonical Defaults**: Press Enter to use authentic Bennett terminology
-- **Test-Driven Development**: Comprehensive test suite ensures reliability (49 API tests)
+- **Test-Driven Development**: Comprehensive test suite ensures reliability (51 API tests)
 
 ### Schema Architecture
 The modular schema system provides:

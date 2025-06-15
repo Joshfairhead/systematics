@@ -9,12 +9,25 @@ impl crate::schemas::Schema for HexadSchema {
         6 
     }
     
+    fn name(&self) -> &'static str { 
+        "Hexad" 
+    }
+    
+    fn coherence_attribute(&self) -> &'static str {
+        "Coalescence"
+    }
+    
+    fn term_designation(&self) -> &'static str {
+        "Laws"
+    }
+    
     fn canonical_terms(&self) -> &'static [&'static str] { 
         &["Resources", "Values", "Options", "Criteria", "Facts", "Priorities"] 
     }
     
-    fn name(&self) -> &'static str { 
-        "Hexad Schema" 
+    fn first_order_connectives_name(&self) -> &'static str {
+        // TODO: Research proper canonical name for Hexad connectives
+        "Connectives"
     }
     
     fn connectives(&self) -> Vec<Connective> {

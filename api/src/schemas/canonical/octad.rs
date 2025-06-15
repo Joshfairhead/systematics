@@ -9,12 +9,25 @@ impl crate::schemas::Schema for OctadSchema {
         8 
     }
     
+    fn name(&self) -> &'static str { 
+        "Octad" 
+    }
+    
+    fn coherence_attribute(&self) -> &'static str {
+        "Self-Sufficiency"
+    }
+    
+    fn term_designation(&self) -> &'static str {
+        "Elements"
+    }
+    
     fn canonical_terms(&self) -> &'static [&'static str] { 
         &["Smallest Significant Holon", "Critical Functions", "Supportive Platform", "Necessary Resourcing", "Integrative Totality", "Inherent Values", "Intrinsic Nature", "Organisational Modes"] 
     }
     
-    fn name(&self) -> &'static str { 
-        "Octad Schema" 
+    fn first_order_connectives_name(&self) -> &'static str {
+        // TODO: Research proper canonical name for Octad connectives
+        "Connectives"
     }
     
     fn connectives(&self) -> Vec<Connective> {

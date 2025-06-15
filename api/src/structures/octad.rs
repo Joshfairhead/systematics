@@ -151,8 +151,20 @@ impl SystematicStructure for Octad {
         &self.name
     }
     
+    fn coherence_attribute(&self) -> &str {
+        self.schema.coherence_attribute()
+    }
+    
+    fn term_designation(&self) -> &str {
+        self.schema.term_designation()
+    }
+    
     fn canonical_terms(&self) -> Vec<String> {
         self.schema.canonical_terms().iter().map(|s| s.to_string()).collect()
+    }
+    
+    fn first_order_connectives_name(&self) -> &str {
+        self.schema.first_order_connectives_name()
     }
     
     fn user_terms(&self) -> &[String] {

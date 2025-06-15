@@ -9,12 +9,24 @@ impl crate::schemas::Schema for PentadSchema {
         5 
     }
     
+    fn name(&self) -> &'static str { 
+        "Pentad" 
+    }
+    
+    fn coherence_attribute(&self) -> &'static str {
+        "Significance and Potential"
+    }
+    
+    fn term_designation(&self) -> &'static str {
+        "Limits"
+    }
+    
     fn canonical_terms(&self) -> &'static [&'static str] { 
         &["Quintessence", "Higher Potential", "Lower Potential", "Purpose", "Source"] 
     }
     
-    fn name(&self) -> &'static str { 
-        "Pentad Schema" 
+    fn first_order_connectives_name(&self) -> &'static str {
+        "Mutualities"
     }
     
     fn connectives(&self) -> Vec<Connective> {

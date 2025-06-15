@@ -9,12 +9,24 @@ impl crate::schemas::Schema for DyadSchema {
         2 
     }
     
+    fn name(&self) -> &'static str { 
+        "Dyad" 
+    }
+    
+    fn coherence_attribute(&self) -> &'static str {
+        "Complimentarity"
+    }
+    
+    fn term_designation(&self) -> &'static str {
+        "Poles"
+    }
+    
     fn canonical_terms(&self) -> &'static [&'static str] { 
         &["Essence", "Existence"] 
     }
     
-    fn name(&self) -> &'static str { 
-        "Dyad Schema" 
+    fn first_order_connectives_name(&self) -> &'static str {
+        "Force"
     }
     
     fn connectives(&self) -> Vec<Connective> {

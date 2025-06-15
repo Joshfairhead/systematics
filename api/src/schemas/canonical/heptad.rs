@@ -9,12 +9,25 @@ impl crate::schemas::Schema for HeptadSchema {
         7 
     }
     
+    fn name(&self) -> &'static str { 
+        "Heptad" 
+    }
+    
+    fn coherence_attribute(&self) -> &'static str {
+        "Transformation"
+    }
+    
+    fn term_designation(&self) -> &'static str {
+        "States"
+    }
+    
     fn canonical_terms(&self) -> &'static [&'static str] { 
         &["Insight", "Research", "Design", "Synthesis", "Application", "Delivery", "Value"] 
     }
     
-    fn name(&self) -> &'static str { 
-        "Heptad Schema" 
+    fn first_order_connectives_name(&self) -> &'static str {
+        // TODO: Research proper canonical name for Heptad connectives
+        "Connectives"
     }
     
     fn connectives(&self) -> Vec<Connective> {

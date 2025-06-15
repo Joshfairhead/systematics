@@ -55,28 +55,39 @@ pub trait SystematicStructure {
     // Core Identity & Structure
     // -------------------------------------------------------------------------
     
+    /// The number of terms in this structure type
+    const TERM_COUNT: usize;
+    
     /// Unique identifier for this structure instance: Used for database storage, DHT addressing, or other unique identification needs.
     fn id(&self) -> &str;
     
     /// Human-readable name for this structure
     fn name(&self) -> &str;
     
-    /// The number of terms in this structure type
-    const TERM_COUNT: usize;
+    /// Get the coherence attribute for this structure type
+    /// This defines what maintains internal consistency within the structure
+    fn coherence_attribute(&self) -> &str;
+    
+    /// Get the term designation for this structure type
+    /// This defines what individual elements should be called
+    fn term_designation(&self) -> &str;
     
     // -------------------------------------------------------------------------
     // Content Access
     // -------------------------------------------------------------------------
+    
+    /// Get canonical term labels from the schema file
+    /// For a monad: `["Unity"]`, for a dyad: `["Essence", "Existence"]`.
+    fn canonical_terms(&self) -> Vec<String>;
+    
+    /// Get the name for the first order connectives of this structure type
+    fn first_order_connectives_name(&self) -> &str;
     
     /// Get semantic coordinates/positions for this structure
     /// Returns the coordinate indices (0, 1, 2, etc.) that map to term positions.
     fn semantic_coordinates(&self) -> Vec<usize> {
         (0..Self::TERM_COUNT).collect()
     }
-    
-    /// Get canonical term labels from the schema file
-    /// For a monad: `["Unity"]`, for a dyad: `["Essence", "Existence"]`.
-    fn canonical_terms(&self) -> Vec<String>;
     
     /// Get current user-provided term values for each position
     fn user_terms(&self) -> &[String];

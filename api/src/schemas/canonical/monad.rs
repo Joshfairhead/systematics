@@ -9,12 +9,24 @@ impl crate::schemas::Schema for MonadSchema {
         1 
     }
     
+    fn name(&self) -> &'static str { 
+        "Monad" 
+    }
+    
+    fn coherence_attribute(&self) -> &'static str {
+        "Universality"
+    }
+    
+    fn term_designation(&self) -> &'static str {
+        "Totality"
+    }
+    
     fn canonical_terms(&self) -> &'static [&'static str] { 
         &["Unity"] 
     }
     
-    fn name(&self) -> &'static str { 
-        "Monad Schema" 
+    fn first_order_connectives_name(&self) -> &'static str {
+        "Connectionless unity"
     }
     
     fn connectives(&self) -> Vec<Connective> { 
