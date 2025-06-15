@@ -21,7 +21,7 @@ impl crate::schemas::Schema for TetradSchema {
         "Sources"
     }
     
-    fn canonical_terms(&self) -> &'static [&'static str] { 
+    fn term_characters(&self) -> &'static [&'static str] { 
         &["Ground", "Ideal", "Instrumental", "Directive"] 
     }
     

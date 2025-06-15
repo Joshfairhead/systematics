@@ -21,7 +21,7 @@ impl crate::schemas::Schema for OctadSchema {
         "Elements"
     }
     
-    fn canonical_terms(&self) -> &'static [&'static str] { 
+    fn term_characters(&self) -> &'static [&'static str] { 
         &["Smallest Significant Holon", "Critical Functions", "Supportive Platform", "Necessary Resourcing", "Integrative Totality", "Inherent Values", "Intrinsic Nature", "Organisational Modes"] 
     }
     

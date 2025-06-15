@@ -17,7 +17,7 @@ pub use pentad::{Pentad, PentadBuilder};
 pub use hexad::{Hexad, HexadBuilder};
 pub use heptad::{Heptad, HeptadBuilder};
 pub use octad::{Octad, OctadBuilder};
-pub use dodecad::{Dodecad, DodecadBuilder};
+pub use dodecad::{Dodecad, DodecadBuilder}; 
 
 #[cfg(test)]
 mod tests {

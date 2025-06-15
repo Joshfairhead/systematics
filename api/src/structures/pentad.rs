@@ -86,18 +86,18 @@ impl Pentad {
         5
     }
     
-    /// Map a canonical term to its positional coordinate
-    /// Returns the 0-based index for the given canonical term
-    pub fn canonical_term_to_position(&self, canonical_term: &str) -> Option<usize> {
-        let canonical_terms = self.schema.canonical_terms();
-        canonical_terms.iter().position(|&term| term == canonical_term)
+        /// Map a term character to its positional coordinate
+    /// Returns the 0-based index for the given term character
+    pub fn term_character_to_position(&self, term_character: &str) -> Option<usize> {
+        let term_characters = self.schema.term_characters();
+        term_characters.iter().position(|&term| term == term_character)
     }
-    
-    /// Map a positional coordinate to its canonical term
-    /// Returns the canonical term for the given 0-based position index
-    pub fn canonical_term_from_position(&self, position: usize) -> Option<&str> {
-        let canonical_terms = self.schema.canonical_terms();
-        canonical_terms.get(position).copied()
+
+    /// Map a positional coordinate to its term character
+    /// Returns the term character for the given 0-based position index
+    pub fn term_character_from_position(&self, position: usize) -> Option<&str> {
+        let term_characters = self.schema.term_characters();
+        term_characters.get(position).copied()
     }
     
     /// Map a user instance to its positional coordinate
@@ -112,16 +112,16 @@ impl Pentad {
         self.user_term_index.get(position).map(|s| s.as_str())
     }
     
-    /// Map a position to its canonical term (alias for canonical_term_from_position)
-    /// Returns the canonical term for the given 0-based position index
-    pub fn position_to_canonical_term(&self, position: usize) -> Option<&str> {
-        self.canonical_term_from_position(position)
+        /// Map a position to its term character (alias for term_character_from_position)
+    /// Returns the term character for the given 0-based position index
+    pub fn position_to_term_character(&self, position: usize) -> Option<&str> {
+        self.term_character_from_position(position)
     }
-    
-    /// Map a canonical term to its position (alias for canonical_term_to_position)
-    /// Returns the 0-based index for the given canonical term
-    pub fn position_from_canonical_term(&self, canonical_term: &str) -> Option<usize> {
-        self.canonical_term_to_position(canonical_term)
+
+    /// Map a term character to its position (alias for term_character_to_position)
+    /// Returns the 0-based index for the given term character
+    pub fn position_from_term_character(&self, term_character: &str) -> Option<usize> {
+        self.term_character_to_position(term_character)
     }
     
     /// Map a position to its user term (alias for instance_from_position)
@@ -156,8 +156,8 @@ impl SystematicStructure for Pentad {
         self.schema.term_designation()
     }
     
-    fn canonical_terms(&self) -> Vec<String> {
-        self.schema.canonical_terms().iter().map(|s| s.to_string()).collect()
+    fn term_characters(&self) -> Vec<String> {
+        self.schema.term_characters().iter().map(|s| s.to_string()).collect()
     }
     
     fn first_order_connectives_name(&self) -> &str {
@@ -329,20 +329,20 @@ mod tests {
     }
 
     #[test]
-    fn test_canonical_terms() {
+    fn test_term_characters() {
         let pentad = PentadBuilder::new()
             .name("Test")
             .terms("A".to_string(), "B".to_string(), "C".to_string(), "D".to_string(), "E".to_string())
             .build()
             .unwrap();
         
-        let canonical = pentad.canonical_terms();
-        assert_eq!(canonical.len(), 5);
-        assert_eq!(canonical[0], "Quintessence");
-        assert_eq!(canonical[1], "Higher Potential");
-        assert_eq!(canonical[2], "Lower Potential");
-        assert_eq!(canonical[3], "Purpose");
-        assert_eq!(canonical[4], "Source");
+        let characters = pentad.term_characters();
+        assert_eq!(characters.len(), 5);
+        assert_eq!(characters[0], "Quintessence");
+        assert_eq!(characters[1], "Higher Potential");
+        assert_eq!(characters[2], "Lower Potential");
+        assert_eq!(characters[3], "Purpose");
+        assert_eq!(characters[4], "Source");
     }
 
     #[test]

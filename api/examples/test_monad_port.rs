@@ -93,9 +93,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .term("Unity")
         .build()?;
     
-    let canonical_terms = monad4.canonical_terms();
-    println!("✓ Canonical terms: {:?}", canonical_terms);
-    assert_eq!(canonical_terms, vec!["Unity"]);
+    let term_characters = monad4.term_characters();
+    println!("✓ Term characters: {:?}", term_characters);
+    assert_eq!(term_characters, vec!["Unity"]);
     
     let instances = monad4.user_terms();
     println!("✓ Current instances: {:?}", instances);

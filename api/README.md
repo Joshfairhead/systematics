@@ -143,7 +143,7 @@ Each structure type has a corresponding schema with Bennett's canonical terms:
 ```rust
 let schema = monad.schema();
 println!("Schema: {}", schema.name());
-println!("Terms: {:?}", schema.canonical_terms());
+println!("Terms: {:?}", schema.term_characters());
 println!("Connectives: {:?}", schema.connectives());
 ```
 
@@ -280,7 +280,7 @@ pub struct MonadBuilder {
 // 4. Schema Definition
 pub struct MonadSchema;
 impl Schema for MonadSchema {
-    fn canonical_terms(&self) -> &'static [&'static str] { &["Unity"] }
+    fn term_characters(&self) -> &'static [&'static str] { &["Unity"] }
     // ... other schema methods
 }
 ```

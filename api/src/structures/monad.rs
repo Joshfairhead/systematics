@@ -116,8 +116,8 @@ impl SystematicStructure for Monad {
     // Content Access
     // -------------------------------------------------------------------------
     
-    fn canonical_terms(&self) -> Vec<String> {
-        self.schema.canonical_terms().iter().map(|s| s.to_string()).collect()
+    fn term_characters(&self) -> Vec<String> {
+        self.schema.term_characters().iter().map(|s| s.to_string()).collect()
     }
     
     fn first_order_connectives_name(&self) -> &str {
@@ -185,7 +185,7 @@ impl SystematicStructure for Monad {
             println!("Name: {}", self.name);
         } else {
             println!("Name: {}", self.name);
-            println!("Term: {}", self.term());
+            println!("{}: {}", self.term_designation(), self.term());
         }
         
         if !self.attributes.is_empty() {
@@ -342,15 +342,15 @@ mod tests {
     }
     
     #[test]
-    fn test_canonical_terms() {
+    fn test_term_characters() {
         let monad = MonadBuilder::new()
             .name("Test")
             .term("Unity")
             .build()
             .unwrap();
             
-        let canonical = monad.canonical_terms();
-        assert_eq!(canonical, vec!["Unity"]);
+        let characters = monad.term_characters();
+        assert_eq!(characters, vec!["Unity"]);
     }
     
     #[test]
@@ -367,7 +367,7 @@ mod tests {
         assert_eq!(monad.name(), "Test");
         assert_eq!(monad.user_terms().len(), 1);
         assert_eq!(monad.user_terms()[0], "Absolute");
-        assert_eq!(monad.canonical_terms(), vec!["Unity"]);
+        assert_eq!(monad.term_characters(), vec!["Unity"]);
         assert!(monad.validate().is_ok());
     }
 } 

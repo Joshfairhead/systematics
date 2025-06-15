@@ -21,7 +21,7 @@ impl crate::schemas::Schema for HeptadSchema {
         "States"
     }
     
-    fn canonical_terms(&self) -> &'static [&'static str] { 
+    fn term_characters(&self) -> &'static [&'static str] { 
         &["Insight", "Research", "Design", "Synthesis", "Application", "Delivery", "Value"] 
     }
     

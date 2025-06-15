@@ -130,8 +130,16 @@ fn get_yes_no_input(prompt: &str, default: bool) -> Result<bool, Box<dyn std::er
 fn create_monad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::error::Error>> {
     println!("\n--- Creating a Monad ---");
     
-    let name = get_optional_input("Enter name (Press enter for Unity): ", "Unity")?;
-    let term = get_optional_input(&format!("Enter term (Press enter to use {}): ", name), &name)?;
+    // Get canonical terms and term designation from the schema
+    use systematics_api::schemas::MonadSchema;
+    use systematics_api::schemas::Schema;
+    let schema = MonadSchema;
+    let term_characters = schema.term_characters();
+    let term_designation = schema.term_designation();
+    let schema_name = schema.name();
+    
+    let name = get_optional_input(&format!("Enter name (Press enter for {}): ", schema_name), schema_name)?;
+    let term = get_optional_input(&format!("Enter {} (Press enter to use {}): ", term_designation, term_characters[0]), term_characters[0])?;
     
     // Collect attributes
     let mut attributes = Vec::new();
@@ -170,12 +178,20 @@ fn create_monad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::err
 fn create_dyad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::error::Error>> {
     println!("\n--- Creating a Dyad ---");
     
-    let name = get_optional_input("Enter a name for your dyad: ", "Dyad Structure")?;
-    let canonical = ["Essence", "Existence"];
+    let name = get_optional_input("Enter name (Press enter for Dyad): ", "Dyad")?;
     
-    println!("Canonical terms: {} / {}", canonical[0], canonical[1]);
-    let term1 = get_optional_input(&format!("Enter term 1 (or press Enter for '{}'): ", canonical[0]), canonical[0])?;
-    let term2 = get_optional_input(&format!("Enter term 2 (or press Enter for '{}'): ", canonical[1]), canonical[1])?;
+    // Get canonical terms and term designation from the schema
+    use systematics_api::schemas::DyadSchema;
+    use systematics_api::schemas::Schema;
+    let schema = DyadSchema;
+    let term_characters = schema.term_characters();
+    let term_designation = schema.term_designation();
+    
+    println!("Term {}: {} / {}", 
+        term_designation.to_lowercase(), 
+        term_characters[0], term_characters[1]);
+    let term1 = get_optional_input(&format!("Enter {} {} (Press enter for '{}'): ", term_characters[0], term_designation.trim_end_matches('s'), term_characters[0]), term_characters[0])?;
+    let term2 = get_optional_input(&format!("Enter {} {} (Press enter for '{}'): ", term_characters[1], term_designation.trim_end_matches('s'), term_characters[1]), term_characters[1])?;
     
     let dyad = api.create_dyad()
         .name(&name)
@@ -192,13 +208,21 @@ fn create_dyad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::erro
 fn create_triad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::error::Error>> {
     println!("\n--- Creating a Triad ---");
     
-    let name = get_optional_input("Enter a name for your triad: ", "Triad Structure")?;
-    let canonical = ["Will", "Function", "Being"];
+    let name = get_optional_input("Enter name (Press enter for Triad): ", "Triad")?;
     
-    println!("Canonical terms: {} / {} / {}", canonical[0], canonical[1], canonical[2]);
-    let term1 = get_optional_input(&format!("Enter term 1 (or press Enter for '{}'): ", canonical[0]), canonical[0])?;
-    let term2 = get_optional_input(&format!("Enter term 2 (or press Enter for '{}'): ", canonical[1]), canonical[1])?;
-    let term3 = get_optional_input(&format!("Enter term 3 (or press Enter for '{}'): ", canonical[2]), canonical[2])?;
+    // Get canonical terms and term designation from the schema
+    use systematics_api::schemas::TriadSchema;
+    use systematics_api::schemas::Schema;
+    let schema = TriadSchema;
+    let term_characters = schema.term_characters();
+    let term_designation = schema.term_designation();
+    
+    println!("Term {}: {} / {} / {}", 
+        term_designation.to_lowercase(), 
+        term_characters[0], term_characters[1], term_characters[2]);
+    let term1 = get_optional_input(&format!("Enter {} {} (Press enter for '{}'): ", term_characters[0], term_designation.trim_end_matches('s'), term_characters[0]), term_characters[0])?;
+    let term2 = get_optional_input(&format!("Enter {} {} (Press enter for '{}'): ", term_characters[1], term_designation.trim_end_matches('s'), term_characters[1]), term_characters[1])?;
+    let term3 = get_optional_input(&format!("Enter {} {} (Press enter for '{}'): ", term_characters[2], term_designation.trim_end_matches('s'), term_characters[2]), term_characters[2])?;
     
     let triad = api.create_triad()
         .name(&name)
@@ -216,15 +240,15 @@ fn create_tetrad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::er
     println!("\n--- Creating a Tetrad ---");
     
     let name = get_optional_input("Enter a name for your tetrad: ", "Tetrad Structure")?;
-    let canonical = ["Ground", "Ideal", "Instrumental", "Directive"];
+    let characters = ["Ground", "Ideal", "Instrumental", "Directive"];
     
-    println!("Canonical terms: {} / {} / {} / {}", canonical[0], canonical[1], canonical[2], canonical[3]);
+    println!("Term characters: {} / {} / {} / {}", characters[0], characters[1], characters[2], characters[3]);
     let mut terms = Vec::new();
     
-    for (i, &canonical_term) in canonical.iter().enumerate() {
+    for (i, &term_character) in characters.iter().enumerate() {
         let term = get_optional_input(
-            &format!("Enter term {} (or press Enter for '{}'): ", i + 1, canonical_term),
-            canonical_term
+            &format!("Enter term {} (or press Enter for '{}'): ", i + 1, term_character),
+            term_character
         )?;
         terms.push(term);
     }
@@ -245,20 +269,20 @@ fn create_pentad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::er
     println!("\n--- Creating a Pentad ---");
     
     let name = get_optional_input("Enter a name for your pentad: ", "Pentad Structure")?;
-    let canonical = ["Quintessence", "Higher Potential", "Lower Potential", "Purpose", "Source"];
+    let characters = ["Quintessence", "Higher Potential", "Lower Potential", "Purpose", "Source"];
     
-    println!("Canonical terms: {} / {} / {} / {} / {}", 
-        canonical[0], canonical[1], canonical[2], canonical[3], canonical[4]);
+    println!("Term characters: {} / {} / {} / {} / {}", 
+        characters[0], characters[1], characters[2], characters[3], characters[4]);
     let mut terms = Vec::new();
     
-    for (i, &canonical_term) in canonical.iter().enumerate() {
+        for (i, &term_character) in characters.iter().enumerate() {
         let term = get_optional_input(
-            &format!("Enter term {} (or press Enter for '{}'): ", i + 1, canonical_term),
-            canonical_term
+            &format!("Enter term {} (or press Enter for '{}'): ", i + 1, term_character),
+            term_character
         )?;
         terms.push(term);
     }
-    
+
     let pentad = api.create_pentad()
         .name(&name)
         .terms(&terms[0], &terms[1], &terms[2], &terms[3], &terms[4])
@@ -275,20 +299,20 @@ fn create_hexad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::err
     println!("\n--- Creating a Hexad ---");
     
     let name = get_optional_input("Enter a name for your hexad: ", "Hexad Structure")?;
-    let canonical = ["Resources", "Values", "Options", "Criteria", "Facts", "Priorities"];
+    let characters = ["Resources", "Values", "Options", "Criteria", "Facts", "Priorities"];
     
-    println!("Canonical terms: {} / {} / {} / {} / {} / {}", 
-        canonical[0], canonical[1], canonical[2], canonical[3], canonical[4], canonical[5]);
+    println!("Term characters: {} / {} / {} / {} / {} / {}", 
+        characters[0], characters[1], characters[2], characters[3], characters[4], characters[5]);
     let mut terms = Vec::new();
     
-    for (i, &canonical_term) in canonical.iter().enumerate() {
+        for (i, &term_character) in characters.iter().enumerate() {
         let term = get_optional_input(
-            &format!("Enter term {} (or press Enter for '{}'): ", i + 1, canonical_term),
-            canonical_term
+            &format!("Enter term {} (or press Enter for '{}'): ", i + 1, term_character),
+            term_character
         )?;
         terms.push(term);
     }
-    
+
     let hexad = api.create_hexad()
         .name(&name)
         .terms(&terms[0], &terms[1], &terms[2], &terms[3], &terms[4], &terms[5])
@@ -305,20 +329,20 @@ fn create_heptad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::er
     println!("\n--- Creating a Heptad ---");
     
     let name = get_optional_input("Enter a name for your heptad: ", "Heptad Structure")?;
-    let canonical = ["Insight", "Research", "Design", "Synthesis", "Application", "Delivery", "Value"];
+    let characters = ["Insight", "Research", "Design", "Synthesis", "Application", "Delivery", "Value"];
     
-    println!("Canonical terms: {} / {} / {} / {} / {} / {} / {}", 
-        canonical[0], canonical[1], canonical[2], canonical[3], canonical[4], canonical[5], canonical[6]);
+    println!("Term characters: {} / {} / {} / {} / {} / {} / {}", 
+        characters[0], characters[1], characters[2], characters[3], characters[4], characters[5], characters[6]);
     let mut terms = Vec::new();
     
-    for (i, &canonical_term) in canonical.iter().enumerate() {
+        for (i, &term_character) in characters.iter().enumerate() {
         let term = get_optional_input(
-            &format!("Enter term {} (or press Enter for '{}'): ", i + 1, canonical_term),
-            canonical_term
+            &format!("Enter term {} (or press Enter for '{}'): ", i + 1, term_character),
+            term_character
         )?;
         terms.push(term);
     }
-    
+
     let heptad = api.create_heptad()
         .name(name)
         .terms(terms[0].clone(), terms[1].clone(), terms[2].clone(), terms[3].clone(), terms[4].clone(), terms[5].clone(), terms[6].clone())
@@ -335,21 +359,21 @@ fn create_octad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::err
     println!("\n--- Creating an Octad ---");
     
     let name = get_optional_input("Enter a name for your octad: ", "Octad Structure")?;
-    let canonical = ["Smallest Significant Holon", "Critical Functions", "Supportive Platform", "Necessary Resourcing", 
+    let characters = ["Smallest Significant Holon", "Critical Functions", "Supportive Platform", "Necessary Resourcing", 
                     "Integrative Totality", "Inherent Values", "Intrinsic Nature", "Organisational Modes"];
     
-    println!("Canonical terms: {} / {} / {} / {} / {} / {} / {} / {}", 
-        canonical[0], canonical[1], canonical[2], canonical[3], canonical[4], canonical[5], canonical[6], canonical[7]);
+    println!("Term characters: {} / {} / {} / {} / {} / {} / {} / {}", 
+        characters[0], characters[1], characters[2], characters[3], characters[4], characters[5], characters[6], characters[7]);
     let mut terms = Vec::new();
     
-    for (i, &canonical_term) in canonical.iter().enumerate() {
+        for (i, &term_character) in characters.iter().enumerate() {
         let term = get_optional_input(
-            &format!("Enter term {} (or press Enter for '{}'): ", i + 1, canonical_term),
-            canonical_term
+            &format!("Enter term {} (or press Enter for '{}'): ", i + 1, term_character),
+            term_character
         )?;
         terms.push(term);
     }
-    
+
     let octad = api.create_octad()
         .name(name)
         .terms(terms[0].clone(), terms[1].clone(), terms[2].clone(), terms[3].clone(), terms[4].clone(), terms[5].clone(), terms[6].clone(), terms[7].clone())
@@ -366,18 +390,18 @@ fn create_dodecad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::e
     println!("\n--- Creating a Dodecad ---");
     
     let name = get_optional_input("Enter a name for your dodecad: ", "Dodecad Structure")?;
-    let canonical = ["Autocracy", "Domination", "Creativity", "Pattern", "Individuality", "Structure", 
+    let characters = ["Autocracy", "Domination", "Creativity", "Pattern", "Individuality", "Structure", 
                     "Repetition", "Potentiality", "Subsistence", "Relatedness", "Polarity", "Wholeness"];
     
-    println!("Canonical terms (12): {} / {} / {} / {} / {} / {} / {} / {} / {} / {} / {} / {}", 
-        canonical[0], canonical[1], canonical[2], canonical[3], canonical[4], canonical[5], 
-        canonical[6], canonical[7], canonical[8], canonical[9], canonical[10], canonical[11]);
+    println!("Term characters (12): {} / {} / {} / {} / {} / {} / {} / {} / {} / {} / {} / {}", 
+        characters[0], characters[1], characters[2], characters[3], characters[4], characters[5], 
+        characters[6], characters[7], characters[8], characters[9], characters[10], characters[11]);
     let mut terms = Vec::new();
     
-    for (i, &canonical_term) in canonical.iter().enumerate() {
+    for (i, &term_character) in characters.iter().enumerate() {
         let term = get_optional_input(
-            &format!("Enter term {} (or press Enter for '{}'): ", i + 1, canonical_term),
-            canonical_term
+            &format!("Enter term {} (or press Enter for '{}'): ", i + 1, term_character),
+            term_character
         )?;
         terms.push(term);
     }

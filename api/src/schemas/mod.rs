@@ -22,7 +22,7 @@ pub trait Schema: Send + Sync {
     /// The term designation - what individual elements should be called (replaces "terms")
     fn term_designation(&self) -> &'static str;
     
-    fn canonical_terms(&self) -> &'static [&'static str];
+    fn term_characters(&self) -> &'static [&'static str];
     
     /// The name for the 1st order connectives within this system
     fn first_order_connectives_name(&self) -> &'static str;
@@ -48,7 +48,7 @@ pub use canonical::{
 };
 
 // Re-export providers for convenience
-pub use providers::{SchemaProvider, BennettSchemas};
+pub use providers::{SchemaProvider, BennettSchemas}; 
 
 #[cfg(test)]
 mod tests {

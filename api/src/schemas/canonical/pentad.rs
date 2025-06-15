@@ -21,7 +21,7 @@ impl crate::schemas::Schema for PentadSchema {
         "Limits"
     }
     
-    fn canonical_terms(&self) -> &'static [&'static str] { 
+    fn term_characters(&self) -> &'static [&'static str] { 
         &["Quintessence", "Higher Potential", "Lower Potential", "Purpose", "Source"] 
     }
     

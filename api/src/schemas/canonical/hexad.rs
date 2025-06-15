@@ -21,7 +21,7 @@ impl crate::schemas::Schema for HexadSchema {
         "Laws"
     }
     
-    fn canonical_terms(&self) -> &'static [&'static str] { 
+    fn term_characters(&self) -> &'static [&'static str] { 
         &["Resources", "Values", "Options", "Criteria", "Facts", "Priorities"] 
     }
     

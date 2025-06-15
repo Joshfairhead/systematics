@@ -78,7 +78,7 @@ pub trait SystematicStructure {
     
     /// Get canonical term labels from the schema file
     /// For a monad: `["Unity"]`, for a dyad: `["Essence", "Existence"]`.
-    fn canonical_terms(&self) -> Vec<String>;
+    fn term_characters(&self) -> Vec<String>;
     
     /// Get the name for the first order connectives of this structure type
     fn first_order_connectives_name(&self) -> &str;

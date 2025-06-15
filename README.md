@@ -179,6 +179,7 @@ cargo test schemas                       # Run schema refactoring tests
 ## Development Status
 
 ### 🎯 **Recent Major Achievements**
+- ✅ **Terminology Refactor**: Renamed `canonical_terms` → `term_characters` throughout codebase for semantic clarity and consistency
 - ✅ **Schema Refactoring & Enhancement**: Added coherence attributes, term designations, and first-order connectives names to all schemas and structures
 - ✅ **Modular Schema Architecture**: Refactored monolithic `schemas.rs` (332 lines) into clean modular structure
 - ✅ **Complete Bidirectional Mapping API**: 8-method bidirectional API across all structures (Tetrad-Dodecad)
@@ -196,6 +197,17 @@ cargo test schemas                       # Run schema refactoring tests
 6. **Robust Architecture**: Unified schema-based design patterns across CLI and API
 7. **Comprehensive Testing**: 51 tests passing across all API structures and schemas
 8. **User-Friendly Interface**: Intuitive prompts with canonical defaults
+
+### 📝 **TODO Items**
+- [ ] **Monad Terminology Refactoring**: Change attributes terminology to match term designation - factor out generic "attributes" terminology and replace with "totalities" to align with Monad's specific term designation
+- [ ] **Structure Term Designation Consistency**: Structure files use term designations in the display methods println, but reference user_instances in the code. We may need to change the references again, ideally the semantics would be on point in the code "canonical_sources", "user_sources", "user_impulses" etc. but would add a comment mentioning that this is the term designation or add a prefix etc.
+- [ ] **CLI API Integration**: Fix remaining hardcoded canonical terms in CLI functions (tetrad, pentad, hexad, heptad, octad, dodecad) to use API schema access like triad now does
+- [ ] **Architectural Discussion - Unbiased API & Schema Modularity**: Design discussion around making the API truly unbiased and composable:
+  - Move Bennett's canonical schemas from core API to a provider system
+  - Enable loading alternative schema perspectives (Buddhist, other schools of thought)
+  - Consider microservices architecture for maximum modularity
+  - Design schema provider interface for pluggable systematic frameworks
+  - Evaluate separation of concerns between core API and canonical implementations
 
 ### 🌐 **Future Development Roadmap**
 

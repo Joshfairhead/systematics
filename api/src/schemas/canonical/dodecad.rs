@@ -22,7 +22,7 @@ impl crate::schemas::Schema for DodecadSchema {
         "Tones" // TODO: Verify with Bennett's canonical texts
     }
     
-    fn canonical_terms(&self) -> &'static [&'static str] { 
+    fn term_characters(&self) -> &'static [&'static str] { 
         &["Autocracy", "Domination", "Creativity", "Pattern", "Individuality", "Structure", "Repetition", "Potentiality", "Subsistence", "Relatedness", "Polarity", "Wholeness"] 
     }
     

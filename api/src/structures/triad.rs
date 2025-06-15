@@ -69,18 +69,18 @@ impl Triad {
         3
     }
     
-    /// Map a canonical term to its positional coordinate
-    /// Returns the 0-based index for the given canonical term
-    pub fn canonical_term_to_position(&self, canonical_term: &str) -> Option<usize> {
-        let canonical_terms = self.schema.canonical_terms();
-        canonical_terms.iter().position(|&term| term == canonical_term)
+    /// Map a term character to its positional coordinate
+    /// Returns the 0-based index for the given term character
+    pub fn term_character_to_position(&self, term_character: &str) -> Option<usize> {
+        let term_characters = self.schema.term_characters();
+        term_characters.iter().position(|&term| term == term_character)
     }
     
-    /// Map a positional coordinate to its canonical term
-    /// Returns the canonical term for the given 0-based position index
-    pub fn canonical_term_from_position(&self, position: usize) -> Option<&str> {
-        let canonical_terms = self.schema.canonical_terms();
-        canonical_terms.get(position).copied()
+    /// Map a positional coordinate to its term character
+    /// Returns the term character for the given 0-based position index
+    pub fn term_character_from_position(&self, position: usize) -> Option<&str> {
+        let term_characters = self.schema.term_characters();
+        term_characters.get(position).copied()
     }
     
     /// Map a user instance to its positional coordinate
@@ -95,16 +95,16 @@ impl Triad {
         self.user_instances.get(position).map(|s| s.as_str())
     }
     
-    /// Map a position to its canonical term (alias for canonical_term_from_position)
-    /// Returns the canonical term for the given 0-based position index
-    pub fn position_to_canonical_term(&self, position: usize) -> Option<&str> {
-        self.canonical_term_from_position(position)
+    /// Map a position to its term character (alias for term_character_from_position)
+    /// Returns the term character for the given 0-based position index
+    pub fn position_to_term_character(&self, position: usize) -> Option<&str> {
+        self.term_character_from_position(position)
     }
     
-    /// Map a canonical term to its position (alias for canonical_term_to_position)
-    /// Returns the 0-based index for the given canonical term
-    pub fn position_from_canonical_term(&self, canonical_term: &str) -> Option<usize> {
-        self.canonical_term_to_position(canonical_term)
+    /// Map a term character to its position (alias for term_character_to_position)
+    /// Returns the 0-based index for the given term character
+    pub fn position_from_term_character(&self, term_character: &str) -> Option<usize> {
+        self.term_character_to_position(term_character)
     }
     
     /// Map a position to its user term (alias for instance_from_position)
@@ -156,8 +156,8 @@ impl SystematicStructure for Triad {
         self.schema.term_designation()
     }
     
-    fn canonical_terms(&self) -> Vec<String> {
-        self.schema.canonical_terms().iter().map(|s| s.to_string()).collect()
+    fn term_characters(&self) -> Vec<String> {
+        self.schema.term_characters().iter().map(|s| s.to_string()).collect()
     }
     
     fn first_order_connectives_name(&self) -> &str {
@@ -223,11 +223,12 @@ impl SystematicStructure for Triad {
     }
     
     fn display(&self) {
-        println!("\n=== {} ===", self.name);
-        println!("Type: Triad (3 positions)");
-        println!("Instances: {} ↔ {} ↔ {}", self.first_instance(), self.second_instance(), self.third_instance());
+        let header = "=== Triadic Structure ===";
+        println!("\n{}", header);
+        println!("Name: {}", self.name());
+        println!("Impulses: {} ↔ {} ↔ {}", self.first_instance(), self.second_instance(), self.third_instance());
         
-        // Show key relationships
+        // Show key relationships if they exist
         if !self.connectives.is_empty() {
             println!("Connectives:");
             for ((from, to), relationship) in &self.connectives {
@@ -238,9 +239,10 @@ impl SystematicStructure for Triad {
             }
         }
         
-        println!("Schema: {}", self.schema.name());
-        println!("ID: {}", &self.id[..8]);
-        println!("{}", "=".repeat(self.name.len() + 8));
+        println!();
+        println!("Metadata");
+        println!("ID: {}", &self.id[..8]); // Short ID for readability
+        println!("{}", "=".repeat(header.len()));
     }
 }
 
@@ -368,15 +370,15 @@ mod tests {
     }
 
     #[test]
-    fn test_canonical_terms() {
+    fn test_term_characters() {
         let triad = TriadBuilder::new()
             .name("Test Triad")
             .instances("A", "B", "C")
             .build()
             .unwrap();
         
-        let canonical = triad.canonical_terms();
-        assert_eq!(canonical, vec!["Will", "Function", "Being"]);
+        let characters = triad.term_characters();
+        assert_eq!(characters, vec!["Will", "Function", "Being"]);
     }
 
     #[test]
@@ -387,17 +389,17 @@ mod tests {
             .build()
             .unwrap();
         
-        // Test canonical term to position mapping
-        assert_eq!(triad.canonical_term_to_position("Will"), Some(0));
-        assert_eq!(triad.canonical_term_to_position("Function"), Some(1));
-        assert_eq!(triad.canonical_term_to_position("Being"), Some(2));
-        assert_eq!(triad.canonical_term_to_position("Invalid"), None);
+        // Test term character to position mapping
+        assert_eq!(triad.term_character_to_position("Will"), Some(0));
+        assert_eq!(triad.term_character_to_position("Function"), Some(1));
+        assert_eq!(triad.term_character_to_position("Being"), Some(2));
+        assert_eq!(triad.term_character_to_position("Invalid"), None);
         
-        // Test position to canonical term mapping
-        assert_eq!(triad.canonical_term_from_position(0), Some("Will"));
-        assert_eq!(triad.canonical_term_from_position(1), Some("Function"));
-        assert_eq!(triad.canonical_term_from_position(2), Some("Being"));
-        assert_eq!(triad.canonical_term_from_position(3), None);
+        // Test position to term character mapping
+        assert_eq!(triad.term_character_from_position(0), Some("Will"));
+        assert_eq!(triad.term_character_from_position(1), Some("Function"));
+        assert_eq!(triad.term_character_from_position(2), Some("Being"));
+        assert_eq!(triad.term_character_from_position(3), None);
         
         // Test position count
         assert_eq!(triad.position_count(), 3);
@@ -481,7 +483,7 @@ mod tests {
         assert_eq!(triad.user_terms()[0], "A");
         assert_eq!(triad.user_terms()[1], "B");
         assert_eq!(triad.user_terms()[2], "C");
-        assert_eq!(triad.canonical_terms(), vec!["Will", "Function", "Being"]);
+        assert_eq!(triad.term_characters(), vec!["Will", "Function", "Being"]);
         assert!(triad.validate().is_ok());
     }
     
@@ -507,16 +509,16 @@ mod tests {
             .build()
             .unwrap();
         
-        // Test canonical term position aliases
-        assert_eq!(triad.position_to_canonical_term(0), Some("Will"));
-        assert_eq!(triad.position_to_canonical_term(1), Some("Function"));
-        assert_eq!(triad.position_to_canonical_term(2), Some("Being"));
-        assert_eq!(triad.position_to_canonical_term(3), None);
+        // Test term character position aliases
+        assert_eq!(triad.position_to_term_character(0), Some("Will"));
+        assert_eq!(triad.position_to_term_character(1), Some("Function"));
+        assert_eq!(triad.position_to_term_character(2), Some("Being"));
+        assert_eq!(triad.position_to_term_character(3), None);
         
-        assert_eq!(triad.position_from_canonical_term("Will"), Some(0));
-        assert_eq!(triad.position_from_canonical_term("Function"), Some(1));
-        assert_eq!(triad.position_from_canonical_term("Being"), Some(2));
-        assert_eq!(triad.position_from_canonical_term("NonExistent"), None);
+        assert_eq!(triad.position_from_term_character("Will"), Some(0));
+        assert_eq!(triad.position_from_term_character("Function"), Some(1));
+        assert_eq!(triad.position_from_term_character("Being"), Some(2));
+        assert_eq!(triad.position_from_term_character("NonExistent"), None);
         
         // Test user term position aliases
         assert_eq!(triad.position_to_user_term(0), Some("MyWill"));
@@ -530,8 +532,8 @@ mod tests {
         assert_eq!(triad.position_from_user_term("Unknown"), None);
         
         // Verify aliases return same results as original methods
-        assert_eq!(triad.position_to_canonical_term(0), triad.canonical_term_from_position(0));
-        assert_eq!(triad.position_from_canonical_term("Will"), triad.canonical_term_to_position("Will"));
+        assert_eq!(triad.position_to_term_character(0), triad.term_character_from_position(0));
+        assert_eq!(triad.position_from_term_character("Will"), triad.term_character_to_position("Will"));
         assert_eq!(triad.position_to_user_term(0), triad.instance_from_position(0));
         assert_eq!(triad.position_from_user_term("MyWill"), triad.instance_to_position("MyWill"));
     }
