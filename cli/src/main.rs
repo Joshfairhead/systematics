@@ -130,13 +130,35 @@ fn get_yes_no_input(prompt: &str, default: bool) -> Result<bool, Box<dyn std::er
 fn create_monad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::error::Error>> {
     println!("\n--- Creating a Monad ---");
     
-    let name = get_optional_input("Enter a name for your monad: ", "Monad Structure")?;
-    let term = get_optional_input("Enter term (or press Enter for 'Unity'): ", "Unity")?;
+    let name = get_optional_input("Enter name (Press enter for Unity): ", "Unity")?;
+    let term = get_optional_input(&format!("Enter term (Press enter to use {}): ", name), &name)?;
     
-    let monad = api.create_monad()
+    // Collect attributes
+    let mut attributes = Vec::new();
+    println!("Enter attributes (press Enter when done):");
+    loop {
+        print!("Attribute (or Enter to finish): ");
+        std::io::stdout().flush()?;
+        
+        let mut input = String::new();
+        std::io::stdin().read_line(&mut input)?;
+        let trimmed = input.trim();
+        
+        if trimmed.is_empty() {
+            break;
+        }
+        attributes.push(trimmed.to_string());
+    }
+    
+    let mut builder = api.create_monad()
         .name(&name)
-        .term(&term)
-        .build()?;
+        .term(&term);
+    
+    for attr in attributes {
+        builder = builder.attribute(attr);
+    }
+    
+    let monad = builder.build()?;
     
     println!("\n✅ Created Monad:");
     monad.display();

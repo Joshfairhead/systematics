@@ -165,19 +165,30 @@ impl SystematicStructure for Monad {
     // -------------------------------------------------------------------------
     
     fn display(&self) {
-        println!("\n=== {} ===", self.name);
-        println!("Type: Monad (1 term)");
-        println!("Term: {}", self.term());
+        let header = "=== Monadic Structure ===";
+        println!("\n{}", header);
+        
+        // Special monad logic: if name and term are the same, only show name
+        if self.name == self.term() {
+            println!("Name: {}", self.name);
+        } else {
+            println!("Name: {}", self.name);
+            println!("Term: {}", self.term());
+        }
         
         if !self.attributes.is_empty() {
-            println!("Attributes: {}", self.attributes.join(", "));
+            println!("Attributes:");
+            for attr in &self.attributes {
+                println!("  - {}", attr);
+            }
         } else {
             println!("Attributes: None");
         }
         
-        println!("Schema: {}", self.schema.name());
+        println!();
+        println!("Metadata");
         println!("ID: {}", &self.id[..8]); // Short ID for readability
-        println!("{}", "=".repeat(self.name.len() + 8));
+        println!("{}", "=".repeat(header.len()));
     }
     
     // -------------------------------------------------------------------------

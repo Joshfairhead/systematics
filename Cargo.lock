@@ -961,6 +961,9 @@ dependencies = [
 [[package]]
 name = "systematics-cli"
 version = "0.1.0"
+dependencies = [
+ "systematics-api",
+]
 
 [[package]]
 name = "thiserror"
