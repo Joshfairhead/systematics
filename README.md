@@ -199,6 +199,8 @@ cargo test schemas                       # Run schema refactoring tests
 8. **User-Friendly Interface**: Intuitive prompts with canonical defaults
 
 ### 📝 **TODO Items**
+- [ ] **Graceful Error Handling**: Implement graceful error handling in CLI - when validation errors occur, allow user to correct the error rather than quitting the application
+- [ ] **Term Characters → Term Designation Refactor**: Change "term characters" to the relevant "term designation" for each system across the entire codebase so that each system's term characters are accurately referenced by their term designation (e.g., "totalities" for Monad, "poles" for Dyad, "impulses" for Triad, etc.)
 - [ ] **Monad Terminology Refactoring**: Change attributes terminology to match term designation - factor out generic "attributes" terminology and replace with "totalities" to align with Monad's specific term designation
 - [ ] **Structure Term Designation Consistency**: Structure files use term designations in the display methods println, but reference user_instances in the code. We may need to change the references again, ideally the semantics would be on point in the code "canonical_sources", "user_sources", "user_impulses" etc. but would add a comment mentioning that this is the term designation or add a prefix etc.
 - [ ] **CLI API Integration**: Fix remaining hardcoded canonical terms in CLI functions (tetrad, pentad, hexad, heptad, octad, dodecad) to use API schema access like triad now does

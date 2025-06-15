@@ -223,14 +223,17 @@ impl SystematicStructure for Heptad {
     }
     
     fn display(&self) {
-        println!("=== {} ===", self.name);
-        println!("Type: Heptad ({} terms)", Self::TERM_COUNT);
-        print!("Terms: ");
-        for (i, term) in self.user_term_index.iter().enumerate() {
-            if i > 0 { print!(" → "); }
-            print!("{}", term);
-        }
-        println!();
+        let header = "=== Heptadic Structure ===";
+        println!("\n{}", header);
+        println!("Name: {}", self.name());
+        println!("{}:", self.term_designation());
+        println!("  - {}", self.user_term_index[0]);
+        println!("  - {}", self.user_term_index[1]);
+        println!("  - {}", self.user_term_index[2]);
+        println!("  - {}", self.user_term_index[3]);
+        println!("  - {}", self.user_term_index[4]);
+        println!("  - {}", self.user_term_index[5]);
+        println!("  - {}", self.user_term_index[6]);
         
         if !self.attributes.is_empty() {
             println!("Attributes: {}", self.attributes.join(", "));
@@ -245,6 +248,11 @@ impl SystematicStructure for Heptad {
                     relationship);
             }
         }
+        
+        println!();
+        println!("Metadata");
+        println!("ID: {}", &self.id[..8]); // Short ID for readability
+        println!("{}", "=".repeat(header.len()));
     }
 }
 

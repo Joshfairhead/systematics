@@ -233,21 +233,20 @@ impl SystematicStructure for Pentad {
     }
     
     fn display(&self) {
-        println!("\n=== {} ===", self.name);
-        println!("Type: Pentad (5 terms)");
+        let header = "=== Pentadic Structure ===";
+        println!("\n{}", header);
+        println!("Name: {}", self.name());
+        println!("{}:", self.term_designation());
+        println!("  - {}", self.user_term_index[0]);
+        println!("  - {}", self.user_term_index[1]);
+        println!("  - {}", self.user_term_index[2]);
+        println!("  - {}", self.user_term_index[3]);
+        println!("  - {}", self.user_term_index[4]);
         
-        // Display terms with arrows
-        for (i, term) in self.user_term_index.iter().enumerate() {
-            if i < self.user_term_index.len() - 1 {
-                print!("{} → ", term);
-            } else {
-                println!("{}", term);
-            }
-        }
-        
-        println!("Schema: {}", self.schema.name());
-        println!("ID: {}", &self.id[..8]);
-        println!("{}", "=".repeat(self.name.len() + 8));
+        println!();
+        println!("Metadata");
+        println!("ID: {}", &self.id[..8]); // Short ID for readability
+        println!("{}", "=".repeat(header.len()));
     }
 }
 
@@ -338,10 +337,10 @@ mod tests {
         
         let characters = pentad.term_characters();
         assert_eq!(characters.len(), 5);
-        assert_eq!(characters[0], "Quintessence");
+        assert_eq!(characters[0], "Purpose");
         assert_eq!(characters[1], "Higher Potential");
-        assert_eq!(characters[2], "Lower Potential");
-        assert_eq!(characters[3], "Purpose");
+        assert_eq!(characters[2], "Quintessence");
+        assert_eq!(characters[3], "Lower Potential");
         assert_eq!(characters[4], "Source");
     }
 

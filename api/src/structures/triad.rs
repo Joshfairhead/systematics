@@ -226,7 +226,10 @@ impl SystematicStructure for Triad {
         let header = "=== Triadic Structure ===";
         println!("\n{}", header);
         println!("Name: {}", self.name());
-        println!("Impulses: {} ↔ {} ↔ {}", self.first_instance(), self.second_instance(), self.third_instance());
+        println!("Impulses:");
+        println!("  - {}", self.first_instance());
+        println!("  - {}", self.second_instance());
+        println!("  - {}", self.third_instance());
         
         // Show key relationships if they exist
         if !self.connectives.is_empty() {

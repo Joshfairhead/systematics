@@ -212,13 +212,16 @@ impl SystematicStructure for Hexad {
     }
     
     fn display(&self) {
-        println!("=== {} ===", self.name);
-        println!("Type: Hexad ({} terms)", Self::TERM_COUNT);
-        println!("Terms: {} → {} → {} → {} → {} → {}", 
-                 self.user_term_index[0], self.user_term_index[1], self.user_term_index[2],
-                 self.user_term_index[3], self.user_term_index[4], self.user_term_index[5]);
-        
-
+        let header = "=== Hexadic Structure ===";
+        println!("\n{}", header);
+        println!("Name: {}", self.name());
+        println!("{}:", self.term_designation());
+        println!("  - {}", self.user_term_index[0]);
+        println!("  - {}", self.user_term_index[1]);
+        println!("  - {}", self.user_term_index[2]);
+        println!("  - {}", self.user_term_index[3]);
+        println!("  - {}", self.user_term_index[4]);
+        println!("  - {}", self.user_term_index[5]);
         
         if !self.connectives.is_empty() {
             println!("Connectives:");
@@ -229,6 +232,11 @@ impl SystematicStructure for Hexad {
                     relationship);
             }
         }
+        
+        println!();
+        println!("Metadata");
+        println!("ID: {}", &self.id[..8]); // Short ID for readability
+        println!("{}", "=".repeat(header.len()));
     }
 }
 

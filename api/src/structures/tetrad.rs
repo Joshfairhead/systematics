@@ -239,13 +239,14 @@ impl SystematicStructure for Tetrad {
     }
     
     fn display(&self) {
-        println!("\n=== {} ===", self.name);
-        println!("Type: Tetrad (4 terms)");
-        println!("Terms: {} → {} → {} → {}", 
-                 self.user_term_index[0], 
-                 self.user_term_index[1], 
-                 self.user_term_index[2],
-                 self.user_term_index[3]);
+        let header = "=== Tetradic Structure ===";
+        println!("\n{}", header);
+        println!("Name: {}", self.name());
+        println!("{}:", self.term_designation());
+        println!("  - {}", self.user_term_index[0]);
+        println!("  - {}", self.user_term_index[1]);
+        println!("  - {}", self.user_term_index[2]);
+        println!("  - {}", self.user_term_index[3]);
         
         // Show key relationships if any exist
         let mut relationships = Vec::new();
@@ -262,19 +263,15 @@ impl SystematicStructure for Tetrad {
         
         if !relationships.is_empty() {
             println!("Relationships:");
-            for (i, rel) in relationships.iter().enumerate() {
-                if i == 0 {
-                    println!("  {}", rel);
-                } else {
-                    println!("  {}", rel);
-                }
+            for rel in relationships.iter() {
+                println!("  {}", rel);
             }
         }
         
-        println!("Schema: {}", self.schema.name());
-        println!("ID: {}", &self.id[..8]);
-        println!("{}", "=".repeat(self.name.len() + 8));
         println!();
+        println!("Metadata");
+        println!("ID: {}", &self.id[..8]); // Short ID for readability
+        println!("{}", "=".repeat(header.len()));
     }
 }
 

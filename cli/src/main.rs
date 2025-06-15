@@ -239,15 +239,24 @@ fn create_triad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::err
 fn create_tetrad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::error::Error>> {
     println!("\n--- Creating a Tetrad ---");
     
-    let name = get_optional_input("Enter a name for your tetrad: ", "Tetrad Structure")?;
-    let characters = ["Ground", "Ideal", "Instrumental", "Directive"];
+    // Get term characters and term designation from the schema
+    use systematics_api::schemas::TetradSchema;
+    use systematics_api::schemas::Schema;
+    let schema = TetradSchema;
+    let term_characters = schema.term_characters();
+    let term_designation = schema.term_designation();
+    let schema_name = schema.name();
     
-    println!("Term characters: {} / {} / {} / {}", characters[0], characters[1], characters[2], characters[3]);
+    let name = get_optional_input(&format!("Enter name (Press enter for {}): ", schema_name), schema_name)?;
+    
+    println!("Term {}: {} / {} / {} / {}", 
+        term_designation.to_lowercase(), 
+        term_characters[0], term_characters[1], term_characters[2], term_characters[3]);
+    
     let mut terms = Vec::new();
-    
-    for (i, &term_character) in characters.iter().enumerate() {
+    for &term_character in term_characters.iter() {
         let term = get_optional_input(
-            &format!("Enter term {} (or press Enter for '{}'): ", i + 1, term_character),
+            &format!("Enter {} {} (Press enter for '{}'): ", term_character, term_designation.trim_end_matches('s'), term_character),
             term_character
         )?;
         terms.push(term);
@@ -268,16 +277,24 @@ fn create_tetrad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::er
 fn create_pentad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::error::Error>> {
     println!("\n--- Creating a Pentad ---");
     
-    let name = get_optional_input("Enter a name for your pentad: ", "Pentad Structure")?;
-    let characters = ["Quintessence", "Higher Potential", "Lower Potential", "Purpose", "Source"];
+    // Get term characters and term designation from the schema
+    use systematics_api::schemas::PentadSchema;
+    use systematics_api::schemas::Schema;
+    let schema = PentadSchema;
+    let term_characters = schema.term_characters();
+    let term_designation = schema.term_designation();
+    let schema_name = schema.name();
     
-    println!("Term characters: {} / {} / {} / {} / {}", 
-        characters[0], characters[1], characters[2], characters[3], characters[4]);
+    let name = get_optional_input(&format!("Enter name (Press enter for {}): ", schema_name), schema_name)?;
+    
+    println!("Term {}: {} / {} / {} / {} / {}", 
+        term_designation.to_lowercase(), 
+        term_characters[0], term_characters[1], term_characters[2], term_characters[3], term_characters[4]);
+    
     let mut terms = Vec::new();
-    
-        for (i, &term_character) in characters.iter().enumerate() {
+    for &term_character in term_characters.iter() {
         let term = get_optional_input(
-            &format!("Enter term {} (or press Enter for '{}'): ", i + 1, term_character),
+            &format!("Enter {} {} (Press enter for '{}'): ", term_character, term_designation.trim_end_matches('s'), term_character),
             term_character
         )?;
         terms.push(term);
@@ -298,16 +315,24 @@ fn create_pentad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::er
 fn create_hexad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::error::Error>> {
     println!("\n--- Creating a Hexad ---");
     
-    let name = get_optional_input("Enter a name for your hexad: ", "Hexad Structure")?;
-    let characters = ["Resources", "Values", "Options", "Criteria", "Facts", "Priorities"];
+    // Get term characters and term designation from the schema
+    use systematics_api::schemas::HexadSchema;
+    use systematics_api::schemas::Schema;
+    let schema = HexadSchema;
+    let term_characters = schema.term_characters();
+    let term_designation = schema.term_designation();
+    let schema_name = schema.name();
     
-    println!("Term characters: {} / {} / {} / {} / {} / {}", 
-        characters[0], characters[1], characters[2], characters[3], characters[4], characters[5]);
+    let name = get_optional_input(&format!("Enter name (Press enter for {}): ", schema_name), schema_name)?;
+    
+    println!("Term {}: {} / {} / {} / {} / {} / {}", 
+        term_designation.to_lowercase(), 
+        term_characters[0], term_characters[1], term_characters[2], term_characters[3], term_characters[4], term_characters[5]);
+    
     let mut terms = Vec::new();
-    
-        for (i, &term_character) in characters.iter().enumerate() {
+    for &term_character in term_characters.iter() {
         let term = get_optional_input(
-            &format!("Enter term {} (or press Enter for '{}'): ", i + 1, term_character),
+            &format!("Enter {} {} (Press enter for '{}'): ", term_character, term_designation.trim_end_matches('s'), term_character),
             term_character
         )?;
         terms.push(term);
@@ -328,16 +353,25 @@ fn create_hexad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::err
 fn create_heptad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::error::Error>> {
     println!("\n--- Creating a Heptad ---");
     
-    let name = get_optional_input("Enter a name for your heptad: ", "Heptad Structure")?;
-    let characters = ["Insight", "Research", "Design", "Synthesis", "Application", "Delivery", "Value"];
+    // Get term characters and term designation from the schema
+    use systematics_api::schemas::HeptadSchema;
+    use systematics_api::schemas::Schema;
+    let schema = HeptadSchema;
+    let term_characters = schema.term_characters();
+    let term_designation = schema.term_designation();
+    let schema_name = schema.name();
     
-    println!("Term characters: {} / {} / {} / {} / {} / {} / {}", 
-        characters[0], characters[1], characters[2], characters[3], characters[4], characters[5], characters[6]);
+    let name = get_optional_input(&format!("Enter name (Press enter for {}): ", schema_name), schema_name)?;
+    
+    println!("Term {}: {} / {} / {} / {} / {} / {} / {}", 
+        term_designation.to_lowercase(), 
+        term_characters[0], term_characters[1], term_characters[2], term_characters[3], 
+        term_characters[4], term_characters[5], term_characters[6]);
+    
     let mut terms = Vec::new();
-    
-        for (i, &term_character) in characters.iter().enumerate() {
+    for &term_character in term_characters.iter() {
         let term = get_optional_input(
-            &format!("Enter term {} (or press Enter for '{}'): ", i + 1, term_character),
+            &format!("Enter {} {} (Press enter for '{}'): ", term_character, term_designation.trim_end_matches('s'), term_character),
             term_character
         )?;
         terms.push(term);
@@ -358,17 +392,25 @@ fn create_heptad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::er
 fn create_octad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::error::Error>> {
     println!("\n--- Creating an Octad ---");
     
-    let name = get_optional_input("Enter a name for your octad: ", "Octad Structure")?;
-    let characters = ["Smallest Significant Holon", "Critical Functions", "Supportive Platform", "Necessary Resourcing", 
-                    "Integrative Totality", "Inherent Values", "Intrinsic Nature", "Organisational Modes"];
+    // Get term characters and term designation from the schema
+    use systematics_api::schemas::OctadSchema;
+    use systematics_api::schemas::Schema;
+    let schema = OctadSchema;
+    let term_characters = schema.term_characters();
+    let term_designation = schema.term_designation();
+    let schema_name = schema.name();
     
-    println!("Term characters: {} / {} / {} / {} / {} / {} / {} / {}", 
-        characters[0], characters[1], characters[2], characters[3], characters[4], characters[5], characters[6], characters[7]);
+    let name = get_optional_input(&format!("Enter name (Press enter for {}): ", schema_name), schema_name)?;
+    
+    println!("Term {}: {} / {} / {} / {} / {} / {} / {} / {}", 
+        term_designation.to_lowercase(), 
+        term_characters[0], term_characters[1], term_characters[2], term_characters[3], 
+        term_characters[4], term_characters[5], term_characters[6], term_characters[7]);
+    
     let mut terms = Vec::new();
-    
-        for (i, &term_character) in characters.iter().enumerate() {
+    for &term_character in term_characters.iter() {
         let term = get_optional_input(
-            &format!("Enter term {} (or press Enter for '{}'): ", i + 1, term_character),
+            &format!("Enter {} {} (Press enter for '{}'): ", term_character, term_designation.trim_end_matches('s'), term_character),
             term_character
         )?;
         terms.push(term);
@@ -389,32 +431,40 @@ fn create_octad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::err
 fn create_dodecad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::error::Error>> {
     println!("\n--- Creating a Dodecad ---");
     
-    let name = get_optional_input("Enter a name for your dodecad: ", "Dodecad Structure")?;
-    let characters = ["Autocracy", "Domination", "Creativity", "Pattern", "Individuality", "Structure", 
-                    "Repetition", "Potentiality", "Subsistence", "Relatedness", "Polarity", "Wholeness"];
+    // Get term characters and term designation from the schema
+    use systematics_api::schemas::DodecadSchema;
+    use systematics_api::schemas::Schema;
+    let schema = DodecadSchema;
+    let term_characters = schema.term_characters();
+    let term_designation = schema.term_designation();
+    let schema_name = schema.name();
     
-    println!("Term characters (12): {} / {} / {} / {} / {} / {} / {} / {} / {} / {} / {} / {}", 
-        characters[0], characters[1], characters[2], characters[3], characters[4], characters[5], 
-        characters[6], characters[7], characters[8], characters[9], characters[10], characters[11]);
+    let name = get_optional_input(&format!("Enter name (Press enter for {}): ", schema_name), schema_name)?;
+    
+    println!("Term {}: {} / {} / {} / {} / {} / {} / {} / {} / {} / {} / {} / {}", 
+        term_designation.to_lowercase(), 
+        term_characters[0], term_characters[1], term_characters[2], term_characters[3], 
+        term_characters[4], term_characters[5], term_characters[6], term_characters[7],
+        term_characters[8], term_characters[9], term_characters[10], term_characters[11]);
+    
     let mut terms = Vec::new();
-    
-    for (i, &term_character) in characters.iter().enumerate() {
+    for &term_character in term_characters.iter() {
         let term = get_optional_input(
-            &format!("Enter term {} (or press Enter for '{}'): ", i + 1, term_character),
+            &format!("Enter {} {} (Press enter for '{}'): ", term_character, term_designation.trim_end_matches('s'), term_character),
             term_character
         )?;
         terms.push(term);
     }
-    
+
     // Convert Vec<String> to [String; 12] array
     let terms_array: [String; 12] = [
         terms[0].clone(), terms[1].clone(), terms[2].clone(), terms[3].clone(),
         terms[4].clone(), terms[5].clone(), terms[6].clone(), terms[7].clone(),
         terms[8].clone(), terms[9].clone(), terms[10].clone(), terms[11].clone()
     ];
-    
+
     let dodecad = api.create_dodecad()
-        .name(name) 
+        .name(name)
         .terms(terms_array)
         .build()?;
     
