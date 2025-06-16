@@ -219,6 +219,139 @@ cargo test schemas                       # Run schema refactoring tests
   - Design schema provider interface for pluggable systematic frameworks
   - Evaluate separation of concerns between core API and canonical implementations
 
+## 🔧 **ACTIVE REFACTORING: API Library Separation**
+
+### **Refactoring Goal**
+Separate the pure mathematical structures (API) from the opinionated knowledge resources (Library) to create a truly neutral systematic framework that can accommodate multiple wisdom traditions while maintaining Bennett's work as the default.
+
+### **Architecture Vision**
+```
+SysteMaster/
+├── api/                    # Pure mathematical structures + interfaces
+├── library/               # Systematic knowledge resource collection
+│   ├── src/
+│   │   ├── bennett/       # Bennett's canonical resources
+│   │   ├── landry/        # Landry's resources (future)
+│   │   ├── gurdjieff/     # Gurdjieff's resources (future)
+│   │   ├── providers/     # Library provider implementations  
+│   │   └── lib.rs         # Schema interfaces + re-exports
+├── cli/                   # CLI using both api + library
+└── frontend/              # Web interface
+```
+
+### **Step-by-Step Refactoring Plan**
+
+#### **Phase 1: Create Library Crate Foundation**
+
+**Step 1.1: Create Library Crate Structure**
+- Create `library/` directory at workspace root
+- Create `library/Cargo.toml` with minimal dependencies
+- Create `library/src/lib.rs` as entry point
+- Update workspace `Cargo.toml` to include library member
+
+**Step 1.2: Move Schema Interface to Library**
+- Move `api/src/schemas/mod.rs` → `library/src/lib.rs` 
+- Move schema trait definitions (`Schema`, `Connective`, etc.)
+- Keep interface pure - no Bennett-specific implementations yet
+- Test that library crate compiles independently
+
+**Checkpoint**: Library crate exists and compiles with schema interfaces
+
+---
+
+#### **Phase 2: Move Bennett Resources to Library**
+
+**Step 2.1: Move Canonical Schemas**
+- Move `api/src/schemas/canonical/` → `library/src/bennett/`
+- Update internal imports within Bennett schemas
+- Create `library/src/bennett/mod.rs` to organize Bennett's resources
+
+**Step 2.2: Move Schema Providers**
+- Move `api/src/schemas/providers/` → `library/src/providers/`
+- Rename `BennettSchemas` → `BennettLibrary` for consistency
+- Update provider to reference Bennett resources in new location
+
+**Checkpoint**: Library contains all Bennett resources and compiles
+
+---
+
+#### **Phase 3: Update API Dependencies**
+
+**Step 3.1: Add Library Dependency to API**
+- Add `systematics-library = { path = "../library" }` to `api/Cargo.toml`
+- Remove schema implementations from `api/src/lib.rs`
+- Re-export library interfaces: `pub use systematics_library::{Schema, LibraryProvider};`
+
+**Step 3.2: Update Structure Imports**
+- Update all structure files to import from library crate
+- Change `use crate::schemas::*` → `use systematics_library::*`
+- Test that API compiles and all structures work
+
+**Checkpoint**: API uses library crate, all tests pass
+
+---
+
+#### **Phase 4: Update CLI Dependencies**
+
+**Step 4.1: Add Direct Library Dependency**
+- Add `systematics-library = { path = "../library" }` to `cli/Cargo.toml`
+- Update CLI imports from `systematics_api::schemas::*` → `systematics_library::*`
+
+**Step 4.2: Test CLI Functionality**
+- Run CLI and test each structure creation
+- Verify connectives still work for dyad through pentad
+- Ensure no functionality is broken
+
+**Checkpoint**: CLI works identically to before refactoring
+
+---
+
+#### **Phase 5: Clean Up and Documentation**
+
+**Step 5.1: Remove Dead Code**
+- Remove empty `api/src/schemas/` directory
+- Clean up any unused imports or exports
+- Update API documentation to reflect pure mathematical focus
+
+**Step 5.2: Update Library Documentation**
+- Document library as resource collection
+- Add contribution guidelines for new systematic traditions
+- Update README with new architecture explanation
+
+**Checkpoint**: Clean codebase, updated documentation
+
+---
+
+#### **Phase 6: Verify Complete System**
+
+**Step 6.1: Full System Test**
+- Run all API tests: `cargo test --package systematics-api`
+- Test CLI functionality across all structures
+- Verify no regressions in behavior
+
+**Step 6.2: Architecture Validation**
+- Confirm API is pure mathematical structures
+- Confirm library contains all knowledge resources
+- Confirm CLI can access both API and library independently
+
+**Final Checkpoint**: System works identically but with clean separation
+
+---
+
+### **Expected Benefits After Refactoring**
+- ✅ **Pure API**: Mathematical structures only, no opinions
+- ✅ **Pluggable Library**: Easy to add Landry, Gurdjieff, custom schemas
+- ✅ **Independent Contribution**: Library authors don't need API changes
+- ✅ **Resource Library Ready**: Library becomes data for inference engine training
+- ✅ **Agent Coordination**: API can load any library provider dynamically
+- ✅ **Microservices Ready**: Clean separation enables distributed architecture
+
+### **Risk Mitigation**
+- **Stop after each step** for feedback and validation
+- **Test compilation** after each major move
+- **Preserve all functionality** - no behavior changes
+- **Rollback plan** - git commits after each successful step
+
 ### 🌐 **Future Development Roadmap**
 
 #### **✅ Phase 1: API Restructuring (COMPLETED)**
