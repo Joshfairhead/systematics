@@ -180,8 +180,8 @@ fn create_monad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::err
     println!("\n--- Creating a Monad ---");
     
     // Get term characters and term designation from the schema
-    use systematics_api::schemas::MonadSchema;
-    use systematics_api::schemas::Schema;
+    use systematics_library::MonadSchema;
+    use systematics_library::Schema;
     let schema = MonadSchema;
     let term_characters = schema.term_characters();
     let term_designation = schema.term_designation();
@@ -230,8 +230,8 @@ fn create_dyad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::erro
     let name = get_optional_input("Enter name (Press enter for Dyad): ", "Dyad")?;
     
     // Get term characters and term designation from the schema
-    use systematics_api::schemas::DyadSchema;
-    use systematics_api::schemas::Schema;
+    use systematics_library::DyadSchema;
+    use systematics_library::Schema;
     let schema = DyadSchema;
     let term_characters = schema.term_characters();
     let term_designation = schema.term_designation();
@@ -270,8 +270,8 @@ fn create_triad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::err
     let name = get_optional_input("Enter name (Press enter for Triad): ", "Triad")?;
     
     // Get term characters and term designation from the schema
-    use systematics_api::schemas::TriadSchema;
-    use systematics_api::schemas::Schema;
+    use systematics_library::TriadSchema;
+    use systematics_library::Schema;
     let schema = TriadSchema;
     let term_characters = schema.term_characters();
     let term_designation = schema.term_designation();
@@ -309,8 +309,8 @@ fn create_tetrad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::er
     println!("\n--- Creating a Tetrad ---");
     
     // Get term characters and term designation from the schema
-    use systematics_api::schemas::TetradSchema;
-    use systematics_api::schemas::Schema;
+    use systematics_library::TetradSchema;
+    use systematics_library::Schema;
     let schema = TetradSchema;
     let term_characters = schema.term_characters();
     let term_designation = schema.term_designation();
@@ -392,8 +392,8 @@ fn create_pentad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::er
     println!("\n--- Creating a Pentad ---");
     
     // Get term characters and term designation from the schema
-    use systematics_api::schemas::PentadSchema;
-    use systematics_api::schemas::Schema;
+    use systematics_library::PentadSchema;
+    use systematics_library::Schema;
     let schema = PentadSchema;
     let term_characters = schema.term_characters();
     let term_designation = schema.term_designation();
@@ -474,8 +474,8 @@ fn create_hexad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::err
     println!("\n--- Creating a Hexad ---");
     
     // Get term characters and term designation from the schema
-    use systematics_api::schemas::HexadSchema;
-    use systematics_api::schemas::Schema;
+    use systematics_library::HexadSchema;
+    use systematics_library::Schema;
     let schema = HexadSchema;
     let term_characters = schema.term_characters();
     let term_designation = schema.term_designation();
@@ -512,8 +512,8 @@ fn create_heptad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::er
     println!("\n--- Creating a Heptad ---");
     
     // Get term characters and term designation from the schema
-    use systematics_api::schemas::HeptadSchema;
-    use systematics_api::schemas::Schema;
+    use systematics_library::HeptadSchema;
+    use systematics_library::Schema;
     let schema = HeptadSchema;
     let term_characters = schema.term_characters();
     let term_designation = schema.term_designation();
@@ -551,8 +551,8 @@ fn create_octad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::err
     println!("\n--- Creating an Octad ---");
     
     // Get term characters and term designation from the schema
-    use systematics_api::schemas::OctadSchema;
-    use systematics_api::schemas::Schema;
+    use systematics_library::OctadSchema;
+    use systematics_library::Schema;
     let schema = OctadSchema;
     let term_characters = schema.term_characters();
     let term_designation = schema.term_designation();
@@ -590,8 +590,8 @@ fn create_dodecad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::e
     println!("\n--- Creating a Dodecad ---");
     
     // Get term characters and term designation from the schema
-    use systematics_api::schemas::DodecadSchema;
-    use systematics_api::schemas::Schema;
+    use systematics_library::DodecadSchema;
+    use systematics_library::Schema;
     let schema = DodecadSchema;
     let term_characters = schema.term_characters();
     let term_designation = schema.term_designation();

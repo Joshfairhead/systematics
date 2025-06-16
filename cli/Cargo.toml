@@ -9,3 +9,4 @@ path = "src/main.rs"
 
 [dependencies]
 systematics-api = { path = "../api" }
+systematics-library = { path = "../library" }
