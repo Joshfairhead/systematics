@@ -269,171 +269,17 @@ SysteMaster/
 - **Natural Language**: "Bennett's canonical monadic system" flows perfectly
 - **Clean Separation**: Mathematical structures vs systematic knowledge
 
-### **Step-by-Step Refactoring Plan**
 
-#### **Phase 1: Create Library Crate Foundation**
 
-**Step 1.1: Create Library Crate Structure**
-- Create `library/` directory at workspace root
-- Create `library/Cargo.toml` with minimal dependencies
-- Create `library/src/lib.rs` as entry point
-- Update workspace `Cargo.toml` to include library member
 
-**Step 1.2: Move Schema Interface to Library**
-- Move `api/src/schemas/mod.rs` → `library/src/lib.rs` 
-- Move schema trait definitions (`Schema`, `Connective`, etc.)
-- Keep interface pure - no Bennett-specific implementations yet
-- Test that library crate compiles independently
-
-**Checkpoint**: Library crate exists and compiles with schema interfaces
-
----
-
-#### **Phase 2: Move Bennett Resources to Library**
-
-**Step 2.1: Move Canonical Schemas**
-- Move `api/src/schemas/canonical/` → `library/src/bennett/`
-- Update internal imports within Bennett schemas
-- Create `library/src/bennett/mod.rs` to organize Bennett's resources
-
-**Step 2.2: Move Schema Providers**
-- Move `api/src/schemas/providers/` → `library/src/providers/`
-- Rename `BennettSchemas` → `BennettLibrary` for consistency
-- Update provider to reference Bennett resources in new location
-
-**Checkpoint**: Library contains all Bennett resources and compiles
-
----
-
-#### **Phase 3: Update API Dependencies**
-
-**Step 3.1: Add Library Dependency to API**
-- Add `systematics-library = { path = "../library" }` to `api/Cargo.toml`
-- Remove schema implementations from `api/src/lib.rs`
-- Re-export library interfaces: `pub use systematics_library::{Schema, LibraryProvider};`
-
-**Step 3.2: Update Structure Imports**
-- Update all structure files to import from library crate
-- Change `use crate::schemas::*` → `use systematics_library::*`
-- Test that API compiles and all structures work
-
-**Checkpoint**: API uses library crate, all tests pass
-
----
-
-#### **Phase 4: Update CLI Dependencies**
-
-**Step 4.1: Add Direct Library Dependency**
-- Add `systematics-library = { path = "../library" }` to `cli/Cargo.toml`
-- Update CLI imports from `systematics_api::schemas::*` → `systematics_library::*`
-
-**Step 4.2: Test CLI Functionality**
-- Run CLI and test each structure creation
-- Verify connectives still work for dyad through pentad
-- Ensure no functionality is broken
-
-**Checkpoint**: CLI works identically to before refactoring
-
----
-
-#### **Phase 5: Clean Up and Documentation**
-
-**Step 5.1: Remove Dead Code**
-- Remove empty `api/src/schemas/` directory
-- Clean up any unused imports or exports
-- Update API documentation to reflect pure mathematical focus
-
-**Step 5.2: Update Library Documentation**
-- Document library as resource collection
-- Add contribution guidelines for new systematic traditions
-- Update README with new architecture explanation
-
-**Checkpoint**: Clean codebase, updated documentation
-
----
-
-#### **Phase 6: Verify Complete System**
-
-**Step 6.1: Full System Test**
-- Run all API tests: `cargo test --package systematics-api`
-- Test CLI functionality across all structures
-- Verify no regressions in behavior
-
-**Step 6.2: Architecture Validation**
-- Confirm API is pure mathematical structures
-- Confirm library contains all knowledge resources
-- Confirm CLI can access both API and library independently
-
-**Final Checkpoint**: System works identically but with clean separation
-
----
-
-### **Expected Benefits After Refactoring**
-- ✅ **Pure API**: Mathematical structures only, no opinions
-- ✅ **Pluggable Library**: Easy to add Landry, Gurdjieff, custom schemas
-- ✅ **Independent Contribution**: Library authors don't need API changes
-- ✅ **Resource Library Ready**: Library becomes data for inference engine training
-- ✅ **Agent Coordination**: API can load any library provider dynamically
-- ✅ **Microservices Ready**: Clean separation enables distributed architecture
-
-### **Risk Mitigation**
-- **Stop after each step** for feedback and validation
-- **Test compilation** after each major move
-- **Preserve all functionality** - no behavior changes
-- **Rollback plan** - git commits after each successful step
-
-### 🌐 **Future Development Roadmap**
-
-#### **✅ Phase 1: API Restructuring (COMPLETED)**
-1. ✅ **Library/Binary Split**: Core API library separated from CLI application
-2. ✅ **Unified Structure API**: Complete `SystematicStructure` trait implementation
-3. ✅ **Clean Builder Pattern**: Consistent API across all structure types (monad to dodecad)
-4. ✅ **Error Handling**: Proper error types with `thiserror` integration
-5. ✅ **Feature Flags**: Modular design ready for optional features
-6. ✅ **API Documentation**: Comprehensive rustdoc with examples in lib.rs
-7. ✅ **Modular System Architecture**: Broke monolithic `schemas.rs` into clean directory structure
-8. ✅ **Complete Bidirectional Mapping**: 8-method API for position ↔ term navigation across all structures
-9. ✅ **Six-Component Schema Enhancement**: Added coherence attributes, term designations, and first-order connectives names to all schemas and structures
-10. 🚧 **Position Descriptions**: Add position descriptions and rename function to indicate if the positions are terms, sources, influences etc.
-11. 🚧 **Semantic Alignment**: Align semantic positionality between numbers and terms. Once aligned remove number from CLI output
-
-#### **Phase 2: CLI Modernization**
-
-#### **Phase 2: Core Enhancements**
-11. **Missing Structures**: Implement Enneagram (9), Decad (10), Hendecad (11)
-12. **Additional Schemas**: Multiple schema options per structure type
-13. **Alternative Schemas**: Create alternative schemas beyond Bennett's canonical ones (now easy with modular structure)
-14. **Export/Import**: Save and load structures to/from files (JSON/YAML)
-15. **Enhanced Validation**: More sophisticated input validation and error handling
-
-#### **Phase 3: Advanced Features**
-16. **Database Integration**: Persistent storage for created structures
-17. **Relationship Mapping**: Advanced connective relationship analysis
-18. **Structure Comparison**: Compare different instances of same structure type
-19. **Batch Operations**: Create multiple structures from templates
-
-#### **Phase 4: Web Interface**
-20. **Frontend Revival**: Modern web interface using the existing Yew foundation
-21. **Interactive Creation**: Browser-based structure creation and editing
-22. **Visualization**: Graphical representation of structures and relationships
-23. **Collaborative Features**: Multi-user editing and sharing capabilities
 
 ## Systematic Structures
 
 ### Implementation Status
-- **Monad** (1 term): **Complete** ✅ - Enhanced with attributes system
-- **Dyad** (2 terms): **Complete** ✅ - Essence/Existence schema
-- **Triad** (3 terms): **Complete** ✅ - Will/Function/Being schema
-- **Tetrad** (4 terms): **Complete** ✅ - Full schema integration
-- **Pentad** (5 terms): **Complete** ✅ - Bennett's canonical terms
-- **Hexad** (6 terms): **Complete** ✅ - Comprehensive functionality
-- **Heptad** (7 terms): **Complete** ✅ - Insight through Value
-- **Octad** (8 terms): **Complete** ✅ - Holon through Modes
-- **Enneagram** (9 terms): **Not Implemented** ⏳
-- **Decad** (10 terms): **Not Implemented** ⏳
-- **Hendecad** (11 terms): **Not Implemented** ⏳
-- **Dodecad** (12 terms): **Complete** ✅ - Autocracy through Wholeness
-- **Six Permutations**: **Complete** ✅ - Named pattern generator
+- **Monad through Dodecad**: Complete ✅ (Missing: Enneagram, Decad, Hendecad)
+- **Bidirectional Navigation**: Complete ✅ - 8-method API across all structures
+- **Schema-Aware Connectives**: Complete ✅ - Meaningful relationship labels
+- **Six Permutations**: Complete ✅ - Named pattern generator
 
 ## Contributing
 
@@ -445,7 +291,7 @@ SysteMaster/
 5. Run `cargo run --bin systematics` to test the CLI interface
 
 ### Code Quality Standards
-- **Modular Schema Design**: All schemas organized in `api/src/schemas/canonical/` directory structure
+- **Modular System Design**: All systems organized in `library/src/bennett/` directory structure
 - **Bennett's Terminology**: Use authentic canonical terms and relationships
 - **Bidirectional API Compliance**: New structures must implement full 8-method bidirectional mapping API
 - **Comprehensive Testing**: All new features must include thorough test coverage
@@ -454,39 +300,39 @@ SysteMaster/
 
 ### Testing Guidelines
 - Unit tests for individual functions and methods
-- Integration tests for schema and structure interactions
+- Integration tests for system and structure interactions
 - Test both successful operations and error conditions
-- Maintain current test coverage standards (49+ API tests)
+- Maintain current test coverage standards (50+ API tests)
 - Test bidirectional mapping methods and aliases
-- Test schema-aware connective generation
+- Test system-aware connective generation
 
 ## Architecture
 
 ### Design Principles
-1. **Modular System Architecture**: Clean separation of canonical schemas, providers, and core traits
+1. **Modular System Architecture**: Clean separation of canonical systems, providers, and core traits
 2. **Bidirectional Navigation**: Complete position ↔ term mapping across all systematic structures
 3. **Authentic Implementation**: Bennett's canonical terms and relationships
 4. **Robust Validation**: Comprehensive input validation with clear feedback
-5. **Extensible Design**: Easy addition of alternative schemas and providers
+5. **Extensible Design**: Easy addition of alternative systems and providers
 6. **User Experience**: Intuitive CLI with helpful prompts and canonical defaults
 7. **Comprehensive Testing**: High test coverage ensuring reliability
 
 ### Technical Highlights
 - **🧩 Enhanced System Framework**: Six-component architecture with coherence attributes, term designations, and connectives naming
-- **🔄 Complete Bidirectional Mapping**: 8-method API for position ↔ term navigation (49 total methods)
-- **Schema-Aware Connectives**: Meaningful relationship labels (e.g., "Autocracy <> Domination")
+- **🔄 Complete Bidirectional Mapping**: 8-method API for position ↔ term navigation (50 total methods)
+- **System-Aware Connectives**: Meaningful relationship labels (e.g., "Autocracy <> Domination")
 - **Enhanced Monad System**: Unlimited custom attributes with streamlined input
-- **Extensible Architecture**: Easy addition of alternative schemas and custom providers
+- **Extensible Architecture**: Easy addition of alternative systems and custom providers
 - **Numerical Organization**: Clear structure naming (structure1_monad, structure2_dyad, etc.)
 - **Clean Rust Architecture**: Leverages Rust's type system for safety and performance
 - **Interactive CLI**: User-friendly command-line interface with validation loops
 - **Named Permutations**: Semantic labeling of permutation patterns
 - **Canonical Defaults**: Press Enter to use authentic Bennett terminology
-- **Test-Driven Development**: Comprehensive test suite ensures reliability (51 API tests)
+- **Test-Driven Development**: Comprehensive test suite ensures reliability (50 API tests)
 
 ### System Architecture
-The modular schema system provides:
-- **🏗️ Canonical Schema Directory**: Individual files for each systematic structure (`monad.rs` through `dodecad.rs`)
+The modular system architecture provides:
+- **🏗️ Canonical System Directory**: Individual files for each systematic structure (`monad.rs` through `dodecad.rs`)
 - **🔄 Bidirectional Mapping**: Complete position ↔ term navigation with aliases
 - **🏢 Schema Providers**: Extensible provider system for different schema sets
 - **⚡ Interactive Selection**: Automatic schema application

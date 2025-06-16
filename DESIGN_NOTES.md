@@ -68,7 +68,7 @@ Being (Symbolic):        Our symbol sets act as reconciling bridge
 
 **The Qualitative Number Equivalence Pattern:**
 ```
-Position 1 (Active/Will):      Source ≡ Perspective ≡ Will
+Position 1 (Active/Will):      Source ≡ Perspective ≡ Will = Event
 Position 2 (Passive/Function): Resource ≡ Language ≡ Function  
 Position 3 (Reconciling/Being): Provider ≡ Agent ≡ Being
 ```
@@ -85,7 +85,7 @@ Position 3 (Reconciling/Being): Provider ≡ Agent ≡ Being
 ```rust
 // Semantic hash based on qualitative position
 enum QualitativePosition {
-    Active,    // 1: Source, Perspective, Will
+    Active,    // 1: Source, Perspective, Will, Event
     Passive,   // 2: Resource, Language, Function
     Reconciling // 3: Provider, Being, Agent
 }
@@ -129,7 +129,7 @@ impl QualitativeHash for Agent {
 2. **Can we implement semantic hashing for automatic concept mapping?**
 3. **What patterns emerge when applying this to larger systematic structures?**
 
-### BREAKTHROUGH: Multidimensional Knowledge Graph Architecture
+### Hypothesis: Multidimensional Knowledge Graph Architecture
 
 **Horizontal vs Vertical Information Dimensions:**
 
@@ -146,13 +146,13 @@ GurdjieffSource::get_system(3) -> Affirming/Denying/Reconciling
 Semantic equivalences across qualitative positions:
 ```rust
 // Position 1 equivalences across all domains
-QualitativePosition::Active -> ["Will", "Active", "Affirming", "Source", "Perspective"]
+QualitativePosition::Active -> ["Will", "Active", "Affirming", "Source", "Perspective", "Event"]
 QualitativePosition::Passive -> ["Function", "Passive", "Denying", "Resource", "Language"]
 QualitativePosition::Reconciling -> ["Being", "Neutral", "Reconciling", "Provider", "Agent"]
 ```
 
 #### Mutual Information Flow:
-**Key Discovery**: Vertical content additions automatically populate horizontal meaning vectors.
+**Key Desire**: Vertical content additions automatically populate horizontal meaning vectors.
 
 **Process:**
 1. **Add New Source Vertically**: 
