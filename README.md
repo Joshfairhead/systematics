@@ -224,6 +224,22 @@ cargo test schemas                       # Run schema refactoring tests
 ### **Refactoring Goal**
 Separate the pure mathematical structures (API) from the opinionated knowledge resources (Library) to create a truly neutral systematic framework that can accommodate multiple wisdom traditions while maintaining Bennett's work as the default.
 
+### **Current Status: Phase 2 - Move Bennett Resources to Library**
+- ✅ **Phase 1 Complete**: Library crate foundation with schema interfaces
+- 🚧 **Phase 2 In Progress**: Moving Bennett resources to library
+  - ✅ Step 2.1: Moved canonical schemas to `library/src/bennett/`
+  - 🚧 Step 2.2: Moving schema providers (testing compilation)
+
+### **Planned Sequence**
+1. **Complete Library Separation** (Current branch: `refactor-api-library-separation`)
+   - Finish Phase 2-6 of library separation
+   - Maintain all existing functionality
+   - Clean architectural separation
+2. **Terminology Refactor** (Future branch: `refactor-schema-to-resource-terminology`)
+   - Schema → Resource (aligns with REA accounting principles)
+   - LibraryProvider → Source, BennettLibrary → Bennett
+   - Clean, semantically aligned terminology
+
 ### **Architecture Vision**
 ```
 SysteMaster/
