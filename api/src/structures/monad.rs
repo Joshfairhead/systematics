@@ -1,8 +1,5 @@
-use crate::{
-    SystematicStructure, 
-    schemas::{Schema, MonadSchema}, 
-    error::{Result, SystematicsError}
-};
+use crate::{SystematicStructure, error::{Result, SystematicsError}};
+use systematics_library::{Schema, MonadSchema};
 use uuid::Uuid;
 use std::collections::HashMap;
 
@@ -132,7 +129,7 @@ impl SystematicStructure for Monad {
     // Schema & Structure
     // -------------------------------------------------------------------------
     
-    fn schema(&self) -> &dyn Schema {
+    fn schema(&self) -> &dyn systematics_library::Schema {
         &self.schema
     }
     

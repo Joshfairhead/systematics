@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use uuid::Uuid;
-use crate::{SystematicStructure, schemas::{Schema, HexadSchema}, error::{Result, SystematicsError}};
+use crate::{SystematicStructure, error::{Result, SystematicsError}};
+use systematics_library::{Schema, HexadSchema};
 
 /// Hexad: Six-term systematic structure representing hexadic relationships
 /// 
@@ -157,7 +158,7 @@ impl SystematicStructure for Hexad {
         &self.user_term_index
     }
     
-    fn schema(&self) -> &dyn Schema {
+    fn schema(&self) -> &dyn systematics_library::Schema {
         &self.schema
     }
     

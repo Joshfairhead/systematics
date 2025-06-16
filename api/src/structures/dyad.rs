@@ -1,9 +1,6 @@
 // Placeholder for Dyad structure - will be implemented similar to Monad
-use crate::{
-    SystematicStructure, 
-    schemas::{Schema, DyadSchema}, 
-    error::{Result, SystematicsError}
-};
+use crate::{SystematicStructure, error::{Result, SystematicsError}};
+use systematics_library::{Schema, DyadSchema};
 use uuid::Uuid;
 use std::collections::HashMap;
 
@@ -202,7 +199,7 @@ impl SystematicStructure for Dyad {
     // Schema & Structure
     // -------------------------------------------------------------------------
     
-    fn schema(&self) -> &dyn Schema {
+    fn schema(&self) -> &dyn systematics_library::Schema {
         &self.schema
     }
     

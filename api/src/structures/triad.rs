@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use uuid::Uuid;
-use crate::{SystematicStructure, schemas::{Schema, TriadSchema}, error::{Result, SystematicsError}};
+use crate::{SystematicStructure, error::{Result, SystematicsError}};
+use systematics_library::{Schema, TriadSchema};
 
 /// A triadic structure representing the fundamental three-fold pattern in Bennett's systematic framework.
 /// 
@@ -168,7 +169,7 @@ impl SystematicStructure for Triad {
         &self.user_instances
     }
     
-    fn schema(&self) -> &dyn Schema {
+    fn schema(&self) -> &dyn systematics_library::Schema {
         &self.schema
     }
     

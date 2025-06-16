@@ -29,7 +29,6 @@
 
 pub mod error;
 pub mod structures;
-pub mod schemas;
 pub mod permutations;
 
 // =============================================================================
@@ -38,7 +37,7 @@ pub mod permutations;
 
 pub use error::{SystematicsError, Result};
 pub use structures::*;
-pub use schemas::{Schema, SchemaProvider, BennettSchemas};
+pub use systematics_library::{Schema, LibraryProvider, BennettLibrary};
 pub use permutations::{Permutation, PermutationSet};
 
 // =============================================================================
@@ -97,7 +96,7 @@ pub trait SystematicStructure {
     // -------------------------------------------------------------------------
     
     /// Get the schema used for this structure
-    fn schema(&self) -> &dyn Schema;
+    fn schema(&self) -> &dyn systematics_library::Schema;
     
     // -------------------------------------------------------------------------
     // Validation & Integrity

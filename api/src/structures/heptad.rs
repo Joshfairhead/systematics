@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use uuid::Uuid;
-use crate::{SystematicStructure, schemas::{Schema, HeptadSchema}, error::{Result, SystematicsError}};
+use crate::{SystematicStructure, error::{Result, SystematicsError}};
+use systematics_library::{Schema, HeptadSchema};
 
 /// Heptad: Seven-term systematic structure representing heptadic relationships
 /// 
@@ -171,7 +172,7 @@ impl SystematicStructure for Heptad {
         &self.user_term_index
     }
     
-    fn schema(&self) -> &dyn Schema {
+    fn schema(&self) -> &dyn systematics_library::Schema {
         &self.schema
     }
     

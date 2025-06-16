@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use uuid::Uuid;
-use crate::{SystematicStructure, schemas::{Schema, OctadSchema}, error::{Result, SystematicsError}};
+use crate::{SystematicStructure, error::{Result, SystematicsError}};
+use systematics_library::{Schema, OctadSchema};
 
 /// Octad: Eight-term systematic structure representing octadic relationships
 /// 
@@ -171,7 +172,7 @@ impl SystematicStructure for Octad {
         &self.user_term_index
     }
     
-    fn schema(&self) -> &dyn Schema {
+    fn schema(&self) -> &dyn systematics_library::Schema {
         &self.schema
     }
     

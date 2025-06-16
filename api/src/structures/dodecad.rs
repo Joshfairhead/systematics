@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use uuid::Uuid;
-use crate::{SystematicStructure, schemas::{Schema, DodecadSchema}, error::{Result, SystematicsError}};
+use crate::{SystematicStructure, error::{Result, SystematicsError}};
+use systematics_library::{Schema, DodecadSchema};
 
 /// Dodecad: Twelve-term systematic structure representing dodecadic relationships
 /// 
@@ -172,7 +173,7 @@ impl SystematicStructure for Dodecad {
         &self.user_term_index
     }
     
-    fn schema(&self) -> &dyn Schema {
+    fn schema(&self) -> &dyn systematics_library::Schema {
         &self.schema
     }
     

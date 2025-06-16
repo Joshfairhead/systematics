@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use uuid::Uuid;
-use crate::{SystematicStructure, schemas::{Schema, PentadSchema}, error::{Result, SystematicsError}};
+use crate::{SystematicStructure, error::{Result, SystematicsError}};
+use systematics_library::{Schema, PentadSchema};
 
 /// Pentad: Five-term systematic structure representing pentadic relationships
 /// 
@@ -168,7 +169,7 @@ impl SystematicStructure for Pentad {
         &self.user_term_index
     }
     
-    fn schema(&self) -> &dyn Schema {
+    fn schema(&self) -> &dyn systematics_library::Schema {
         &self.schema
     }
     
