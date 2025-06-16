@@ -5,6 +5,8 @@
 //! systematic frameworks while keeping the core mathematical structures neutral.
 
 pub mod error;
+pub mod bennett;
+pub mod providers;
 
 // Core schema traits and types
 /// Represents a directional relationship between two terms in a schema
@@ -45,5 +47,10 @@ pub trait Schema: Send + Sync {
     }
 }
 
-// Re-export error types for convenience
-pub use error::{LibraryError, Result}; 
+// Re-export core types for convenience
+pub use error::{LibraryError, Result};
+pub use providers::{LibraryProvider, BennettLibrary};
+pub use bennett::{
+    MonadSchema, DyadSchema, TriadSchema, TetradSchema, 
+    PentadSchema, HexadSchema, HeptadSchema, OctadSchema, DodecadSchema
+}; 
