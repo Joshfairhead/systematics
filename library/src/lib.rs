@@ -2,7 +2,18 @@
 //! 
 //! A collection of systematic knowledge resources for different wisdom traditions.
 //! This library provides schema interfaces and implementations for various 
-//! systematic frameworks while keeping the core mathematical structures neutral.
+//! systematic frameworks, enabling pluggable knowledge sources while maintaining
+//! the qualitative significance of number as the organizing principle.
+//! 
+//! ## Architecture
+//! 
+//! The library separates mathematical structure (handled by the API) from 
+//! knowledge content (handled here). This enables:
+//! 
+//! - Multiple wisdom traditions (Bennett, Landry, Gurdjieff, etc.)
+//! - Pluggable schema providers
+//! - Resource library for inference engine training
+//! - REA (Resource-Event-Agent) accounting alignment
 
 pub mod error;
 pub mod bennett;

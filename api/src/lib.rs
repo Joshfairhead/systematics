@@ -1,6 +1,6 @@
 //! # Systematics API
 //! 
-//! A core library for creating and managing systematic structures based on Bennett's ontological frameworks.
+//! A core library for creating and managing systematic structures based on the qualitative significance of number.
 //! 
 //! This library provides a clean API for working with systematic structures from monad (1 term) 
 //! to dodecad (12 terms), plus permutation generation.
@@ -104,7 +104,7 @@ pub trait SystematicStructure {
     
     /// Validate the structure's internal consistency
     /// Checks that all terms are valid, relationships are consistent,
-    /// and the structure follows Bennett's systematic principles.
+    /// and the structure follows systematic principles.
     fn validate(&self) -> Result<()>;
     
     // -------------------------------------------------------------------------
