@@ -150,6 +150,14 @@ impl SystematicStructure for Tetrad {
         &self.name
     }
     
+    fn structure_type(&self) -> &str {
+        "tetrad"
+    }
+    
+    fn terms(&self) -> &[String] {
+        &self.user_term_index
+    }
+    
     fn coherence_attribute(&self) -> &str {
         self.system.coherence_attribute()
     }

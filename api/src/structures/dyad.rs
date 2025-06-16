@@ -171,6 +171,14 @@ impl SystematicStructure for Dyad {
         &self.name
     }
     
+    fn structure_type(&self) -> &str {
+        "dyad"
+    }
+    
+    fn terms(&self) -> &[String] {
+        &self.user_instances
+    }
+    
     fn coherence_attribute(&self) -> &str {
         self.system.coherence_attribute()
     }

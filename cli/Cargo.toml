@@ -8,5 +8,8 @@ name = "systematics"
 path = "src/main.rs"
 
 [dependencies]
+clap = { version = "4.5.40", features = ["derive"] }
+surrealdb = { version = "2.3.4", features = ["kv-mem"] }
 systematics-api = { path = "../api" }
 systematics-library = { path = "../library" }
+tokio = { version = "1.45.1", features = ["full"] }

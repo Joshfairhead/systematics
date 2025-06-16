@@ -1,90 +1,135 @@
 use systematics_api::{SystematicsApi, SystematicStructure};
 use std::io::{self, Write};
+use clap::{Parser, Subcommand};
+use tokio;
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let api = SystematicsApi::new();
-    
-    println!("How many terms in your system? (1, 2, 3, 4, 5, 6, 7, 8, 12, or P for permutations)");
-    println!("Note: All systems now use the new modular API architecture");
-    let mut choice_input = String::new();
-    io::stdin().read_line(&mut choice_input).expect("Failed to read choice");
+mod storage;
+use storage::{StorageArgs, StorageCli};
 
-    let choice = choice_input.trim();
+#[derive(Parser)]
+#[command(author, version, about, long_about = None)]
+#[command(name = "systematics")]
+struct Cli {
+    #[command(subcommand)]
+    command: Commands,
+}
+
+#[derive(Subcommand)]
+enum Commands {
+    /// Create a new systematic structure
+    Create {
+        /// Number of terms (1-12)
+        #[arg(short, long)]
+        terms: Option<u32>,
+    },
+    /// Manage storage (database operations)
+    Storage(StorageArgs),
+    /// Create permutations
+    Permutations,
+}
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let cli = Cli::parse();
     
-    // Handle permutations option
-    if choice.to_lowercase() == "p" || choice.to_lowercase() == "permutations" {
-        match create_permutations_interactive(&api) {
-            Ok(_) => {}, // Successfully created
-            Err(e) => eprintln!("Error creating permutations: {}", e),
+    match &cli.command {
+        Commands::Create { terms } => {
+            let api = SystematicsApi::new();
+            
+            let num_terms = match terms {
+                Some(n) => *n,
+                None => {
+                    println!("How many terms in your system? (1, 2, 3, 4, 5, 6, 7, 8, 12)");
+                    println!("Note: All systems now use the new modular API architecture");
+                    let mut choice_input = String::new();
+                    io::stdin().read_line(&mut choice_input).expect("Failed to read choice");
+                    choice_input.trim().parse::<u32>().unwrap_or(0)
+                }
+            };
+            
+            // Initialize storage for auto-saving (only if needed)
+            let storage_cli = match StorageCli::new().await {
+                Ok(cli) => Some(cli),
+                Err(e) => {
+                    eprintln!("⚠️  Warning: Could not initialize storage: {}", e);
+                    eprintln!("   Structures will not be auto-saved.");
+                    None
+                }
+            };
+            
+            match num_terms {
+                1 => {
+                    match create_monad_interactive(&api, storage_cli.as_ref()).await {
+                        Ok(_) => {}, // Successfully created
+                        Err(e) => eprintln!("Error creating monad: {}", e),
+                    }
+                }
+                2 => {
+                    match create_dyad_interactive(&api, storage_cli.as_ref()).await {
+                        Ok(_) => {}, // Successfully created
+                        Err(e) => eprintln!("Error creating dyad: {}", e),
+                    }
+                }
+                3 => {
+                    match create_triad_interactive(&api, storage_cli.as_ref()).await {
+                        Ok(_) => {}, // Successfully created
+                        Err(e) => eprintln!("Error creating triad: {}", e),
+                    }
+                }
+                4 => { 
+                    match create_tetrad_interactive(&api, storage_cli.as_ref()).await {
+                        Ok(_) => {}, // Successfully created
+                        Err(e) => eprintln!("Error creating tetrad: {}", e),
+                    }
+                }
+                5 => {
+                    match create_pentad_interactive(&api, storage_cli.as_ref()).await {
+                        Ok(_) => {}, // Successfully created
+                        Err(e) => eprintln!("Error creating pentad: {}", e),
+                    }
+                }
+                6 => {
+                    match create_hexad_interactive(&api, storage_cli.as_ref()).await {
+                        Ok(_) => {}, // Successfully created
+                        Err(e) => eprintln!("Error creating hexad: {}", e),
+                    }
+                }
+                7 => {
+                    match create_heptad_interactive(&api, storage_cli.as_ref()).await {
+                        Ok(_) => {}, // Successfully created
+                        Err(e) => eprintln!("Error creating heptad: {}", e),
+                    }
+                }
+                8 => {
+                    match create_octad_interactive(&api, storage_cli.as_ref()).await {
+                        Ok(_) => {}, // Successfully created
+                        Err(e) => eprintln!("Error creating octad: {}", e),
+                    }
+                }
+                12 => {
+                    match create_dodecad_interactive(&api, storage_cli.as_ref()).await {
+                        Ok(_) => {}, // Successfully created
+                        Err(e) => eprintln!("Error creating dodecad: {}", e),
+                    }
+                }
+                _ => {
+                    println!("Invalid number of terms. Please choose 1, 2, 3, 4, 5, 6, 7, 8, or 12.");
+                }
+            }
         }
-        return Ok(());
+        Commands::Storage(args) => {
+            let storage_cli = StorageCli::new().await?;
+            storage_cli.handle_command(args).await?;
+        }
+        Commands::Permutations => {
+            let api = SystematicsApi::new();
+            match create_permutations_interactive(&api) {
+                Ok(_) => {}, // Successfully created
+                Err(e) => eprintln!("Error creating permutations: {}", e),
+            }
+        }
     }
     
-    // Handle numeric choices
-    match choice.parse::<u32>() {
-        Ok(num_terms) => match num_terms {
-            1 => {
-                match create_monad_interactive(&api) {
-                    Ok(_monad) => {}, // Successfully created
-                    Err(e) => eprintln!("Error creating monad: {}", e),
-                }
-            }
-            2 => {
-                match create_dyad_interactive(&api) {
-                    Ok(_dyad) => {}, // Successfully created
-                    Err(e) => eprintln!("Error creating dyad: {}", e),
-                }
-            }
-            3 => {
-                match create_triad_interactive(&api) {
-                    Ok(_triad) => {}, // Successfully created
-                    Err(e) => eprintln!("Error creating triad: {}", e),
-                }
-            }
-            4 => { 
-                match create_tetrad_interactive(&api) {
-                    Ok(_tetrad) => {}, // Successfully created
-                    Err(e) => eprintln!("Error creating tetrad: {}", e),
-                }
-            }
-            5 => {
-                match create_pentad_interactive(&api) {
-                    Ok(_pentad) => {}, // Successfully created
-                    Err(e) => eprintln!("Error creating pentad: {}", e),
-                }
-            }
-            6 => {
-                match create_hexad_interactive(&api) {
-                    Ok(_hexad) => {}, // Successfully created
-                    Err(e) => eprintln!("Error creating hexad: {}", e),
-                }
-            }
-            7 => {
-                match create_heptad_interactive(&api) {
-                    Ok(_heptad) => {}, // Successfully created
-                    Err(e) => eprintln!("Error creating heptad: {}", e),
-                }
-            }
-            8 => {
-                match create_octad_interactive(&api) {
-                    Ok(_octad) => {}, // Successfully created
-                    Err(e) => eprintln!("Error creating octad: {}", e),
-                }
-            }
-            12 => {
-                match create_dodecad_interactive(&api) {
-                    Ok(_dodecad) => {}, // Successfully created
-                    Err(e) => eprintln!("Error creating dodecad: {}", e),
-                }
-            }
-            _ => {
-                println!("Invalid number of terms. Please choose 1, 2, 3, 4, 5, 6, 7, 8, or 12.");
-            }
-        },
-        Err(_) => {
-            println!("Invalid input. Please enter a number (1-12) or 'P' for permutations.");
-        }
-    }
     Ok(())
 }
 
@@ -145,7 +190,7 @@ fn get_forced_yes_no_input(prompt: &str) -> Result<bool, Box<dyn std::error::Err
 
 // Helper function for collecting connectives using term names from schema
 fn collect_connectives_with_schema(structure_name: &str, term_characters: &[&str], user_terms: &[String]) -> Result<Vec<((usize, usize), String)>, Box<dyn std::error::Error>> {
-    let add_connectives = get_forced_yes_no_input(&format!("Add connectives to {}? (y/n): ", structure_name))?;
+    let add_connectives = get_yes_no_input(&format!("Add connectives to {}? (y/n, default n): ", structure_name), false)?;
     
     if !add_connectives {
         return Ok(Vec::new());
@@ -176,7 +221,7 @@ fn collect_connectives_with_schema(structure_name: &str, term_characters: &[&str
 }
 
 // Interactive creation functions using the API
-fn create_monad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::error::Error>> {
+async fn create_monad_interactive(api: &SystematicsApi, storage_cli: Option<&StorageCli>) -> Result<(), Box<dyn std::error::Error>> {
     println!("\n--- Creating a Monad ---");
     
     // Get term characters and term designation from the schema
@@ -221,10 +266,14 @@ fn create_monad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::err
     monad.display();
     monad.validate()?;
     
+    if let Some(storage_cli) = storage_cli {
+        let _ = storage_cli.auto_save_structure(&monad, &name, None).await?;
+    }
+    
     Ok(())
 }
 
-fn create_dyad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::error::Error>> {
+async fn create_dyad_interactive(api: &SystematicsApi, storage_cli: Option<&StorageCli>) -> Result<(), Box<dyn std::error::Error>> {
     println!("\n--- Creating a Dyad ---");
     
     let name = get_optional_input("Enter name (Press enter for Dyad): ", "Dyad")?;
@@ -261,10 +310,14 @@ fn create_dyad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::erro
     dyad.display();
     dyad.validate()?;
     
+    if let Some(storage_cli) = storage_cli {
+        let _ = storage_cli.auto_save_structure(&dyad, &name, None).await?;
+    }
+    
     Ok(())
 }
 
-fn create_triad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::error::Error>> {
+async fn create_triad_interactive(api: &SystematicsApi, storage_cli: Option<&StorageCli>) -> Result<(), Box<dyn std::error::Error>> {
     println!("\n--- Creating a Triad ---");
     
     let name = get_optional_input("Enter name (Press enter for Triad): ", "Triad")?;
@@ -302,10 +355,14 @@ fn create_triad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::err
     triad.display();
     triad.validate()?;
     
+    if let Some(storage_cli) = storage_cli {
+        let _ = storage_cli.auto_save_structure(&triad, &name, None).await?;
+    }
+    
     Ok(())
 }
 
-fn create_tetrad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::error::Error>> {
+async fn create_tetrad_interactive(api: &SystematicsApi, storage_cli: Option<&StorageCli>) -> Result<(), Box<dyn std::error::Error>> {
     println!("\n--- Creating a Tetrad ---");
     
     // Get term characters and term designation from the schema
@@ -385,10 +442,14 @@ fn create_tetrad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::er
     tetrad.display();
     tetrad.validate()?;
     
+    if let Some(storage_cli) = storage_cli {
+        let _ = storage_cli.auto_save_structure(&tetrad, &name, None).await?;
+    }
+    
     Ok(())
 }
 
-fn create_pentad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::error::Error>> {
+async fn create_pentad_interactive(api: &SystematicsApi, storage_cli: Option<&StorageCli>) -> Result<(), Box<dyn std::error::Error>> {
     println!("\n--- Creating a Pentad ---");
     
     // Get term characters and term designation from the schema
@@ -467,10 +528,14 @@ fn create_pentad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::er
     pentad.display();
     pentad.validate()?;
     
+    if let Some(storage_cli) = storage_cli {
+        let _ = storage_cli.auto_save_structure(&pentad, &name, None).await?;
+    }
+    
     Ok(())
 }
 
-fn create_hexad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::error::Error>> {
+async fn create_hexad_interactive(api: &SystematicsApi, storage_cli: Option<&StorageCli>) -> Result<(), Box<dyn std::error::Error>> {
     println!("\n--- Creating a Hexad ---");
     
     // Get term characters and term designation from the schema
@@ -505,10 +570,14 @@ fn create_hexad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::err
     hexad.display();
     hexad.validate()?;
     
+    if let Some(storage_cli) = storage_cli {
+        let _ = storage_cli.auto_save_structure(&hexad, &name, None).await?;
+    }
+    
     Ok(())
 }
 
-fn create_heptad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::error::Error>> {
+async fn create_heptad_interactive(api: &SystematicsApi, storage_cli: Option<&StorageCli>) -> Result<(), Box<dyn std::error::Error>> {
     println!("\n--- Creating a Heptad ---");
     
     // Get term characters and term designation from the schema
@@ -536,7 +605,7 @@ fn create_heptad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::er
     }
 
     let heptad = api.create_heptad()
-        .name(name)
+        .name(name.clone())
         .terms(terms[0].clone(), terms[1].clone(), terms[2].clone(), terms[3].clone(), terms[4].clone(), terms[5].clone(), terms[6].clone())
         .build()?;
     
@@ -544,10 +613,14 @@ fn create_heptad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::er
     heptad.display();
     heptad.validate()?;
     
+    if let Some(storage_cli) = storage_cli {
+        let _ = storage_cli.auto_save_structure(&heptad, &name, None).await?;
+    }
+    
     Ok(())
 }
 
-fn create_octad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::error::Error>> {
+async fn create_octad_interactive(api: &SystematicsApi, storage_cli: Option<&StorageCli>) -> Result<(), Box<dyn std::error::Error>> {
     println!("\n--- Creating an Octad ---");
     
     // Get term characters and term designation from the schema
@@ -575,7 +648,7 @@ fn create_octad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::err
     }
 
     let octad = api.create_octad()
-        .name(name)
+        .name(name.clone())
         .terms(terms[0].clone(), terms[1].clone(), terms[2].clone(), terms[3].clone(), terms[4].clone(), terms[5].clone(), terms[6].clone(), terms[7].clone())
         .build()?;
     
@@ -583,10 +656,14 @@ fn create_octad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::err
     octad.display();
     octad.validate()?;
     
+    if let Some(storage_cli) = storage_cli {
+        let _ = storage_cli.auto_save_structure(&octad, &name, None).await?;
+    }
+    
     Ok(())
 }
 
-fn create_dodecad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::error::Error>> {
+async fn create_dodecad_interactive(api: &SystematicsApi, storage_cli: Option<&StorageCli>) -> Result<(), Box<dyn std::error::Error>> {
     println!("\n--- Creating a Dodecad ---");
     
     // Get term characters and term designation from the schema
@@ -622,13 +699,17 @@ fn create_dodecad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::e
     ];
 
     let dodecad = api.create_dodecad()
-        .name(name)
+        .name(name.clone())
         .terms(terms_array)
         .build()?;
     
     println!("\n✅ Created Dodecad:");
     dodecad.display();
     dodecad.validate()?;
+    
+    if let Some(storage_cli) = storage_cli {
+        let _ = storage_cli.auto_save_structure(&dodecad, &name, None).await?;
+    }
     
     Ok(())
 }

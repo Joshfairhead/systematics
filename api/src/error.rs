@@ -27,6 +27,18 @@ pub enum SystematicsError {
     #[error("Deserialization error: {0}")]
     Deserialization(String),
     
+    #[error("Storage error: {0}")]
+    Storage(String),
+    
+    #[error("Structure not found: {id}")]
+    StructureNotFound { id: String },
+    
+    #[error("Database connection error: {0}")]
+    DatabaseConnection(String),
+    
+    #[error("Query execution error: {0}")]
+    QueryExecution(String),
+    
     #[error("IO error: {source}")]
     Io {
         #[from]

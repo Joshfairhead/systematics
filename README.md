@@ -10,8 +10,21 @@ Systematics allows you to:
 - Generate six permutations with named patterns (Expansion, Interaction, Order, Concentration, Identity, Freedom)
 - Work with comprehensive systematic frameworks using Bennett's canonical terms and relationships
 - Manage unlimited custom attributes for monadic structures
+- Store and retrieve structures using graph-based database storage
+- Search and analyze relationships between systematic structures
 
 ## Current Features
+
+### ✅ **SurrealDB Graph Storage**
+Complete database integration with graph-based storage architecture:
+- **Persistent Storage**: Auto-save structures during creation with unique UUIDs
+- **Graph Representation**: Each structure creates nodes (terms) and edges (relationships)
+- **Semantic Search**: Search across structure names, descriptions, and terms
+- **Relationship Analysis**: Find related structures through shared terms
+- **Full CRUD Operations**: Create, Read, Update, Delete with comprehensive error handling
+- **Database Commands**: CLI interface for all storage operations (list, search, view, delete, stats)
+- **Metadata Management**: Additional properties and custom attributes storage
+- **Term Usage Tracking**: Find all structures containing specific terms
 
 ### ✅ **Schema-Based Implementation**
 All systematic structures now use a unified system-based architecture:
@@ -55,6 +68,7 @@ SysteMaster/
 ├── api/                                 # 🏗️ Core library with type-safe API ✅ COMPLETE
 │   ├── src/
 │   │   ├── lib.rs                       # Main API entry point and documentation
+│   │   ├── storage.rs                   # SurrealDB integration with graph storage ✅
 │   │   ├── structures/
 │   │   │   ├── monad.rs                 # Monad implementation ✅
 │   │   │   ├── dyad.rs                  # Dyad implementation ✅
@@ -88,6 +102,7 @@ SysteMaster/
 ├── cli/                                 # Command-line interface application
 │   ├── src/
 │   │   ├── main.rs                      # CLI entry point
+│   │   ├── storage.rs                   # Storage CLI commands and interface ✅
 │   │   ├── modules/
 │   │   │   ├── structure1_monad.rs     # Monad with attributes system ✅
 │   │   │   ├── structure2_dyad.rs      # Dyadic structures ✅
@@ -128,6 +143,18 @@ cargo run --bin systematics
 ```
 
 Select the number of terms in your system (1, 2, 3, 4, 5, 6, 7, 8, 12) or enter 'P' for the permutations generator.
+
+### Storage Commands
+```bash
+cargo run --bin systematics storage list              # List all stored structures
+cargo run --bin systematics storage search "term"     # Search structures
+cargo run --bin systematics storage view <id>         # View structure details
+cargo run --bin systematics storage delete <id>       # Delete structure
+cargo run --bin systematics storage related <id>      # Find related structures
+cargo run --bin systematics storage find-term "term"  # Find structures with term
+cargo run --bin systematics storage graph <id>        # Show structure graph
+cargo run --bin systematics storage stats             # Database statistics
+```
 
 ### Example: Creating a Monad
 ```
@@ -179,6 +206,9 @@ cargo test schemas                       # Run schema refactoring tests
 ## Development Status
 
 ### 🎯 **Recent Major Achievements**
+- ✅ **SurrealDB Integration**: Complete graph-based storage with auto-save, search, and relationship analysis
+- ✅ **Storage CLI Commands**: Full database management interface with 10+ storage operations
+- ✅ **Graph Architecture**: Nodes (terms) and edges (relationships) for advanced querying
 - ✅ **Terminology Refactor**: Renamed `canonical_terms` → `term_characters` throughout codebase for semantic clarity and consistency
 - ✅ **Schema Refactoring & Enhancement**: Added coherence attributes, term designations, and first-order connectives names to all schemas and structures
 - ✅ **Modular System Architecture**: Refactored monolithic `schemas.rs` (332 lines) into clean modular structure
@@ -191,12 +221,13 @@ cargo test schemas                       # Run schema refactoring tests
 ### 🔧 **Current Capabilities**
 1. **Complete CLI Implementation**: All systematic structures (1-12 terms) fully functional
 2. **✅ Complete API Library**: Type-safe Rust library with builder pattern and comprehensive error handling
-3. **🧩 Enhanced System Framework**: Six-component schema architecture with coherence attributes, term designations, and connectives naming
-4. **🔄 Bidirectional Mapping API**: Position ↔ Term navigation across all structures (49 methods total)
-5. **Authentic Bennett Schemas**: Proper canonical terminology and relationships with 100+ connectives
-6. **Robust Architecture**: Unified system-based design patterns across CLI and API
-7. **Comprehensive Testing**: 51 tests passing across all API structures and schemas
-8. **User-Friendly Interface**: Intuitive prompts with canonical defaults
+3. **🗄️ SurrealDB Storage**: Graph-based database with auto-save, search, and relationship analysis
+4. **🧩 Enhanced System Framework**: Six-component schema architecture with coherence attributes, term designations, and connectives naming
+5. **🔄 Bidirectional Mapping API**: Position ↔ Term navigation across all structures (49 methods total)
+6. **Authentic Bennett Schemas**: Proper canonical terminology and relationships with 100+ connectives
+7. **Robust Architecture**: Unified system-based design patterns across CLI and API
+8. **Comprehensive Testing**: 51 tests passing across all API structures and schemas
+9. **User-Friendly Interface**: Intuitive prompts with canonical defaults
 
 ### 📝 **TODO Items**
 - [ ] **Graceful Error Handling**: Implement graceful error handling in CLI - when validation errors occur, allow user to correct the error rather than quitting the application

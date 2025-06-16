@@ -1,0 +1,36 @@
+{
+  "structures": {
+    "29c00fce-096b-40cb-863b-ff3d242a3a61": {
+      "id": "29c00fce-096b-40cb-863b-ff3d242a3a61",
+      "name": "Monad",
+      "structure_type": "1-term",
+      "term_count": 1,
+      "user_terms": [
+        "Unity"
+      ],
+      "term_characters": [
+        "Unity"
+      ],
+      "connectives": [],
+      "attributes": {},
+      "created_at": "2025-06-16T19:14:44.313101Z",
+      "updated_at": "2025-06-16T19:14:44.313101Z",
+      "tags": []
+    }
+  },
+  "nodes": {
+    "29c00fce-096b-40cb-863b-ff3d242a3a61_0": {
+      "position": 0,
+      "canonical_term": "Unity",
+      "user_term": "Unity",
+      "structure_id": "29c00fce-096b-40cb-863b-ff3d242a3a61"
+    }
+  },
+  "edges": [],
+  "metadata": {
+    "version": "1.0.0",
+    "created_at": "2025-06-16T19:14:44.312672Z",
+    "last_updated": "2025-06-16T19:14:44.313101Z",
+    "total_structures": 1
+  }
+}

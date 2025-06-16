@@ -30,6 +30,7 @@
 pub mod error;
 pub mod structures;
 pub mod permutations;
+pub mod storage;
 
 // =============================================================================
 // Public Re-exports
@@ -39,6 +40,7 @@ pub use error::{SystematicsError, Result};
 pub use structures::*;
 pub use systematics_library::{System, LibraryProvider, BennettLibrary};
 pub use permutations::{Permutation, PermutationSet};
+pub use storage::{SurrealStorage, StoredStructure, GraphNode, GraphEdge};
 
 // =============================================================================
 // Core Traits
@@ -62,6 +64,12 @@ pub trait SystematicStructure {
     
     /// Human-readable name for this structure
     fn name(&self) -> &str;
+    
+    /// Get the structure type name (e.g., "monad", "dyad", "triad")
+    fn structure_type(&self) -> &str;
+    
+    /// Get current user-provided term values as a slice (for storage)
+    fn terms(&self) -> &[String];
     
     /// Get the coherence attribute for this structure type
     /// This defines what maintains internal consistency within the structure

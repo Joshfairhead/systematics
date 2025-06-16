@@ -149,6 +149,14 @@ impl SystematicStructure for Triad {
         &self.name
     }
     
+    fn structure_type(&self) -> &str {
+        "triad"
+    }
+    
+    fn terms(&self) -> &[String] {
+        &self.user_instances
+    }
+    
     fn coherence_attribute(&self) -> &str {
         self.system.coherence_attribute()
     }

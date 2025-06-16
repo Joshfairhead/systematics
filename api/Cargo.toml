@@ -1,20 +1,20 @@
 [package]
 name = "systematics-api"
-version.workspace = true
-edition.workspace = true
+version = "0.1.0"
+edition = "2021"
+
+[features]
+default = ["serde"]
+serde = ["dep:serde"]
 
 [dependencies]
 systematics-library = { path = "../library" }
+thiserror = "2.0"
 serde = { version = "1.0", features = ["derive"], optional = true }
-serde_json = { version = "1.0", optional = true }
-thiserror = "1.0"
+surrealdb = { version = "2.3", features = ["kv-mem"] }
+tokio = { version = "1.0", features = ["full"] }
 uuid = { version = "1.0", features = ["v4"] }
-
-[features]
-default = []
-cli = []
-web = ["wasm-bindgen"]
-serde_support = ["serde", "serde_json"]
+chrono = { version = "0.4", features = ["serde"] }
 
 [dependencies.wasm-bindgen]
 version = "0.2"

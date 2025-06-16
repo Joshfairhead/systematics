@@ -101,6 +101,14 @@ impl SystematicStructure for Monad {
         &self.name
     }
     
+    fn structure_type(&self) -> &str {
+        "monad"
+    }
+    
+    fn terms(&self) -> &[String] {
+        &self.user_term_index
+    }
+    
     fn coherence_attribute(&self) -> &str {
         self.system.coherence_attribute()
     }
