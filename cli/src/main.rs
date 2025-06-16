@@ -11,7 +11,7 @@ use storage::{StorageArgs, StorageCli};
 #[command(name = "systematics")]
 struct Cli {
     #[command(subcommand)]
-    command: Commands,
+    command: Option<Commands>,
 }
 
 #[derive(Subcommand)]
@@ -32,101 +32,240 @@ enum Commands {
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let cli = Cli::parse();
     
-    match &cli.command {
-        Commands::Create { terms } => {
-            let api = SystematicsApi::new();
-            
-            let num_terms = match terms {
-                Some(n) => *n,
-                None => {
-                    println!("How many terms in your system? (1, 2, 3, 4, 5, 6, 7, 8, 12)");
-                    println!("Note: All systems now use the new modular API architecture");
-                    let mut choice_input = String::new();
-                    io::stdin().read_line(&mut choice_input).expect("Failed to read choice");
-                    choice_input.trim().parse::<u32>().unwrap_or(0)
+    match cli.command {
+        Some(command) => {
+            // Command-line argument mode
+            match &command {
+                Commands::Create { terms } => {
+                    let api = SystematicsApi::new();
+                    
+                    let num_terms = match terms {
+                        Some(n) => *n,
+                        None => {
+                            println!("How many terms in your system? (1, 2, 3, 4, 5, 6, 7, 8, 12)");
+                            println!("Note: All systems now use the new modular API architecture");
+                            let mut choice_input = String::new();
+                            io::stdin().read_line(&mut choice_input).expect("Failed to read choice");
+                            choice_input.trim().parse::<u32>().unwrap_or(0)
+                        }
+                    };
+                    
+                    handle_structure_creation(num_terms, &api).await?;
                 }
-            };
-            
-            // Initialize storage for auto-saving (only if needed)
-            let storage_cli = match StorageCli::new().await {
-                Ok(cli) => Some(cli),
-                Err(e) => {
-                    eprintln!("⚠️  Warning: Could not initialize storage: {}", e);
-                    eprintln!("   Structures will not be auto-saved.");
-                    None
+                Commands::Storage(args) => {
+                    let storage_cli = StorageCli::new().await?;
+                    storage_cli.handle_command(args).await?;
                 }
-            };
-            
-            match num_terms {
-                1 => {
-                    match create_monad_interactive(&api, storage_cli.as_ref()).await {
+                Commands::Permutations => {
+                    let api = SystematicsApi::new();
+                    match create_permutations_interactive(&api) {
                         Ok(_) => {}, // Successfully created
-                        Err(e) => eprintln!("Error creating monad: {}", e),
+                        Err(e) => eprintln!("Error creating permutations: {}", e),
                     }
-                }
-                2 => {
-                    match create_dyad_interactive(&api, storage_cli.as_ref()).await {
-                        Ok(_) => {}, // Successfully created
-                        Err(e) => eprintln!("Error creating dyad: {}", e),
-                    }
-                }
-                3 => {
-                    match create_triad_interactive(&api, storage_cli.as_ref()).await {
-                        Ok(_) => {}, // Successfully created
-                        Err(e) => eprintln!("Error creating triad: {}", e),
-                    }
-                }
-                4 => { 
-                    match create_tetrad_interactive(&api, storage_cli.as_ref()).await {
-                        Ok(_) => {}, // Successfully created
-                        Err(e) => eprintln!("Error creating tetrad: {}", e),
-                    }
-                }
-                5 => {
-                    match create_pentad_interactive(&api, storage_cli.as_ref()).await {
-                        Ok(_) => {}, // Successfully created
-                        Err(e) => eprintln!("Error creating pentad: {}", e),
-                    }
-                }
-                6 => {
-                    match create_hexad_interactive(&api, storage_cli.as_ref()).await {
-                        Ok(_) => {}, // Successfully created
-                        Err(e) => eprintln!("Error creating hexad: {}", e),
-                    }
-                }
-                7 => {
-                    match create_heptad_interactive(&api, storage_cli.as_ref()).await {
-                        Ok(_) => {}, // Successfully created
-                        Err(e) => eprintln!("Error creating heptad: {}", e),
-                    }
-                }
-                8 => {
-                    match create_octad_interactive(&api, storage_cli.as_ref()).await {
-                        Ok(_) => {}, // Successfully created
-                        Err(e) => eprintln!("Error creating octad: {}", e),
-                    }
-                }
-                12 => {
-                    match create_dodecad_interactive(&api, storage_cli.as_ref()).await {
-                        Ok(_) => {}, // Successfully created
-                        Err(e) => eprintln!("Error creating dodecad: {}", e),
-                    }
-                }
-                _ => {
-                    println!("Invalid number of terms. Please choose 1, 2, 3, 4, 5, 6, 7, 8, or 12.");
                 }
             }
         }
-        Commands::Storage(args) => {
-            let storage_cli = StorageCli::new().await?;
-            storage_cli.handle_command(args).await?;
+        None => {
+            // Interactive menu mode (default when no arguments provided)
+            run_interactive_menu().await?;
         }
-        Commands::Permutations => {
-            let api = SystematicsApi::new();
-            match create_permutations_interactive(&api) {
+    }
+    
+    Ok(())
+}
+
+async fn run_interactive_menu() -> Result<(), Box<dyn std::error::Error>> {
+    println!("🔬 SysteMaster");
+    println!("=============");
+    println!();
+    
+    loop {
+        println!("Options:");
+        println!("1. Create structure    4. Permutations");
+        println!("2. View saved         5. Exit");
+        println!("3. Search");
+        println!();
+        print!("Choice (1-5): ");
+        io::stdout().flush()?;
+        
+        let mut input = String::new();
+        io::stdin().read_line(&mut input)?;
+        let choice = input.trim();
+        
+        match choice {
+            "1" => {
+                println!();
+                println!("Terms: 1=Monad 2=Dyad 3=Triad 4=Tetrad 5=Pentad 6=Hexad 7=Heptad 8=Octad 12=Dodecad");
+                print!("Number of terms: ");
+                io::stdout().flush()?;
+                
+                let mut terms_input = String::new();
+                io::stdin().read_line(&mut terms_input)?;
+                let num_terms = terms_input.trim().parse::<u32>().unwrap_or(0);
+                
+                let api = SystematicsApi::new();
+                if let Err(e) = handle_structure_creation(num_terms, &api).await {
+                    eprintln!("❌ {}", e);
+                }
+                println!();
+            }
+            "2" => {
+                println!();
+                print!("📚 Loading...");
+                io::stdout().flush()?;
+                
+                let timeout_duration = std::time::Duration::from_secs(3);
+                match tokio::time::timeout(timeout_duration, StorageCli::new()).await {
+                    Ok(Ok(storage_cli)) => {
+                        println!(" Done!");
+                        let args = StorageArgs {
+                            command: storage::StorageCommand::List,
+                        };
+                        if let Err(e) = storage_cli.handle_command(&args).await {
+                            eprintln!("❌ {}", e);
+                        }
+                    }
+                    Ok(Err(e)) => {
+                        println!();
+                        eprintln!("❌ Storage unavailable: {}", e);
+                    }
+                    Err(_) => {
+                        println!();
+                        eprintln!("❌ Storage timeout (using in-memory database)");
+                    }
+                }
+                println!();
+            }
+            "3" => {
+                println!();
+                print!("Search term: ");
+                io::stdout().flush()?;
+                
+                let mut search_input = String::new();
+                io::stdin().read_line(&mut search_input)?;
+                let search_term = search_input.trim().to_string();
+                
+                if !search_term.is_empty() {
+                    print!("🔍 Searching...");
+                    io::stdout().flush()?;
+                    
+                    let timeout_duration = std::time::Duration::from_secs(3);
+                    match tokio::time::timeout(timeout_duration, StorageCli::new()).await {
+                        Ok(Ok(storage_cli)) => {
+                            println!(" Done!");
+                            let args = StorageArgs {
+                                command: storage::StorageCommand::Search { query: search_term },
+                            };
+                            if let Err(e) = storage_cli.handle_command(&args).await {
+                                eprintln!("❌ {}", e);
+                            }
+                        }
+                        Ok(Err(e)) => {
+                            println!();
+                            eprintln!("❌ Storage unavailable: {}", e);
+                        }
+                        Err(_) => {
+                            println!();
+                            eprintln!("❌ Storage timeout");
+                        }
+                    }
+                } else {
+                    println!("❌ Enter a search term");
+                }
+                println!();
+            }
+            "4" => {
+                println!();
+                let api = SystematicsApi::new();
+                if let Err(e) = create_permutations_interactive(&api) {
+                    eprintln!("❌ {}", e);
+                }
+                println!();
+            }
+            "5" | "q" | "quit" | "exit" => {
+                println!("👋 Goodbye!");
+                return Ok(());
+            }
+            "" => {
+                // Just pressed enter, show menu again
+                continue;
+            }
+            _ => {
+                println!("❌ Enter 1-5");
+                println!();
+            }
+        }
+    }
+}
+
+async fn handle_structure_creation(num_terms: u32, api: &SystematicsApi) -> Result<(), Box<dyn std::error::Error>> {
+    // Initialize storage for auto-saving (only if needed)
+    let storage_cli = match StorageCli::new().await {
+        Ok(cli) => Some(cli),
+        Err(e) => {
+            eprintln!("⚠️  Warning: Could not initialize storage: {}", e);
+            eprintln!("   Structures will not be auto-saved.");
+            None
+        }
+    };
+    
+    match num_terms {
+        1 => {
+            match create_monad_interactive(&api, storage_cli.as_ref()).await {
                 Ok(_) => {}, // Successfully created
-                Err(e) => eprintln!("Error creating permutations: {}", e),
+                Err(e) => eprintln!("Error creating monad: {}", e),
             }
+        }
+        2 => {
+            match create_dyad_interactive(&api, storage_cli.as_ref()).await {
+                Ok(_) => {}, // Successfully created
+                Err(e) => eprintln!("Error creating dyad: {}", e),
+            }
+        }
+        3 => {
+            match create_triad_interactive(&api, storage_cli.as_ref()).await {
+                Ok(_) => {}, // Successfully created
+                Err(e) => eprintln!("Error creating triad: {}", e),
+            }
+        }
+        4 => { 
+            match create_tetrad_interactive(&api, storage_cli.as_ref()).await {
+                Ok(_) => {}, // Successfully created
+                Err(e) => eprintln!("Error creating tetrad: {}", e),
+            }
+        }
+        5 => {
+            match create_pentad_interactive(&api, storage_cli.as_ref()).await {
+                Ok(_) => {}, // Successfully created
+                Err(e) => eprintln!("Error creating pentad: {}", e),
+            }
+        }
+        6 => {
+            match create_hexad_interactive(&api, storage_cli.as_ref()).await {
+                Ok(_) => {}, // Successfully created
+                Err(e) => eprintln!("Error creating hexad: {}", e),
+            }
+        }
+        7 => {
+            match create_heptad_interactive(&api, storage_cli.as_ref()).await {
+                Ok(_) => {}, // Successfully created
+                Err(e) => eprintln!("Error creating heptad: {}", e),
+            }
+        }
+        8 => {
+            match create_octad_interactive(&api, storage_cli.as_ref()).await {
+                Ok(_) => {}, // Successfully created
+                Err(e) => eprintln!("Error creating octad: {}", e),
+            }
+        }
+        12 => {
+            match create_dodecad_interactive(&api, storage_cli.as_ref()).await {
+                Ok(_) => {}, // Successfully created
+                Err(e) => eprintln!("Error creating dodecad: {}", e),
+            }
+        }
+        _ => {
+            println!("❌ Invalid number of terms. Please choose 1, 2, 3, 4, 5, 6, 7, 8, or 12.");
         }
     }
     
@@ -738,5 +877,7 @@ fn create_permutations_interactive(api: &SystematicsApi) -> Result<(), Box<dyn s
     
     Ok(())
 }
+
+
 
 

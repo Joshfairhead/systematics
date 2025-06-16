@@ -13,6 +13,16 @@ Systematics allows you to:
 - Store and retrieve structures using graph-based database storage
 - Search and analyze relationships between systematic structures
 
+## Recent Achievements
+
+### 🚀 **CLI Refactor & Database Integration** (Latest)
+- **Simplified Command**: Reduced from `cargo run --package systematics-cli` to just `cargo run`
+- **Interactive Menu**: Clean, user-friendly interface with compact options layout
+- **Timeout Protection**: 3-second timeouts prevent database initialization hanging
+- **Centralized Errors**: All errors now use the unified `SystematicsError` system
+- **Better UX**: Loading indicators, graceful error handling, multiple exit options
+- **Auto-Save Integration**: Structures automatically saved with SurrealDB during creation
+
 ## Current Features
 
 ### ✅ **SurrealDB Graph Storage**
@@ -46,9 +56,12 @@ All systematic structures now use a unified system-based architecture:
 - **Permutations**: Six named permutation patterns for any three terms
 
 ### ✅ **Enhanced User Experience**
-- **CLI Interface**: Intuitive main menu for selecting systematic structures (1-12 terms) or permutations
-- **Streamlined Input**: Press Enter to use canonical terms, or provide custom instances
-- **Attribute Management**: Add unlimited descriptive attributes to monadic structures
+- **Simplified CLI**: Just `cargo run` - no complex commands needed
+- **Interactive Menu**: Clean, compact interface with numbered options
+- **Fast & Responsive**: 3-second timeouts prevent hanging, immediate feedback
+- **Graceful Error Handling**: Centralized error system with clear, concise messages
+- **Multiple Exit Options**: Type `5`, `q`, `quit`, or `exit` to close
+- **Auto-Save**: Structures automatically saved during creation with unique IDs
 - **Schema Selection**: Automatic application of appropriate Bennett schemas
 - **Comprehensive Testing**: 51 tests passing with excellent coverage across all modules
 
@@ -137,23 +150,42 @@ SysteMaster/
 
 ## Usage
 
-### CLI Interface
+### Simple Interactive CLI
 ```bash
-cargo run --bin systematics
+cargo run
 ```
 
-Select the number of terms in your system (1, 2, 3, 4, 5, 6, 7, 8, 12) or enter 'P' for the permutations generator.
+**Interactive Menu:**
+```
+🔬 SysteMaster
+=============
 
-### Storage Commands
+Options:
+1. Create structure    4. Permutations
+2. View saved         5. Exit
+3. Search
+
+Choice (1-5): 
+```
+
+- **Option 1**: Create systematic structures (1-12 terms) with guided prompts
+- **Option 2**: View all saved structures with auto-save functionality  
+- **Option 3**: Search structures by name, description, or terms
+- **Option 4**: Generate six permutation patterns for any three terms
+- **Option 5**: Exit (or type `q`, `quit`, `exit`)
+
+### Advanced CLI Commands
+For power users and scripting:
 ```bash
-cargo run --bin systematics storage list              # List all stored structures
-cargo run --bin systematics storage search "term"     # Search structures
-cargo run --bin systematics storage view <id>         # View structure details
-cargo run --bin systematics storage delete <id>       # Delete structure
-cargo run --bin systematics storage related <id>      # Find related structures
-cargo run --bin systematics storage find-term "term"  # Find structures with term
-cargo run --bin systematics storage graph <id>        # Show structure graph
-cargo run --bin systematics storage stats             # Database statistics
+cargo run create --terms 1                           # Create structure directly
+cargo run storage list                               # List all stored structures
+cargo run storage search "term"                      # Search structures
+cargo run storage view <id>                          # View structure details
+cargo run storage delete <id>                        # Delete structure
+cargo run storage related <id>                       # Find related structures
+cargo run storage find-term "term"                   # Find structures with term
+cargo run storage graph <id>                         # Show structure graph
+cargo run storage stats                              # Database statistics
 ```
 
 ### Example: Creating a Monad

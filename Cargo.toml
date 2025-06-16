@@ -5,6 +5,7 @@ members = [
     "cli",
     "frontend"
 ]
+default-members = ["cli"]
 resolver = "2"
 
 [workspace.package]
