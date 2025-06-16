@@ -223,14 +223,9 @@ impl SystematicStructure for Hexad {
         println!("  - {}", self.user_term_index[4]);
         println!("  - {}", self.user_term_index[5]);
         
+        // Note: Connectives not displayed in CLI for systems beyond pentad due to complexity
         if !self.connectives.is_empty() {
-            println!("Connectives:");
-            for ((from, to), relationship) in &self.connectives {
-                println!("  {} → {}: {}", 
-                    self.user_term_index[*from], 
-                    self.user_term_index[*to], 
-                    relationship);
-            }
+            println!("{}: {} relationships defined", self.first_order_connectives_name(), self.connectives.len());
         }
         
         println!();

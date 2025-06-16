@@ -126,11 +126,60 @@ fn get_yes_no_input(prompt: &str, default: bool) -> Result<bool, Box<dyn std::er
     }
 }
 
+fn get_forced_yes_no_input(prompt: &str) -> Result<bool, Box<dyn std::error::Error>> {
+    loop {
+        print!("{}", prompt);
+        io::stdout().flush()?;
+        
+        let mut input = String::new();
+        io::stdin().read_line(&mut input)?;
+        let trimmed = input.trim().to_lowercase();
+        
+        match trimmed.as_str() {
+            "y" | "yes" => return Ok(true),
+            "n" | "no" => return Ok(false),
+            _ => println!("Please enter 'y' or 'n'"),
+        }
+    }
+}
+
+// Helper function for collecting connectives using term names from schema
+fn collect_connectives_with_schema(structure_name: &str, term_characters: &[&str], user_terms: &[String]) -> Result<Vec<((usize, usize), String)>, Box<dyn std::error::Error>> {
+    let add_connectives = get_forced_yes_no_input(&format!("Add connectives to {}? (y/n): ", structure_name))?;
+    
+    if !add_connectives {
+        return Ok(Vec::new());
+    }
+    
+    let mut connectives = Vec::new();
+    
+    // For each unique pair of terms, ask for the bidirectional relationship
+    for i in 0..term_characters.len() {
+        for j in (i + 1)..term_characters.len() {
+            print!("{} <--> {} relationship (Enter to skip): ", term_characters[i], term_characters[j]);
+            std::io::stdout().flush()?;
+            
+            let mut input = String::new();
+            std::io::stdin().read_line(&mut input)?;
+            let trimmed = input.trim();
+            
+            if !trimmed.is_empty() {
+                // Add both directions for bidirectional relationship
+                connectives.push(((i, j), trimmed.to_string()));
+                connectives.push(((j, i), trimmed.to_string()));
+                println!("  Added: {} <--{}--> {}", user_terms[i], trimmed, user_terms[j]);
+            }
+        }
+    }
+    
+    Ok(connectives)
+}
+
 // Interactive creation functions using the API
 fn create_monad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::error::Error>> {
     println!("\n--- Creating a Monad ---");
     
-    // Get canonical terms and term designation from the schema
+    // Get term characters and term designation from the schema
     use systematics_api::schemas::MonadSchema;
     use systematics_api::schemas::Schema;
     let schema = MonadSchema;
@@ -180,7 +229,7 @@ fn create_dyad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::erro
     
     let name = get_optional_input("Enter name (Press enter for Dyad): ", "Dyad")?;
     
-    // Get canonical terms and term designation from the schema
+    // Get term characters and term designation from the schema
     use systematics_api::schemas::DyadSchema;
     use systematics_api::schemas::Schema;
     let schema = DyadSchema;
@@ -193,10 +242,20 @@ fn create_dyad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::erro
     let term1 = get_optional_input(&format!("Enter {} {} (Press enter for '{}'): ", term_characters[0], term_designation.trim_end_matches('s'), term_characters[0]), term_characters[0])?;
     let term2 = get_optional_input(&format!("Enter {} {} (Press enter for '{}'): ", term_characters[1], term_designation.trim_end_matches('s'), term_characters[1]), term_characters[1])?;
     
-    let dyad = api.create_dyad()
+    let mut dyad = api.create_dyad()
         .name(&name)
         .terms(&term1, &term2)
         .build()?;
+    
+    // Collect connectives
+    println!();
+    let user_terms = vec![term1, term2];
+    let connectives = collect_connectives_with_schema(&name, term_characters, &user_terms)?;
+    
+    // Add connectives to the structure
+    for ((from, to), relationship) in connectives {
+        dyad.set_connective(from, to, relationship);
+    }
     
     println!("\n✅ Created Dyad:");
     dyad.display();
@@ -210,7 +269,7 @@ fn create_triad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::err
     
     let name = get_optional_input("Enter name (Press enter for Triad): ", "Triad")?;
     
-    // Get canonical terms and term designation from the schema
+    // Get term characters and term designation from the schema
     use systematics_api::schemas::TriadSchema;
     use systematics_api::schemas::Schema;
     let schema = TriadSchema;
@@ -224,10 +283,20 @@ fn create_triad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::err
     let term2 = get_optional_input(&format!("Enter {} {} (Press enter for '{}'): ", term_characters[1], term_designation.trim_end_matches('s'), term_characters[1]), term_characters[1])?;
     let term3 = get_optional_input(&format!("Enter {} {} (Press enter for '{}'): ", term_characters[2], term_designation.trim_end_matches('s'), term_characters[2]), term_characters[2])?;
     
-    let triad = api.create_triad()
+    let mut triad = api.create_triad()
         .name(&name)
         .terms(&term1, &term2, &term3)
         .build()?;
+    
+    // Collect connectives
+    println!();
+    let user_terms = vec![term1, term2, term3];
+    let connectives = collect_connectives_with_schema(&name, term_characters, &user_terms)?;
+    
+    // Add connectives to the structure
+    for ((from, to), relationship) in connectives {
+        triad.set_connective(from, to, relationship);
+    }
     
     println!("\n✅ Created Triad:");
     triad.display();
@@ -262,10 +331,55 @@ fn create_tetrad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::er
         terms.push(term);
     }
     
-    let tetrad = api.create_tetrad()
+    let mut tetrad = api.create_tetrad()
         .name(&name)
         .terms(&terms[0], &terms[1], &terms[2], &terms[3])
         .build()?;
+    
+    // Ask if user wants to add connectives
+    println!();
+    let add_connectives = get_forced_yes_no_input("Add connectives to Tetrad? (y/n): ")?;
+    
+    if add_connectives {
+        // Show each canonical connective and ask if it should be replaced
+        let canonical_connectives = schema.connectives();
+        println!("\nCanonical tetrad connectives (Enter to keep, or type replacement):");
+        
+        // Calculate column widths for alignment (same as display)
+        let max_left_len = canonical_connectives.iter()
+            .map(|c| terms[c.from_position].len())
+            .max().unwrap_or(0);
+        let max_rel_len = canonical_connectives.iter()
+            .map(|c| c.relationship.len())
+            .max().unwrap_or(0);
+        
+        for connective in canonical_connectives {
+            let from_term = &terms[connective.from_position];
+            let to_term = &terms[connective.to_position];
+            
+            print!("{:>left_width$} <--{:^rel_width$}--> {}: ", 
+                from_term, 
+                connective.relationship, 
+                to_term,
+                left_width = max_left_len,
+                rel_width = max_rel_len);
+            std::io::stdout().flush()?;
+            
+            let mut input = String::new();
+            std::io::stdin().read_line(&mut input)?;
+            let replacement = input.trim();
+            
+            let final_relationship = if replacement.is_empty() {
+                connective.relationship.clone()
+            } else {
+                replacement.to_string()
+            };
+            
+            tetrad.set_connective(connective.from_position, connective.to_position, final_relationship.clone());
+            // Also set reverse direction for bidirectional display
+            tetrad.set_connective(connective.to_position, connective.from_position, final_relationship);
+        }
+    }
     
     println!("\n✅ Created Tetrad:");
     tetrad.display();
@@ -284,10 +398,11 @@ fn create_pentad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::er
     let term_characters = schema.term_characters();
     let term_designation = schema.term_designation();
     let schema_name = schema.name();
+    let connectives_name = schema.first_order_connectives_name();
     
     let name = get_optional_input(&format!("Enter name (Press enter for {}): ", schema_name), schema_name)?;
     
-    println!("Term {}: {} / {} / {} / {} / {}", 
+    println!("\nTerm {}: {} / {} / {} / {} / {}", 
         term_designation.to_lowercase(), 
         term_characters[0], term_characters[1], term_characters[2], term_characters[3], term_characters[4]);
     
@@ -300,10 +415,53 @@ fn create_pentad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::er
         terms.push(term);
     }
 
-    let pentad = api.create_pentad()
+    println!();
+    let add_connectives = get_forced_yes_no_input(&format!("Add {} (y/n): ", connectives_name))?;
+    
+    let mut pentad = api.create_pentad()
         .name(&name)
         .terms(&terms[0], &terms[1], &terms[2], &terms[3], &terms[4])
         .build()?;
+    
+    if add_connectives {
+        // Get canonical connectives from schema
+        let canonical_connectives = schema.connectives();
+        
+        println!("\nCanonical {} (Enter to keep, or type replacement):", connectives_name);
+        
+        // Calculate column widths for alignment (same as display)
+        let max_left_len = canonical_connectives.iter()
+            .map(|c| terms[c.from_position].len())
+            .max().unwrap_or(0);
+        let max_rel_len = canonical_connectives.iter()
+            .map(|c| c.relationship.len())
+            .max().unwrap_or(0);
+        
+        for connective in canonical_connectives {
+            let from_term = &terms[connective.from_position];
+            let to_term = &terms[connective.to_position];
+            
+            print!("{:>left_width$} <--{:^rel_width$}--> {}: ", 
+                from_term, 
+                connective.relationship, 
+                to_term,
+                left_width = max_left_len,
+                rel_width = max_rel_len);
+            std::io::stdout().flush()?;
+            
+            let mut input = String::new();
+            std::io::stdin().read_line(&mut input)?;
+            let replacement = input.trim();
+            
+            let final_relationship = if replacement.is_empty() {
+                connective.relationship.clone()
+            } else {
+                replacement.to_string()
+            };
+            
+            pentad.set_connective(connective.from_position, connective.to_position, final_relationship);
+        }
+    }
     
     println!("\n✅ Created Pentad:");
     pentad.display();
@@ -325,7 +483,7 @@ fn create_hexad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::err
     
     let name = get_optional_input(&format!("Enter name (Press enter for {}): ", schema_name), schema_name)?;
     
-    println!("Term {}: {} / {} / {} / {} / {} / {}", 
+    println!("\nTerm {}: {} / {} / {} / {} / {} / {}", 
         term_designation.to_lowercase(), 
         term_characters[0], term_characters[1], term_characters[2], term_characters[3], term_characters[4], term_characters[5]);
     

@@ -234,11 +234,32 @@ impl SystematicStructure for Triad {
         // Show key relationships if they exist
         if !self.connectives.is_empty() {
             println!("Connectives:");
+            let mut shown_pairs = std::collections::HashSet::new();
+            let mut display_items = Vec::new();
+            
+            // Collect all unique pairs first
             for ((from, to), relationship) in &self.connectives {
-                println!("  {} → {}: {}", 
-                    self.user_instances[*from], 
-                    self.user_instances[*to], 
-                    relationship);
+                let pair = if from < to { (*from, *to) } else { (*to, *from) };
+                if !shown_pairs.contains(&pair) {
+                    shown_pairs.insert(pair);
+                    let left_term = &self.user_instances[pair.0];
+                    let right_term = &self.user_instances[pair.1];
+                    display_items.push((left_term, relationship, right_term));
+                }
+            }
+            
+            // Calculate column widths
+            let max_left_len = display_items.iter().map(|(left, _, _)| left.len()).max().unwrap_or(0);
+            let max_rel_len = display_items.iter().map(|(_, rel, _)| rel.len()).max().unwrap_or(0);
+            
+            // Display with proper column alignment
+            for (left_term, relationship, right_term) in display_items {
+                println!("  {:>left_width$} <--{:^rel_width$}--> {}", 
+                    left_term,
+                    relationship,
+                    right_term,
+                    left_width = max_left_len,
+                    rel_width = max_rel_len);
             }
         }
         

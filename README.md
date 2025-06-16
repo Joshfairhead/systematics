@@ -203,6 +203,14 @@ cargo test schemas                       # Run schema refactoring tests
 - [ ] **Term Characters → Term Designation Refactor**: Change "term characters" to the relevant "term designation" for each system across the entire codebase so that each system's term characters are accurately referenced by their term designation (e.g., "totalities" for Monad, "poles" for Dyad, "impulses" for Triad, etc.)
 - [ ] **Monad Terminology Refactoring**: Change attributes terminology to match term designation - factor out generic "attributes" terminology and replace with "totalities" to align with Monad's specific term designation
 - [ ] **Structure Term Designation Consistency**: Structure files use term designations in the display methods println, but reference user_instances in the code. We may need to change the references again, ideally the semantics would be on point in the code "canonical_sources", "user_sources", "user_impulses" etc. but would add a comment mentioning that this is the term designation or add a prefix etc.
+- [ ] **CLI Display Format Enhancement**: Improve tetrad and pentad connectives display format. Instead of the current arrow format (`Purpose <--Output--> Higher Potential`), consider displaying canonical connectives as keys with user-defined instances as values:
+  ```
+  Interplays/Mutualities:
+    - Output: Purpose → Higher Potential: Research
+    - Range of potential: Higher Potential → Lower Potential: Governance
+    - Aspiration: Quintessence → Higher Potential: Strategy
+  ```
+  This would provide clearer semantic separation between the canonical relationship names (which are the meaningful systematic concepts) and the user's specific instances. The canonical connective names carry the ontological significance, while the user instances are the concrete manifestations. This format would make the systematic structure more readable and emphasize the conceptual framework underlying the user's specific application.
 - [ ] **CLI API Integration**: Fix remaining hardcoded canonical terms in CLI functions (tetrad, pentad, hexad, heptad, octad, dodecad) to use API schema access like triad now does
 - [ ] **Architectural Discussion - Unbiased API & Schema Modularity**: Design discussion around making the API truly unbiased and composable:
   - Move Bennett's canonical schemas from core API to a provider system

@@ -248,23 +248,35 @@ impl SystematicStructure for Tetrad {
         println!("  - {}", self.user_term_index[2]);
         println!("  - {}", self.user_term_index[3]);
         
-        // Show key relationships if any exist
-        let mut relationships = Vec::new();
-        for i in 0..4 {
-            for j in 0..4 {
-                if i != j {
-                    if let Some(rel) = self.get_connective(i, j) {
-                        relationships.push(format!("{} {} {}", 
-                            self.user_term_index[i], rel, self.user_term_index[j]));
-                    }
+        // Show connectives if they exist
+        if !self.connectives.is_empty() {
+            println!("{}:", self.first_order_connectives_name());
+            let mut shown_pairs = std::collections::HashSet::new();
+            let mut display_items = Vec::new();
+            
+            // Collect all unique pairs first
+            for ((from, to), relationship) in &self.connectives {
+                let pair = if from < to { (*from, *to) } else { (*to, *from) };
+                if !shown_pairs.contains(&pair) {
+                    shown_pairs.insert(pair);
+                    let left_term = &self.user_term_index[pair.0];
+                    let right_term = &self.user_term_index[pair.1];
+                    display_items.push((left_term, relationship, right_term));
                 }
             }
-        }
-        
-        if !relationships.is_empty() {
-            println!("Relationships:");
-            for rel in relationships.iter() {
-                println!("  {}", rel);
+            
+            // Calculate column widths
+            let max_left_len = display_items.iter().map(|(left, _, _)| left.len()).max().unwrap_or(0);
+            let max_rel_len = display_items.iter().map(|(_, rel, _)| rel.len()).max().unwrap_or(0);
+            
+            // Display with proper column alignment
+            for (left_term, relationship, right_term) in display_items {
+                println!("  {:>left_width$} <--{:^rel_width$}--> {}", 
+                    left_term,
+                    relationship,
+                    right_term,
+                    left_width = max_left_len,
+                    rel_width = max_rel_len);
             }
         }
         

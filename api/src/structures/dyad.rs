@@ -136,6 +136,23 @@ impl Dyad {
     pub fn connective(&self) -> Option<&String> {
         self.connectives.get(&(0, 1))
     }
+    
+    /// Get a specific connective relationship between two positions
+    pub fn get_connective(&self, from_index: usize, to_index: usize) -> Option<&String> {
+        self.connectives.get(&(from_index, to_index))
+    }
+    
+    /// Set a connective relationship between two positions
+    pub fn set_connective(&mut self, from_index: usize, to_index: usize, relationship: String) {
+        if from_index < 2 && to_index < 2 && from_index != to_index {
+            self.connectives.insert((from_index, to_index), relationship);
+        }
+    }
+    
+    /// Get all connectives
+    pub fn connectives(&self) -> &HashMap<(usize, usize), String> {
+        &self.connectives
+    }
 }
 
 // =============================================================================
@@ -252,6 +269,38 @@ impl SystematicStructure for Dyad {
         println!("\n{}", header);
         println!("Name: {}", self.name());
         println!("Poles: {} ↔ {}", self.first_instance(), self.second_instance());
+        
+        // Show connectives if they exist
+        if !self.connectives.is_empty() {
+            println!("Connectives:");
+            let mut shown_pairs = std::collections::HashSet::new();
+            let mut display_items = Vec::new();
+            
+            // Collect all unique pairs first
+            for ((from, to), relationship) in &self.connectives {
+                let pair = if from < to { (*from, *to) } else { (*to, *from) };
+                if !shown_pairs.contains(&pair) {
+                    shown_pairs.insert(pair);
+                    let left_term = &self.user_instances[pair.0];
+                    let right_term = &self.user_instances[pair.1];
+                    display_items.push((left_term, relationship, right_term));
+                }
+            }
+            
+            // Calculate column widths
+            let max_left_len = display_items.iter().map(|(left, _, _)| left.len()).max().unwrap_or(0);
+            let max_rel_len = display_items.iter().map(|(_, rel, _)| rel.len()).max().unwrap_or(0);
+            
+            // Display with proper column alignment
+            for (left_term, relationship, right_term) in display_items {
+                println!("  {:>left_width$} <--{:^rel_width$}--> {}", 
+                    left_term,
+                    relationship,
+                    right_term,
+                    left_width = max_left_len,
+                    rel_width = max_rel_len);
+            }
+        }
         
         println!();
         println!("Metadata");
