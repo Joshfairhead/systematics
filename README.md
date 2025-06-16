@@ -219,28 +219,25 @@ cargo test schemas                       # Run schema refactoring tests
   - Design schema provider interface for pluggable systematic frameworks
   - Evaluate separation of concerns between core API and canonical implementations
 
-## 🔧 **ACTIVE REFACTORING: API Library Separation**
+## 🔧 **ACTIVE REFACTORING: Schema → Resource Terminology**
 
-### **Refactoring Goal**
-Separate the pure mathematical structures (API) from the opinionated knowledge resources (Library) to create a truly neutral systematic framework that can accommodate multiple wisdom traditions while maintaining Bennett's work as the default.
+### **Previous Achievement: ✅ Library Separation Complete**
+Successfully separated pure mathematical structures (API) from opinionated knowledge resources (Library), creating a truly neutral systematic framework that accommodates multiple wisdom traditions while maintaining Bennett's work as the default.
 
-### **Status: ✅ LIBRARY SEPARATION COMPLETE**
-- ✅ **Phase 1 Complete**: Library crate foundation with schema interfaces
-- ✅ **Phase 2 Complete**: Bennett resources moved to library, all compiling
-- ✅ **Phase 3 Complete**: API updated to use library, 50/50 tests passing
-- ✅ **Phase 4 Complete**: CLI updated to use library directly, full functionality
-- ✅ **Phase 5 Complete**: Clean codebase, updated documentation
-- ✅ **Phase 6 Complete**: Full system verification, no regressions
+### **Current Refactoring Goal**
+Improve terminology for better semantic clarity:
+- **Schema** → **Resource** (better describes knowledge content)
+- **LibraryProvider** → **Source** (cleaner, more intuitive)  
+- **BennettLibrary** → **Bennett** (simpler naming)
 
-### **Planned Sequence**
-1. **Complete Library Separation** (Current branch: `refactor-api-library-separation`)
-   - Finish Phase 2-6 of library separation
-   - Maintain all existing functionality
-   - Clean architectural separation
-2. **Terminology Refactor** (Future branch: `refactor-schema-to-resource-terminology`)
-   - Schema → Resource (aligns with REA accounting principles)
-   - LibraryProvider → Source, BennettLibrary → Bennett
-   - Clean, semantically aligned terminology
+### **Current Status: Starting Terminology Refactor**
+- ✅ **Library Separation**: Complete architectural separation achieved
+- 🚧 **Terminology Refactor**: Schema → Resource, Provider → Source alignment
+
+### **Benefits of New Terminology**
+- **Semantic Clarity**: "Resource" better describes knowledge content than "Schema"
+- **Clean API**: `Bennett` vs `BennettLibrary`, `Source` vs `LibraryProvider`
+- **Intuitive Naming**: More natural terminology for knowledge systems
 
 ### **Architecture Vision**
 ```
