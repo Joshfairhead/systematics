@@ -6,7 +6,7 @@ A Rust-based application for creating, managing, and analyzing systematic struct
 
 Systematics allows you to:
 - Create user-defined instances from Bennett's core ontological grammars
-- Define terms and relationships using authentic schema-based templates
+- Define terms and relationships using authentic system-based templates
 - Generate six permutations with named patterns (Expansion, Interaction, Order, Concentration, Identity, Freedom)
 - Work with comprehensive systematic frameworks using Bennett's canonical terms and relationships
 - Manage unlimited custom attributes for monadic structures
@@ -14,22 +14,22 @@ Systematics allows you to:
 ## Current Features
 
 ### ✅ **Schema-Based Implementation**
-All systematic structures now use a unified schema-based architecture:
+All systematic structures now use a unified system-based architecture:
 - **Canonical Terms**: Authentic Bennett terminology for each structure type
 - **Schema-Aware Connectives**: Meaningful relationship labels (e.g., "Creativity <> Polarity")
 - **Interactive Creation**: Streamlined user experience with schema guidance
-- **Consistent Architecture**: Unified patterns across all structure types
+- **Consistent Architecture**: Unified system patterns across all structure types
 
 ### ✅ **Fully Implemented Structures**
 - **Monad (1 term)**: Enhanced with unlimited custom attributes and streamlined input flow
-- **Dyad (2 terms)**: Essence/Existence with schema-based connectives
+- **Dyad (2 terms)**: Essence/Existence with system-based connectives
 - **Triad (3 terms)**: Will/Function/Being with Active/Passive/Reconciling roles
 - **Tetrad (4 terms)**: Complete implementation with Bennett's canonical terms
 - **Pentad (5 terms)**: Full systematic structure with schema integration
 - **Hexad (6 terms)**: Complete implementation with comprehensive functionality
 - **Heptad (7 terms)**: Insight through Value with schema-aware connectives
 - **Octad (8 terms)**: Smallest Significant Holon through Organisational Modes
-- **Dodecad (12 terms)**: Autocracy through Wholeness with 66 schema-based connectives
+- **Dodecad (12 terms)**: Autocracy through Wholeness with 66 system-based connectives
 - **Permutations**: Six named permutation patterns for any three terms
 
 ### ✅ **Enhanced User Experience**
@@ -39,7 +39,7 @@ All systematic structures now use a unified schema-based architecture:
 - **Schema Selection**: Automatic application of appropriate Bennett schemas
 - **Comprehensive Testing**: 51 tests passing with excellent coverage across all modules
 
-### ✅ **Six-Component Schema Architecture**
+### ✅ **Six-Component System Architecture**
 Each systematic structure now implements a comprehensive six-component schema:
 1. **System Name**: Canonical name (Monad, Dyad, Triad, etc.)
 2. **Coherence Attribute**: Internal consistency principle (e.g., Universality, Complimentarity, Dynamism)
@@ -151,7 +151,7 @@ Select the number of terms in your system (1, 2, 3, 4, 5, 6, 7, 8, 12) or enter 
    - Domination: [your instance]
    - ... (12 terms total)
 4. Choose whether to modify default connectives
-5. View structure with 66 schema-based connectives
+5. View structure with 66 system-based connectives
 ```
 
 ### Six Permutations Generator
@@ -181,7 +181,7 @@ cargo test schemas                       # Run schema refactoring tests
 ### 🎯 **Recent Major Achievements**
 - ✅ **Terminology Refactor**: Renamed `canonical_terms` → `term_characters` throughout codebase for semantic clarity and consistency
 - ✅ **Schema Refactoring & Enhancement**: Added coherence attributes, term designations, and first-order connectives names to all schemas and structures
-- ✅ **Modular Schema Architecture**: Refactored monolithic `schemas.rs` (332 lines) into clean modular structure
+- ✅ **Modular System Architecture**: Refactored monolithic `schemas.rs` (332 lines) into clean modular structure
 - ✅ **Complete Bidirectional Mapping API**: 8-method bidirectional API across all structures (Tetrad-Dodecad)
 - ✅ **Enhanced Monad System**: Unlimited custom attributes with streamlined input flow
 - ✅ **Reorganized Codebase**: Numerical organization with clear structure naming
@@ -191,10 +191,10 @@ cargo test schemas                       # Run schema refactoring tests
 ### 🔧 **Current Capabilities**
 1. **Complete CLI Implementation**: All systematic structures (1-12 terms) fully functional
 2. **✅ Complete API Library**: Type-safe Rust library with builder pattern and comprehensive error handling
-3. **🧩 Enhanced Schema System**: Six-component schema architecture with coherence attributes, term designations, and connectives naming
+3. **🧩 Enhanced System Framework**: Six-component schema architecture with coherence attributes, term designations, and connectives naming
 4. **🔄 Bidirectional Mapping API**: Position ↔ Term navigation across all structures (49 methods total)
 5. **Authentic Bennett Schemas**: Proper canonical terminology and relationships with 100+ connectives
-6. **Robust Architecture**: Unified schema-based design patterns across CLI and API
+6. **Robust Architecture**: Unified system-based design patterns across CLI and API
 7. **Comprehensive Testing**: 51 tests passing across all API structures and schemas
 8. **User-Friendly Interface**: Intuitive prompts with canonical defaults
 
@@ -219,40 +219,55 @@ cargo test schemas                       # Run schema refactoring tests
   - Design schema provider interface for pluggable systematic frameworks
   - Evaluate separation of concerns between core API and canonical implementations
 
-## 🔧 **ACTIVE REFACTORING: Schema → Resource Terminology**
+## 🔧 **ACTIVE REFACTORING: Provider → Source Terminology**
 
-### **Previous Achievement: ✅ Library Separation Complete**
-Successfully separated pure mathematical structures (API) from opinionated knowledge resources (Library), creating a truly neutral systematic framework that accommodates multiple wisdom traditions while maintaining Bennett's work as the default.
+### **Previous Achievements:**
+- ✅ **Library Separation**: Complete architectural separation achieved
+- ✅ **Schema → System**: Completed semantic clarity improvement
+
+### **Schema → System Refactor: COMPLETE ✅**
+Successfully improved terminology for better semantic clarity:
+- **Schema** → **System** (MonadicSystem, DyadicSystem, TriadicSystem...)
+- All `schema()` methods → `system()` methods
+- Updated imports, providers, documentation
+- **50/50 API tests passing**, CLI working, examples updated
 
 ### **Current Refactoring Goal**
-Improve terminology for better semantic clarity:
-- **Schema** → **Resource** (better describes knowledge content)
+Complete the terminology improvements:
 - **LibraryProvider** → **Source** (cleaner, more intuitive)  
 - **BennettLibrary** → **Bennett** (simpler naming)
 
-### **Current Status: Starting Terminology Refactor**
+### **Current Status: Ready for Provider → Source**
 - ✅ **Library Separation**: Complete architectural separation achieved
-- 🚧 **Terminology Refactor**: Schema → Resource, Provider → Source alignment
+- ✅ **Schema → System**: Better semantic clarity with systematic structures
+- 🚧 **Provider → Source**: Next phase for cleaner API naming
 
-### **Benefits of New Terminology**
-- **Semantic Clarity**: "Resource" better describes knowledge content than "Schema"
-- **Clean API**: `Bennett` vs `BennettLibrary`, `Source` vs `LibraryProvider`
-- **Intuitive Naming**: More natural terminology for knowledge systems
+### **Benefits of System Terminology**
+- **Semantic Accuracy**: "MonadicSystem" perfectly describes systematic structures
+- **Natural Language**: "Bennett's canonical monadic system" flows beautifully
+- **Consistent Naming**: All end in "System" with proper adjectival forms
+- **Clear Intent**: Systems describe how components work together systematically
 
-### **Architecture Vision**
+### **Current Architecture**
 ```
 SysteMaster/
-├── api/                    # Pure mathematical structures + interfaces
-├── library/               # Systematic knowledge resource collection
+├── api/                    # Pure mathematical structures + System trait
+├── library/               # Systematic knowledge systems collection
 │   ├── src/
-│   │   ├── bennett/       # Bennett's canonical resources
-│   │   ├── landry/        # Landry's resources (future)
-│   │   ├── gurdjieff/     # Gurdjieff's resources (future)
+│   │   ├── bennett/       # Bennett's canonical systems (MonadicSystem, DyadicSystem...)
+│   │   ├── landry/        # Landry's systems (future)
+│   │   ├── gurdjieff/     # Gurdjieff's systems (future)
 │   │   ├── providers/     # Library provider implementations  
-│   │   └── lib.rs         # Schema interfaces + re-exports
+│   │   └── lib.rs         # System interfaces + re-exports
 ├── cli/                   # CLI using both api + library
 └── frontend/              # Web interface
 ```
+
+**Key Improvements:**
+- **System Trait**: Better semantic clarity than Schema
+- **Systematic Naming**: MonadicSystem, DyadicSystem, TriadicSystem...
+- **Natural Language**: "Bennett's canonical monadic system" flows perfectly
+- **Clean Separation**: Mathematical structures vs systematic knowledge
 
 ### **Step-by-Step Refactoring Plan**
 
@@ -376,7 +391,7 @@ SysteMaster/
 4. ✅ **Error Handling**: Proper error types with `thiserror` integration
 5. ✅ **Feature Flags**: Modular design ready for optional features
 6. ✅ **API Documentation**: Comprehensive rustdoc with examples in lib.rs
-7. ✅ **Modular Schema Architecture**: Broke monolithic `schemas.rs` into clean directory structure
+7. ✅ **Modular System Architecture**: Broke monolithic `schemas.rs` into clean directory structure
 8. ✅ **Complete Bidirectional Mapping**: 8-method API for position ↔ term navigation across all structures
 9. ✅ **Six-Component Schema Enhancement**: Added coherence attributes, term designations, and first-order connectives names to all schemas and structures
 10. 🚧 **Position Descriptions**: Add position descriptions and rename function to indicate if the positions are terms, sources, influences etc.
@@ -448,7 +463,7 @@ SysteMaster/
 ## Architecture
 
 ### Design Principles
-1. **Modular Schema Architecture**: Clean separation of canonical schemas, providers, and core traits
+1. **Modular System Architecture**: Clean separation of canonical schemas, providers, and core traits
 2. **Bidirectional Navigation**: Complete position ↔ term mapping across all systematic structures
 3. **Authentic Implementation**: Bennett's canonical terms and relationships
 4. **Robust Validation**: Comprehensive input validation with clear feedback
@@ -457,7 +472,7 @@ SysteMaster/
 7. **Comprehensive Testing**: High test coverage ensuring reliability
 
 ### Technical Highlights
-- **🧩 Enhanced Schema System**: Six-component architecture with coherence attributes, term designations, and connectives naming
+- **🧩 Enhanced System Framework**: Six-component architecture with coherence attributes, term designations, and connectives naming
 - **🔄 Complete Bidirectional Mapping**: 8-method API for position ↔ term navigation (49 total methods)
 - **Schema-Aware Connectives**: Meaningful relationship labels (e.g., "Autocracy <> Domination")
 - **Enhanced Monad System**: Unlimited custom attributes with streamlined input
@@ -469,7 +484,7 @@ SysteMaster/
 - **Canonical Defaults**: Press Enter to use authentic Bennett terminology
 - **Test-Driven Development**: Comprehensive test suite ensures reliability (51 API tests)
 
-### Schema Architecture
+### System Architecture
 The modular schema system provides:
 - **🏗️ Canonical Schema Directory**: Individual files for each systematic structure (`monad.rs` through `dodecad.rs`)
 - **🔄 Bidirectional Mapping**: Complete position ↔ term navigation with aliases
