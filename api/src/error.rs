@@ -12,8 +12,8 @@ pub enum SystematicsError {
     #[error("Invalid term at position {position}: {reason}")]
     InvalidTerm { position: usize, reason: String },
     
-    #[error("Schema validation failed: {reason}")]
-    SchemaValidation { reason: String },
+    #[error("System validation failed: {reason}")]
+    SystemValidation { reason: String },
     
     #[error("Structure validation failed: {reason}")]
     StructureValidation { reason: String },

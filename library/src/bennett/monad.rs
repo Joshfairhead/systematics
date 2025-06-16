@@ -1,10 +1,10 @@
 use crate::Connective;
 
-/// Bennett's canonical monad schema - Unity
+/// Bennett's canonical monadic system - Unity
 #[derive(Debug, Clone)]
-pub struct MonadSchema;
+pub struct MonadicSystem;
 
-impl crate::Schema for MonadSchema {
+impl crate::System for MonadicSystem {
     fn term_count(&self) -> usize { 
         1 
     }

@@ -1,10 +1,10 @@
 use crate::Connective;
 
-/// Bennett's canonical hexad schema - Resources, Values, Options, Criteria, Facts, Priorities
+/// Bennett's canonical hexadic system - Resources, Values, Options, Criteria, Facts, Priorities
 #[derive(Debug, Clone)]
-pub struct HexadSchema;
+pub struct HexadicSystem;
 
-impl crate::Schema for HexadSchema {
+impl crate::System for HexadicSystem {
     fn term_count(&self) -> usize { 
         6 
     }

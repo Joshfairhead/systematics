@@ -37,7 +37,7 @@ pub mod permutations;
 
 pub use error::{SystematicsError, Result};
 pub use structures::*;
-pub use systematics_library::{Schema, LibraryProvider, BennettLibrary};
+pub use systematics_library::{System, LibraryProvider, BennettLibrary};
 pub use permutations::{Permutation, PermutationSet};
 
 // =============================================================================
@@ -75,7 +75,7 @@ pub trait SystematicStructure {
     // Content Access
     // -------------------------------------------------------------------------
     
-    /// Get canonical term labels from the schema file
+    /// Get canonical term labels from the system file
     /// For a monad: `["Unity"]`, for a dyad: `["Essence", "Existence"]`.
     fn term_characters(&self) -> Vec<String>;
     
@@ -95,8 +95,8 @@ pub trait SystematicStructure {
     // Schema & Structure
     // -------------------------------------------------------------------------
     
-    /// Get the schema used for this structure
-    fn schema(&self) -> &dyn systematics_library::Schema;
+    /// Get the system used for this structure
+    fn system(&self) -> &dyn systematics_library::System;
     
     // -------------------------------------------------------------------------
     // Validation & Integrity

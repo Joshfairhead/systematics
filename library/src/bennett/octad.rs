@@ -1,10 +1,10 @@
 use crate::Connective;
 
-/// Bennett's canonical octad schema - Smallest Significant Holon, Critical Functions, Supportive Platform, Necessary Resourcing, Integrative Totality, Inherent Values, Intrinsic Nature, Organisational Modes
+/// Bennett's canonical octadic system - Smallest Significant Holon, Critical Functions, Supportive Platform, Necessary Resourcing, Integrative Totality, Inherent Values, Intrinsic Nature, Organisational Modes
 #[derive(Debug, Clone)]
-pub struct OctadSchema;
+pub struct OctadicSystem;
 
-impl crate::Schema for OctadSchema {
+impl crate::System for OctadicSystem {
     fn term_count(&self) -> usize { 
         8 
     }

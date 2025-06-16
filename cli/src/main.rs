@@ -180,14 +180,14 @@ fn create_monad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::err
     println!("\n--- Creating a Monad ---");
     
     // Get term characters and term designation from the schema
-    use systematics_library::MonadSchema;
-    use systematics_library::Schema;
-    let schema = MonadSchema;
-    let term_characters = schema.term_characters();
-    let term_designation = schema.term_designation();
-    let schema_name = schema.name();
+    use systematics_library::MonadicSystem;
+    use systematics_library::System;
+    let system = MonadicSystem;
+    let term_characters = system.term_characters();
+    let term_designation = system.term_designation();
+    let system_name = system.name();
     
-    let name = get_optional_input(&format!("Enter name (Press enter for {}): ", schema_name), schema_name)?;
+    let name = get_optional_input(&format!("Enter name (Press enter for {}): ", system_name), system_name)?;
     let term = get_optional_input(&format!("Enter {} (Press enter to use {}): ", term_designation, term_characters[0]), term_characters[0])?;
     
     // Collect attributes
@@ -230,11 +230,11 @@ fn create_dyad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::erro
     let name = get_optional_input("Enter name (Press enter for Dyad): ", "Dyad")?;
     
     // Get term characters and term designation from the schema
-    use systematics_library::DyadSchema;
-    use systematics_library::Schema;
-    let schema = DyadSchema;
-    let term_characters = schema.term_characters();
-    let term_designation = schema.term_designation();
+    use systematics_library::DyadicSystem;
+    use systematics_library::System;
+    let system = DyadicSystem;
+    let term_characters = system.term_characters();
+    let term_designation = system.term_designation();
     
     println!("Term {}: {} / {}", 
         term_designation.to_lowercase(), 
@@ -270,11 +270,11 @@ fn create_triad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::err
     let name = get_optional_input("Enter name (Press enter for Triad): ", "Triad")?;
     
     // Get term characters and term designation from the schema
-    use systematics_library::TriadSchema;
-    use systematics_library::Schema;
-    let schema = TriadSchema;
-    let term_characters = schema.term_characters();
-    let term_designation = schema.term_designation();
+    use systematics_library::TriadicSystem;
+    use systematics_library::System;
+    let system = TriadicSystem;
+    let term_characters = system.term_characters();
+    let term_designation = system.term_designation();
     
     println!("Term {}: {} / {} / {}", 
         term_designation.to_lowercase(), 
@@ -309,14 +309,14 @@ fn create_tetrad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::er
     println!("\n--- Creating a Tetrad ---");
     
     // Get term characters and term designation from the schema
-    use systematics_library::TetradSchema;
-    use systematics_library::Schema;
-    let schema = TetradSchema;
-    let term_characters = schema.term_characters();
-    let term_designation = schema.term_designation();
-    let schema_name = schema.name();
+    use systematics_library::TetradicSystem;
+    use systematics_library::System;
+    let system = TetradicSystem;
+    let term_characters = system.term_characters();
+    let term_designation = system.term_designation();
+    let system_name = system.name();
     
-    let name = get_optional_input(&format!("Enter name (Press enter for {}): ", schema_name), schema_name)?;
+    let name = get_optional_input(&format!("Enter name (Press enter for {}): ", system_name), system_name)?;
     
     println!("Term {}: {} / {} / {} / {}", 
         term_designation.to_lowercase(), 
@@ -342,7 +342,7 @@ fn create_tetrad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::er
     
     if add_connectives {
         // Show each canonical connective and ask if it should be replaced
-        let canonical_connectives = schema.connectives();
+        let canonical_connectives = system.connectives();
         println!("\nCanonical tetrad connectives (Enter to keep, or type replacement):");
         
         // Calculate column widths for alignment (same as display)
@@ -392,15 +392,15 @@ fn create_pentad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::er
     println!("\n--- Creating a Pentad ---");
     
     // Get term characters and term designation from the schema
-    use systematics_library::PentadSchema;
-    use systematics_library::Schema;
-    let schema = PentadSchema;
-    let term_characters = schema.term_characters();
-    let term_designation = schema.term_designation();
-    let schema_name = schema.name();
-    let connectives_name = schema.first_order_connectives_name();
+    use systematics_library::PentadicSystem;
+    use systematics_library::System;
+    let system = PentadicSystem;
+    let term_characters = system.term_characters();
+    let term_designation = system.term_designation();
+    let system_name = system.name();
+    let connectives_name = system.first_order_connectives_name();
     
-    let name = get_optional_input(&format!("Enter name (Press enter for {}): ", schema_name), schema_name)?;
+    let name = get_optional_input(&format!("Enter name (Press enter for {}): ", system_name), system_name)?;
     
     println!("\nTerm {}: {} / {} / {} / {} / {}", 
         term_designation.to_lowercase(), 
@@ -425,7 +425,7 @@ fn create_pentad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::er
     
     if add_connectives {
         // Get canonical connectives from schema
-        let canonical_connectives = schema.connectives();
+        let canonical_connectives = system.connectives();
         
         println!("\nCanonical {} (Enter to keep, or type replacement):", connectives_name);
         
@@ -474,14 +474,14 @@ fn create_hexad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::err
     println!("\n--- Creating a Hexad ---");
     
     // Get term characters and term designation from the schema
-    use systematics_library::HexadSchema;
-    use systematics_library::Schema;
-    let schema = HexadSchema;
-    let term_characters = schema.term_characters();
-    let term_designation = schema.term_designation();
-    let schema_name = schema.name();
+    use systematics_library::HexadicSystem;
+    use systematics_library::System;
+    let system = HexadicSystem;
+    let term_characters = system.term_characters();
+    let term_designation = system.term_designation();
+    let system_name = system.name();
     
-    let name = get_optional_input(&format!("Enter name (Press enter for {}): ", schema_name), schema_name)?;
+    let name = get_optional_input(&format!("Enter name (Press enter for {}): ", system_name), system_name)?;
     
     println!("\nTerm {}: {} / {} / {} / {} / {} / {}", 
         term_designation.to_lowercase(), 
@@ -512,14 +512,14 @@ fn create_heptad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::er
     println!("\n--- Creating a Heptad ---");
     
     // Get term characters and term designation from the schema
-    use systematics_library::HeptadSchema;
-    use systematics_library::Schema;
-    let schema = HeptadSchema;
-    let term_characters = schema.term_characters();
-    let term_designation = schema.term_designation();
-    let schema_name = schema.name();
+    use systematics_library::HeptadicSystem;
+    use systematics_library::System;
+    let system = HeptadicSystem;
+    let term_characters = system.term_characters();
+    let term_designation = system.term_designation();
+    let system_name = system.name();
     
-    let name = get_optional_input(&format!("Enter name (Press enter for {}): ", schema_name), schema_name)?;
+    let name = get_optional_input(&format!("Enter name (Press enter for {}): ", system_name), system_name)?;
     
     println!("Term {}: {} / {} / {} / {} / {} / {} / {}", 
         term_designation.to_lowercase(), 
@@ -551,14 +551,14 @@ fn create_octad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::err
     println!("\n--- Creating an Octad ---");
     
     // Get term characters and term designation from the schema
-    use systematics_library::OctadSchema;
-    use systematics_library::Schema;
-    let schema = OctadSchema;
-    let term_characters = schema.term_characters();
-    let term_designation = schema.term_designation();
-    let schema_name = schema.name();
+    use systematics_library::OctadicSystem;
+    use systematics_library::System;
+    let system = OctadicSystem;
+    let term_characters = system.term_characters();
+    let term_designation = system.term_designation();
+    let system_name = system.name();
     
-    let name = get_optional_input(&format!("Enter name (Press enter for {}): ", schema_name), schema_name)?;
+    let name = get_optional_input(&format!("Enter name (Press enter for {}): ", system_name), system_name)?;
     
     println!("Term {}: {} / {} / {} / {} / {} / {} / {} / {}", 
         term_designation.to_lowercase(), 
@@ -590,14 +590,14 @@ fn create_dodecad_interactive(api: &SystematicsApi) -> Result<(), Box<dyn std::e
     println!("\n--- Creating a Dodecad ---");
     
     // Get term characters and term designation from the schema
-    use systematics_library::DodecadSchema;
-    use systematics_library::Schema;
-    let schema = DodecadSchema;
-    let term_characters = schema.term_characters();
-    let term_designation = schema.term_designation();
-    let schema_name = schema.name();
+    use systematics_library::DodecadicSystem;
+    use systematics_library::System;
+    let system = DodecadicSystem;
+    let term_characters = system.term_characters();
+    let term_designation = system.term_designation();
+    let system_name = system.name();
     
-    let name = get_optional_input(&format!("Enter name (Press enter for {}): ", schema_name), schema_name)?;
+    let name = get_optional_input(&format!("Enter name (Press enter for {}): ", system_name), system_name)?;
     
     println!("Term {}: {} / {} / {} / {} / {} / {} / {} / {} / {} / {} / {} / {}", 
         term_designation.to_lowercase(), 

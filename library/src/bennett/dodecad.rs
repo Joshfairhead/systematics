@@ -1,10 +1,10 @@
 use crate::Connective;
 
-/// Bennett's canonical dodecad schema - Autocracy, Domination, Creativity, Pattern, Individuality, Structure, Repetition, Potentiality, Subsistence, Relatedness, Polarity, Wholeness
+/// Bennett's canonical dodecadic system - Autocracy, Domination, Creativity, Pattern, Individuality, Structure, Repetition, Potentiality, Subsistence, Relatedness, Polarity, Wholeness
 #[derive(Debug, Clone)]
-pub struct DodecadSchema;
+pub struct DodecadicSystem;
 
-impl crate::Schema for DodecadSchema {
+impl crate::System for DodecadicSystem {
     fn term_count(&self) -> usize { 
         12 
     }

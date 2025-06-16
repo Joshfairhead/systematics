@@ -1,10 +1,10 @@
 use crate::Connective;
 
-/// Bennett's canonical triad schema - Will, Function, Being
+/// Bennett's canonical triadic system - Will, Function, Being
 #[derive(Debug, Clone)]
-pub struct TriadSchema;
+pub struct TriadicSystem;
 
-impl crate::Schema for TriadSchema {
+impl crate::System for TriadicSystem {
     fn term_count(&self) -> usize { 
         3 
     }

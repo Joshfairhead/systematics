@@ -1,10 +1,10 @@
 use crate::Connective;
 
-/// Bennett's canonical pentad schema - Quintessence, Higher Potential, Lower Potential, Purpose, Source
+/// Bennett's canonical pentadic system - Quintessence, Higher Potential, Lower Potential, Purpose, Source
 #[derive(Debug, Clone)]
-pub struct PentadSchema;
+pub struct PentadicSystem;
 
-impl crate::Schema for PentadSchema {
+impl crate::System for PentadicSystem {
     fn term_count(&self) -> usize { 
         5 
     }

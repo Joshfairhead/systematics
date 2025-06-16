@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use uuid::Uuid;
 use crate::{SystematicStructure, error::{Result, SystematicsError}};
-use systematics_library::{Schema, HexadSchema};
+use systematics_library::{System, HexadicSystem};
 
 /// Hexad: Six-term systematic structure representing hexadic relationships
 /// 
@@ -24,7 +24,7 @@ pub struct Hexad {
     connectives: HashMap<(usize, usize), String>,
     
     // Schema reference
-    schema: HexadSchema,
+    system: HexadicSystem,
 }
 
 impl Hexad {
@@ -37,7 +37,7 @@ impl Hexad {
             name,
             user_term_index: [String::new(), String::new(), String::new(), String::new(), String::new(), String::new()],
             connectives,
-            schema: HexadSchema,
+            system: HexadicSystem,
         }
     }
     
@@ -79,14 +79,14 @@ impl Hexad {
         /// Map a term character to its positional coordinate
     /// Returns the 0-based index for the given term character
     pub fn term_character_to_position(&self, term_character: &str) -> Option<usize> {
-        let term_characters = self.schema.term_characters();
+        let term_characters = self.system.term_characters();
         term_characters.iter().position(|&term| term == term_character)
     }
 
     /// Map a positional coordinate to its term character
     /// Returns the term character for the given 0-based position index
     pub fn term_character_from_position(&self, position: usize) -> Option<&str> {
-        let term_characters = self.schema.term_characters();
+        let term_characters = self.system.term_characters();
         term_characters.get(position).copied()
     }
     
@@ -139,27 +139,27 @@ impl SystematicStructure for Hexad {
     }
     
     fn coherence_attribute(&self) -> &str {
-        self.schema.coherence_attribute()
+        self.system.coherence_attribute()
     }
     
     fn term_designation(&self) -> &str {
-        self.schema.term_designation()
+        self.system.term_designation()
     }
     
     fn term_characters(&self) -> Vec<String> {
-        self.schema.term_characters().iter().map(|s| s.to_string()).collect()
+        self.system.term_characters().iter().map(|s| s.to_string()).collect()
     }
     
     fn first_order_connectives_name(&self) -> &str {
-        self.schema.first_order_connectives_name()
+        self.system.first_order_connectives_name()
     }
     
     fn user_terms(&self) -> &[String] {
         &self.user_term_index
     }
     
-    fn schema(&self) -> &dyn systematics_library::Schema {
-        &self.schema
+    fn system(&self) -> &dyn systematics_library::System {
+        &self.system
     }
     
     fn validate(&self) -> Result<()> {
@@ -281,7 +281,7 @@ impl HexadBuilder {
             name,
             user_term_index: terms,
             connectives: self.connectives.unwrap_or_else(HashMap::new),
-            schema: HexadSchema,
+            system: HexadicSystem,
         };
         
         // Validate the built hexad

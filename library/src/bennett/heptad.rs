@@ -1,10 +1,10 @@
 use crate::Connective;
 
-/// Bennett's canonical heptad schema - Insight, Research, Design, Synthesis, Application, Delivery, Value
+/// Bennett's canonical heptadic system - Insight, Research, Design, Synthesis, Application, Delivery, Value
 #[derive(Debug, Clone)]
-pub struct HeptadSchema;
+pub struct HeptadicSystem;
 
-impl crate::Schema for HeptadSchema {
+impl crate::System for HeptadicSystem {
     fn term_count(&self) -> usize { 
         7 
     }

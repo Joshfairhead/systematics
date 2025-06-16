@@ -1,5 +1,5 @@
 use crate::{SystematicStructure, error::{Result, SystematicsError}};
-use systematics_library::{Schema, MonadSchema};
+use systematics_library::{System, MonadicSystem};
 use uuid::Uuid;
 use std::collections::HashMap;
 
@@ -27,8 +27,8 @@ pub struct Monad {
     // Connectives (empty for monad but maintains pattern for higher structures)
     connectives: HashMap<(usize, usize), String>,
     
-    // Schema definition
-    schema: MonadSchema,
+    // System definition
+    system: MonadicSystem,
 }
 
 // =============================================================================
@@ -44,7 +44,7 @@ impl Monad {
             user_term_index: [String::new()],
             attributes: Vec::new(),
             connectives: HashMap::new(),
-            schema: MonadSchema,
+            system: MonadicSystem,
         }
     }
     
@@ -102,11 +102,11 @@ impl SystematicStructure for Monad {
     }
     
     fn coherence_attribute(&self) -> &str {
-        self.schema.coherence_attribute()
+        self.system.coherence_attribute()
     }
     
     fn term_designation(&self) -> &str {
-        self.schema.term_designation()
+        self.system.term_designation()
     }
     
     // -------------------------------------------------------------------------
@@ -114,11 +114,11 @@ impl SystematicStructure for Monad {
     // -------------------------------------------------------------------------
     
     fn term_characters(&self) -> Vec<String> {
-        self.schema.term_characters().iter().map(|s| s.to_string()).collect()
+        self.system.term_characters().iter().map(|s| s.to_string()).collect()
     }
     
     fn first_order_connectives_name(&self) -> &str {
-        self.schema.first_order_connectives_name()
+        self.system.first_order_connectives_name()
     }
     
     fn user_terms(&self) -> &[String] {
@@ -129,8 +129,8 @@ impl SystematicStructure for Monad {
     // Schema & Structure
     // -------------------------------------------------------------------------
     
-    fn schema(&self) -> &dyn systematics_library::Schema {
-        &self.schema
+    fn system(&self) -> &dyn systematics_library::System {
+        &self.system
     }
     
     // -------------------------------------------------------------------------

@@ -1,7 +1,7 @@
 //! # Systematics Library
 //! 
 //! A collection of systematic knowledge resources for different wisdom traditions.
-//! This library provides schema interfaces and implementations for various 
+//! This library provides system interfaces and implementations for various 
 //! systematic frameworks, enabling pluggable knowledge sources while maintaining
 //! the qualitative significance of number as the organizing principle.
 //! 
@@ -11,7 +11,7 @@
 //! knowledge content (handled here). This enables:
 //! 
 //! - Multiple wisdom traditions (Bennett, Landry, Gurdjieff, etc.)
-//! - Pluggable schema providers
+//! - Pluggable system providers
 //! - Resource library for inference engine training
 //! - REA (Resource-Event-Agent) accounting alignment
 
@@ -19,8 +19,8 @@ pub mod error;
 pub mod bennett;
 pub mod providers;
 
-// Core schema traits and types
-/// Represents a directional relationship between two terms in a schema
+// Core system traits and types
+/// Represents a directional relationship between two terms in a system
 #[derive(Debug, Clone)]
 pub struct Connective {
     pub from_position: usize,
@@ -29,8 +29,8 @@ pub struct Connective {
     pub description: Option<String>,
 }
 
-/// Core trait for all schema types
-pub trait Schema: Send + Sync {
+/// Core trait for all system types
+pub trait System: Send + Sync {
     fn term_count(&self) -> usize;
     fn name(&self) -> &'static str;
     
@@ -47,7 +47,7 @@ pub trait Schema: Send + Sync {
     
     fn connectives(&self) -> Vec<Connective>;
     
-    /// Validate that given terms fit this schema
+    /// Validate that given terms fit this system
     fn validate_terms(&self, terms: &[String]) -> error::Result<()> {
         if terms.len() != self.term_count() {
             return Err(error::LibraryError::InvalidConfiguration(
@@ -62,6 +62,6 @@ pub trait Schema: Send + Sync {
 pub use error::{LibraryError, Result};
 pub use providers::{LibraryProvider, BennettLibrary};
 pub use bennett::{
-    MonadSchema, DyadSchema, TriadSchema, TetradSchema, 
-    PentadSchema, HexadSchema, HeptadSchema, OctadSchema, DodecadSchema
+    MonadicSystem, DyadicSystem, TriadicSystem, TetradicSystem, 
+    PentadicSystem, HexadicSystem, HeptadicSystem, OctadicSystem, DodecadicSystem
 }; 

@@ -1,10 +1,10 @@
 use crate::Connective;
 
-/// Bennett's canonical tetrad schema - Ground, Ideal, Instrumental, Directive
+/// Bennett's canonical tetradic system - Ground, Ideal, Instrumental, Directive
 #[derive(Debug, Clone)]
-pub struct TetradSchema;
+pub struct TetradicSystem;
 
-impl crate::Schema for TetradSchema {
+impl crate::System for TetradicSystem {
     fn term_count(&self) -> usize { 
         4 
     }

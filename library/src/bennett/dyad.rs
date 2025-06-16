@@ -1,10 +1,10 @@
 use crate::Connective;
 
-/// Bennett's canonical dyad schema - Essence, Existence
+/// Bennett's canonical dyadic system - Essence, Existence
 #[derive(Debug, Clone)]
-pub struct DyadSchema;
+pub struct DyadicSystem;
 
-impl crate::Schema for DyadSchema {
+impl crate::System for DyadicSystem {
     fn term_count(&self) -> usize { 
         2 
     }

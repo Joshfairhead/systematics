@@ -15,7 +15,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("✓ Created monad: {}", monad1.name());
     println!("✓ Term: {}", monad1.term());
     println!("✓ ID: {}", monad1.id());
-    println!("✓ Schema: {}", monad1.schema().name());
+    println!("✓ System: {}", monad1.system().name());
     
     // Test 2: Attributes System (CLI feature)
     println!("\nTest 2: Attributes System");

@@ -23,7 +23,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         println!("  Attributes: {}", monad.attributes().join(", "));
     }
     
-    println!("  Schema: {}", monad.schema().name());
+    println!("  System: {}", monad.system().name());
     println!("  ID: {}", &monad.id()[..8]); // Show only first 8 chars of UUID
     
     // Validate the structure
@@ -52,7 +52,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     
 
     
-    println!("  Schema: {}", dyad.schema().name());
+    println!("  System: {}", dyad.system().name());
     println!("  ID: {}", &dyad.id()[..8]);
     
     match dyad.validate() {
@@ -87,7 +87,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     
 
     
-    println!("  Schema: {}", triad.schema().name());
+    println!("  System: {}", triad.system().name());
     println!("  ID: {}", &triad.id()[..8]);
     
     match triad.validate() {
@@ -112,7 +112,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     
 
     
-    println!("  Schema: {}", tetrad.schema().name());
+    println!("  System: {}", tetrad.system().name());
     println!("  ID: {}", &tetrad.id()[..8]);
     
     match tetrad.validate() {
