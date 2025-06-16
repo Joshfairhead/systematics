@@ -1,0 +1,7 @@
+[package]
+name = "systematics-library"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+thiserror = "1.0" 

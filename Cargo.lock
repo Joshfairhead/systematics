@@ -966,6 +966,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "systematics-library"
+version = "0.1.0"
+dependencies = [
+ "thiserror",
+]
+
+[[package]]
 name = "thiserror"
 version = "1.0.69"
 source = "registry+https://github.com/rust-lang/crates.io-index"
