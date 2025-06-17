@@ -2,7 +2,18 @@
 
 ## High Priority
 
-### Terminology Refactor (Current)
+### Architectural Refactor (Current)
+- [ ] **API-Centric Architecture**: Refactor CLI to use API as central hub instead of direct database access
+  - [ ] Move database from `cli/systematics.db` to `data/systematics.db` (project root)
+  - [ ] Create HTTP/GraphQL server in API crate
+  - [ ] Refactor CLI to call API endpoints instead of direct SurrealStorage
+  - [ ] Add GraphQL endpoint for client applications (graph traversals, relationships)
+  - [ ] Keep SQL for complex analytics and admin operations
+  - [ ] Environment-based database path configuration
+- [ ] **Database Access Pattern**: All clients (CLI, frontend, etc.) should go through API layer
+- [ ] **Dual Query Support**: GraphQL for graph data, SQL for analytics
+
+### Terminology Refactor
 - [ ] Complete LibraryProvider → Source refactor (paused pending architectural clarification)
 - [ ] Implement semantic hashing for qualitative positions? (RND)
 - [ ] Prototype multidimensional knowledge graph architecture (RND)
@@ -41,6 +52,20 @@
 - [ ] Interactive Creation: Browser-based structure creation and editing
 - [ ] Visualization: Graphical representation of structures and relationships
 - [ ] Collaborative Features: Multi-user editing and sharing capabilities
+
+## Interesting Use Cases
+
+### Expert Interview System
+- [ ] **Systematic Interview Framework**: Use stored schemas to design structured interview prompts
+  - [ ] PhD Project Formulation: Guide doctoral students through comprehensive domain exploration
+  - [ ] Requirements Engineering: Systematic elicitation of design/engineering requirements
+  - [ ] Domain Knowledge Extraction: Interview experts using canonical terms as scaffolding
+  - [ ] Comprehensive Coverage: Ensure all aspects of a domain are explored systematically
+  - [ ] Dynamic Prompting: Generate context-aware follow-up questions based on responses
+  - [ ] Multi-Level Analysis: Apply different systematic structures (triads, tetrads, etc.) to same domain
+- [ ] **Interview Templates**: Pre-built interview frameworks for common domains
+- [ ] **Response Analysis**: Pattern recognition in expert responses across systematic positions
+- [ ] **Knowledge Synthesis**: Combine multiple expert interviews into comprehensive domain models
 
 ## Research & Exploration
 
