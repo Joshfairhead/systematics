@@ -85,7 +85,7 @@ dist/
 
 # Temporary folders
 tmp/
-temp/
+temp/ 
 
 # Data directory (contains database files)
 data/systematics.db/

@@ -117,7 +117,7 @@ impl Dodecad {
         self.user_term_index.get(position).map(|s| s.as_str())
     }
     
-    /// Map a position to its term character (alias for term_character_from_position)
+        /// Map a position to its term character (alias for term_character_from_position)
     /// Returns the term character for the given 0-based position index
     pub fn position_to_term_character(&self, position: usize) -> Option<&str> {
         self.term_character_from_position(position)

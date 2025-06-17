@@ -3,6 +3,7 @@ use std::io::{self, Write};
 use clap::{Parser, Subcommand};
 use tokio;
 
+mod api_client;
 mod storage;
 use storage::{StorageArgs, StorageCli};
 
@@ -37,19 +38,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             // Command-line argument mode
             match &command {
                 Commands::Create { terms } => {
-                    let api = SystematicsApi::new();
-                    
+    let api = SystematicsApi::new();
+    
                     let num_terms = match terms {
                         Some(n) => *n,
                         None => {
                             println!("How many terms in your system? (1, 2, 3, 4, 5, 6, 7, 8, 12)");
-                            println!("Note: All systems now use the new modular API architecture");
-                            let mut choice_input = String::new();
-                            io::stdin().read_line(&mut choice_input).expect("Failed to read choice");
+    println!("Note: All systems now use the new modular API architecture");
+    let mut choice_input = String::new();
+    io::stdin().read_line(&mut choice_input).expect("Failed to read choice");
                             choice_input.trim().parse::<u32>().unwrap_or(0)
                         }
                     };
-                    
+    
                     // Initialize storage for command-line mode
                     let storage_cli = match StorageCli::new().await {
                         Ok(cli) => Some(cli),
@@ -68,10 +69,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 }
                 Commands::Permutations => {
                     let api = SystematicsApi::new();
-                    match create_permutations_interactive(&api) {
-                        Ok(_) => {}, // Successfully created
-                        Err(e) => eprintln!("Error creating permutations: {}", e),
-                    }
+        match create_permutations_interactive(&api) {
+            Ok(_) => {}, // Successfully created
+            Err(e) => eprintln!("Error creating permutations: {}", e),
+        }
                 }
             }
         }
@@ -207,60 +208,60 @@ async fn handle_structure_creation(num_terms: u32, api: &SystematicsApi, storage
         1 => {
             match create_monad_interactive(&api, storage_cli).await {
                 Ok(_) => {}, // Successfully created
-                Err(e) => eprintln!("Error creating monad: {}", e),
+                    Err(e) => eprintln!("Error creating monad: {}", e),
+                }
             }
-        }
-        2 => {
+            2 => {
             match create_dyad_interactive(&api, storage_cli).await {
                 Ok(_) => {}, // Successfully created
-                Err(e) => eprintln!("Error creating dyad: {}", e),
+                    Err(e) => eprintln!("Error creating dyad: {}", e),
+                }
             }
-        }
-        3 => {
+            3 => {
             match create_triad_interactive(&api, storage_cli).await {
                 Ok(_) => {}, // Successfully created
-                Err(e) => eprintln!("Error creating triad: {}", e),
+                    Err(e) => eprintln!("Error creating triad: {}", e),
+                }
             }
-        }
-        4 => { 
+            4 => { 
             match create_tetrad_interactive(&api, storage_cli).await {
                 Ok(_) => {}, // Successfully created
-                Err(e) => eprintln!("Error creating tetrad: {}", e),
+                    Err(e) => eprintln!("Error creating tetrad: {}", e),
+                }
             }
-        }
-        5 => {
+            5 => {
             match create_pentad_interactive(&api, storage_cli).await {
                 Ok(_) => {}, // Successfully created
-                Err(e) => eprintln!("Error creating pentad: {}", e),
+                    Err(e) => eprintln!("Error creating pentad: {}", e),
+                }
             }
-        }
-        6 => {
+            6 => {
             match create_hexad_interactive(&api, storage_cli).await {
                 Ok(_) => {}, // Successfully created
-                Err(e) => eprintln!("Error creating hexad: {}", e),
+                    Err(e) => eprintln!("Error creating hexad: {}", e),
+                }
             }
-        }
-        7 => {
+            7 => {
             match create_heptad_interactive(&api, storage_cli).await {
                 Ok(_) => {}, // Successfully created
-                Err(e) => eprintln!("Error creating heptad: {}", e),
+                    Err(e) => eprintln!("Error creating heptad: {}", e),
+                }
             }
-        }
-        8 => {
+            8 => {
             match create_octad_interactive(&api, storage_cli).await {
                 Ok(_) => {}, // Successfully created
-                Err(e) => eprintln!("Error creating octad: {}", e),
+                    Err(e) => eprintln!("Error creating octad: {}", e),
+                }
             }
-        }
-        12 => {
+            12 => {
             match create_dodecad_interactive(&api, storage_cli).await {
                 Ok(_) => {}, // Successfully created
-                Err(e) => eprintln!("Error creating dodecad: {}", e),
+                    Err(e) => eprintln!("Error creating dodecad: {}", e),
+                }
             }
-        }
-        _ => {
+            _ => {
             println!("❌ Invalid number of terms. Please choose 1, 2, 3, 4, 5, 6, 7, 8, or 12.");
-        }
+            }
     }
     
     Ok(())

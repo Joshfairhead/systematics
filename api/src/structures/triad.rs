@@ -281,6 +281,8 @@ impl SystematicStructure for Triad {
         println!("ID: {}", &self.id[..8]); // Short ID for readability
         println!("{}", "=".repeat(header.len()));
     }
+    
+
 }
 
 /// Builder for creating Triad structures with improved naming
@@ -371,7 +373,7 @@ impl TriadBuilder {
         
         let triad = Triad::new(name, first_instance, second_instance, third_instance);
         
-        if let Some(custom_connectives) = self.connectives {
+        if let Some(_custom_connectives) = self.connectives {
             // Custom connectives would be applied here if needed
         }
         

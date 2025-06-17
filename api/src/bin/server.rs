@@ -5,9 +5,9 @@ use std::env;
 async fn main() -> Result<(), SystematicsError> {
     // Get configuration from environment variables
     let port = env::var("PORT")
-        .unwrap_or_else(|_| "3000".to_string())
+        .unwrap_or_else(|_| "3001".to_string())
         .parse::<u16>()
-        .unwrap_or(3000);
+        .unwrap_or(3001);
         
     let db_path = env::var("SYSTEMATICS_DB_PATH")
         .unwrap_or_else(|_| "./data/systematics.db".to_string());

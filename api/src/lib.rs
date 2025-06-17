@@ -137,12 +137,20 @@ pub trait SystematicStructure {
     // -------------------------------------------------------------------------
     
     /// Export structure to JSON representation
-    #[cfg(feature = "serde_support")]
-    fn to_json(&self) -> Result<String>;
+    fn to_json(&self) -> Result<String> {
+        Err(SystematicsError::NotSupported {
+            feature: "JSON serialization".to_string(),
+            reason: "Enable serde feature and derive Serialize for this structure".to_string(),
+        })
+    }
     
     /// Import structure from JSON representation  
-    #[cfg(feature = "serde_support")]
-    fn from_json(json: &str) -> Result<Self> where Self: Sized;
+    fn from_json(_json: &str) -> Result<Self> where Self: Sized {
+        Err(SystematicsError::NotSupported {
+            feature: "JSON deserialization".to_string(),
+            reason: "Enable serde feature and derive Deserialize for this structure".to_string(),
+        })
+    }
 }
 
 // =============================================================================

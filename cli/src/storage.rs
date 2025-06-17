@@ -1,7 +1,9 @@
-use systematics_api::{
-    SurrealStorage, StoredStructure, SystematicsError, SystematicStructure
-};
+use crate::api_client::{ApiClient, StructureIdValue};
+use systematics_api::{SystematicsError, SystematicStructure};
 use std::collections::HashMap;
+use std::process::{Command, Stdio};
+use std::time::Duration;
+use tokio::time::sleep;
 use clap::{Args, Subcommand};
 
 #[derive(Debug, Args)]
@@ -65,17 +67,90 @@ pub enum StorageCommand {
 }
 
 pub struct StorageCli {
-    storage: SurrealStorage,
+    api_client: ApiClient,
 }
 
 impl StorageCli {
     pub async fn new() -> Result<Self, SystematicsError> {
-        let db_path = "../data/systematics.db";
-        let storage = SurrealStorage::new(db_path).await?;
+        let api_url = std::env::var("SYSTEMATICS_API_URL")
+            .unwrap_or_else(|_| "http://localhost:3001".to_string());
         
-        println!("📚 Connected to SurrealDB at: {}", db_path);
+        let api_client = ApiClient::new(Some(api_url.clone()));
         
-        Ok(Self { storage })
+        // Test connection - if it fails, try to start the server
+        if !api_client.health_check().await.unwrap_or(false) {
+            println!("🔄 API server not running. Starting API server...");
+            Self::start_api_server().await?;
+            
+            // Wait for server to be ready
+            println!("⏳ Waiting for API server to be ready...");
+            let mut attempts = 0;
+            let max_attempts = 30; // 30 seconds timeout
+            
+            while attempts < max_attempts {
+                if api_client.health_check().await.unwrap_or(false) {
+                    break;
+                }
+                sleep(Duration::from_secs(1)).await;
+                attempts += 1;
+            }
+            
+            if attempts >= max_attempts {
+                return Err(SystematicsError::Storage(
+                    "API server failed to start within 30 seconds".to_string()
+                ));
+            }
+        }
+        
+        // Final connection test
+        if api_client.health_check().await? {
+            println!("🌐 Connected to SysteMaster API at: {}", api_url);
+        } else {
+            return Err(SystematicsError::Storage(format!(
+                "Failed to connect to API server at {}. Is the server running?", api_url
+            )));
+        }
+        
+        Ok(Self { api_client })
+    }
+
+    async fn start_api_server() -> Result<(), SystematicsError> {
+        // Find the API directory relative to the CLI
+        let api_path = std::env::current_dir()
+            .map_err(|e| SystematicsError::Storage(format!("Failed to get current directory: {}", e)))?
+            .parent()
+            .ok_or_else(|| SystematicsError::Storage("Cannot find parent directory".to_string()))?
+            .join("api");
+        
+        if !api_path.exists() {
+            return Err(SystematicsError::Storage(
+                "API directory not found. Make sure you're running from the CLI directory in the SysteMaster workspace.".to_string()
+            ));
+        }
+        
+        // Start the API server in the background
+        let mut cmd = Command::new("cargo");
+        cmd.args(&["run", "--bin", "server", "--features", "server"])
+            .current_dir(&api_path)
+            .stdout(Stdio::null()) // Suppress output
+            .stderr(Stdio::null())
+            .stdin(Stdio::null());
+        
+        // On Windows, we need to handle process creation differently
+        #[cfg(windows)]
+        {
+            use std::os::windows::process::CommandExt;
+            cmd.creation_flags(0x08000000); // CREATE_NO_WINDOW flag
+        }
+        
+        let child = cmd.spawn()
+            .map_err(|e| SystematicsError::Storage(format!("Failed to start API server: {}", e)))?;
+        
+        // We don't wait for the child process - it runs in the background
+        std::mem::forget(child); // Prevent the child from being dropped and killed
+        
+        println!("🚀 API server starting in background...");
+        Ok(())
     }
 
     pub async fn handle_command(&self, args: &StorageArgs) -> Result<(), SystematicsError> {
@@ -98,7 +173,7 @@ impl StorageCli {
     }
 
     async fn list_structures(&self) -> Result<(), SystematicsError> {
-        let structures = self.storage.list_structures().await?;
+        let structures = self.api_client.list_structures().await?;
         
         if structures.is_empty() {
             println!("📭 No structures found in the database.");
@@ -119,7 +194,7 @@ impl StorageCli {
                 println!("  Description: {}", desc);
             }
             println!("  ─────────────────────────────────────────");
-            println!("  ID: {} | Created: {}", structure.id.id, structure.created_at);
+            println!("  ID: {} | Created: {}", get_structure_id_string(&structure.id), structure.created_at);
             println!();
         }
         
@@ -127,7 +202,7 @@ impl StorageCli {
     }
 
     async fn search_structures(&self, query: &str) -> Result<(), SystematicsError> {
-        let structures = self.storage.search_structures(query).await?;
+        let structures = self.api_client.search_structures(query).await?;
         
         if structures.is_empty() {
             println!("🔍 No structures found matching '{}'", query);
@@ -148,7 +223,7 @@ impl StorageCli {
                 println!("  Description: {}", desc);
             }
             println!("  ─────────────────────────────────────────");
-            println!("  ID: {} | Created: {}", structure.id.id, structure.created_at);
+            println!("  ID: {} | Created: {}", get_structure_id_string(&structure.id), structure.created_at);
             println!();
         }
         
@@ -156,7 +231,7 @@ impl StorageCli {
     }
 
     async fn view_structure(&self, id: &str) -> Result<(), SystematicsError> {
-        let structure = self.storage.get_structure(id).await?;
+        let structure = self.api_client.get_structure(id).await?;
         
         match structure {
             Some(s) => {
@@ -164,7 +239,7 @@ impl StorageCli {
                 println!("{}", "═".repeat(60));
                 println!("Name: {}", s.name);
                 println!("Type: {}", s.structure_type);
-                println!("ID: {}", s.id.id);
+                println!("ID: {}", get_structure_id_string(&s.id));
                 println!("Created: {}", s.created_at);
                 println!("Updated: {}", s.updated_at);
                 
@@ -224,12 +299,12 @@ impl StorageCli {
                 println!("❌ Structure with ID '{}' not found", id);
             }
         }
-        
+        // Graph functionality not yet implemented in API
         Ok(())
     }
 
     async fn delete_structure(&self, id: &str) -> Result<(), SystematicsError> {
-        let deleted = self.storage.delete_structure(id).await?;
+        let deleted = self.api_client.delete_structure(id).await?;
         
         if deleted {
             println!("✅ Structure '{}' deleted successfully", id);
@@ -241,7 +316,7 @@ impl StorageCli {
     }
 
     async fn show_related_structures(&self, id: &str) -> Result<(), SystematicsError> {
-        let related = self.storage.get_related_structures(id).await?;
+        let related = self.api_client.get_related_structures(id).await?;
         
         if related.is_empty() {
             println!("🔗 No related structures found for '{}'", id);
@@ -259,7 +334,7 @@ impl StorageCli {
             display_connectives(&structure.connectives, &structure.terms);
             
             println!("  ─────────────────────────────────────────");
-            println!("  ID: {}", structure.id.id);
+            println!("  ID: {}", get_structure_id_string(&structure.id));
             println!();
         }
         
@@ -267,7 +342,8 @@ impl StorageCli {
     }
 
     async fn find_term_usage(&self, term: &str) -> Result<(), SystematicsError> {
-        let structures = self.storage.get_term_usage(term).await?;
+        // For now, use search functionality to find term usage
+        let structures = self.api_client.search_structures(term).await?;
         
         if structures.is_empty() {
             println!("🔍 No structures found containing term '{}'", term);
@@ -301,7 +377,7 @@ impl StorageCli {
                 );
             }
             println!("  ─────────────────────────────────────────");
-            println!("  ID: {}", structure.id.id);
+            println!("  ID: {}", get_structure_id_string(&structure.id));
             println!();
         }
         
@@ -309,61 +385,33 @@ impl StorageCli {
     }
 
     async fn show_structure_graph(&self, id: &str) -> Result<(), SystematicsError> {
-        let (nodes, edges) = self.storage.get_structure_graph(id).await?;
-        
-        if nodes.is_empty() {
-            println!("❌ Structure '{}' not found or has no graph data", id);
-            return Ok(());
-        }
-
-        println!("🕸️  Graph for Structure '{}':", id);
-        println!("{}", "═".repeat(60));
-        
-        println!("Nodes ({}):", nodes.len());
-        for node in &nodes {
-            println!("  {} [{}]: {}", node.position + 1, node.id.id, node.term);
-        }
-        
-        println!("\nEdges ({}):", edges.len());
-        for edge in &edges {
-            let from_pos = nodes.iter().find(|n| n.id.id.to_string() == edge.from_node)
-                .map(|n| n.position + 1)
-                .unwrap_or(0);
-            let to_pos = nodes.iter().find(|n| n.id.id.to_string() == edge.to_node)
-                .map(|n| n.position + 1)
-                .unwrap_or(0);
-                
-            println!("  {} → {} ({}, weight: {:.2})", 
-                from_pos, to_pos, edge.relationship_type, edge.weight);
-        }
-        
+        // Graph functionality not yet implemented in API
+        println!("⚠️  Graph functionality not yet available via API");
+        println!("   This feature will be added in a future update");
+        println!("   Structure ID: {}", id);
         Ok(())
     }
 
     async fn update_metadata(&self, id: &str, metadata: HashMap<String, String>) -> Result<(), SystematicsError> {
-        let updated = self.storage.update_structure_metadata(id, metadata.clone()).await?;
-        
-        if updated {
-            println!("✅ Metadata updated for structure '{}'", id);
-            for (key, value) in metadata {
-                println!("  {}: {}", key, value);
-            }
-        } else {
-            println!("❌ Structure '{}' not found", id);
+        // Metadata update functionality not yet implemented in API
+        println!("⚠️  Metadata update functionality not yet available via API");
+        println!("   This feature will be added in a future update");
+        println!("   Structure ID: {}", id);
+        for (key, value) in metadata {
+            println!("   Requested: {} = {}", key, value);
         }
-        
         Ok(())
     }
 
     async fn init_database(&self) -> Result<(), SystematicsError> {
-        println!("🚀 Database initialized successfully!");
-        println!("   Location: ./systematics.db");
-        println!("   Database: systematics/structures");
+        println!("🚀 API-based database access initialized!");
+        println!("   API Server: Connected");
+        println!("   Database: Managed by API server");
         Ok(())
     }
 
     async fn show_stats(&self) -> Result<(), SystematicsError> {
-        let structures = self.storage.list_structures().await?;
+        let structures = self.api_client.list_structures().await?;
         
         println!("📊 Database Statistics");
         println!("{}", "═".repeat(40));
@@ -396,7 +444,7 @@ impl StorageCli {
     }
 
     async fn export_database(&self, output_path: &str) -> Result<(), SystematicsError> {
-        let structures = self.storage.list_structures().await?;
+        let structures = self.api_client.list_structures().await?;
         
         // Create export data structure
         let export_data = serde_json::json!({
@@ -427,7 +475,22 @@ impl StorageCli {
         name: &str,
         description: Option<&str>,
     ) -> Result<String, SystematicsError> {
-        let id = self.storage.store_structure(structure, name, description).await?;
+        // Convert connectives from (usize, usize) keys to string keys for API
+        let connectives: HashMap<String, String> = structure.connectives()
+            .iter()
+            .map(|((from, to), relationship)| {
+                (format!("{}:{}", from, to), relationship.clone())
+            })
+            .collect();
+        
+        let id = self.api_client.create_structure(
+            name,
+            structure.structure_type(),
+            structure.terms().to_vec(),
+            connectives,
+            description.map(|s| s.to_string()),
+        ).await?;
+        
         println!("💾 Structure '{}' saved with ID: {}", name, id);
         Ok(id)
     }
@@ -444,6 +507,12 @@ fn get_term_name(terms: &[String], index: usize) -> String {
     terms.get(index)
         .map(|s| s.clone())
         .unwrap_or_else(|| format!("Term{}", index))
+}
+
+fn get_structure_id_string(id: &crate::api_client::StructureId) -> &str {
+    match &id.id {
+        StructureIdValue::String(s) => s,
+    }
 }
 
 fn display_connectives(connectives: &HashMap<String, String>, terms: &[String]) {

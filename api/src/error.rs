@@ -39,13 +39,16 @@ pub enum SystematicsError {
     #[error("Query execution error: {0}")]
     QueryExecution(String),
     
+    #[error("Feature not supported: {feature} - {reason}")]
+    NotSupported { feature: String, reason: String },
+    
     #[error("IO error: {source}")]
     Io {
         #[from]
         source: std::io::Error,
     },
     
-    #[cfg(feature = "serde_support")]
+    #[cfg(feature = "serde")]
     #[error("JSON error: {source}")]
     Json {
         #[from]

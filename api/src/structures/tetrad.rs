@@ -300,6 +300,8 @@ impl SystematicStructure for Tetrad {
         println!("ID: {}", &self.id[..8]); // Short ID for readability
         println!("{}", "=".repeat(header.len()));
     }
+    
+
 }
 
 /// Builder for creating Tetrad structures

@@ -317,19 +317,7 @@ impl SystematicStructure for Dyad {
         println!("{}", "=".repeat(header.len()));
     }
     
-    // -------------------------------------------------------------------------
-    // Serialization (Optional Feature)
-    // -------------------------------------------------------------------------
-    
-    #[cfg(feature = "serde_support")]
-    fn to_json(&self) -> Result<String> {
-        serde_json::to_string(self).map_err(|e| SystematicsError::Serialization(e.to_string()))
-    }
-    
-    #[cfg(feature = "serde_support")]
-    fn from_json(json: &str) -> Result<Self> {
-        serde_json::from_str(json).map_err(|e| SystematicsError::Deserialization(e.to_string()))
-    }
+
 }
 
 // =============================================================================

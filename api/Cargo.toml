@@ -5,13 +5,14 @@ edition = "2021"
 
 [features]
 default = ["serde"]
-serde = ["dep:serde"]
+serde = ["dep:serde", "dep:serde_json"]
 server = ["dep:axum", "dep:tower", "dep:tower-http"]
 
 [dependencies]
 systematics-library = { path = "../library" }
 thiserror = "2.0"
 serde = { version = "1.0", features = ["derive"], optional = true }
+serde_json = { version = "1.0", optional = true }
 surrealdb = { version = "2.3", features = ["kv-mem", "kv-rocksdb"] }
 tokio = { version = "1.0", features = ["full"] }
 uuid = { version = "1.0", features = ["v4"] }
