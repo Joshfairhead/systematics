@@ -1,5 +1,7 @@
 # SysteMaster TODO List
 
+*For strategic context see [roadmap.md](roadmap.md) | For current system status see [CONTEXT.md](CONTEXT.md)*
+
 ## 🎯 High Priority
 
 ### Multi-Tenant Provider System (Major Architecture Evolution)
@@ -156,35 +158,6 @@
 - [ ] **Terminology Consistency**: Align code semantics with Bennett's terminology
 - [ ] **Graceful Error Recovery**: Allow error correction instead of application exit
 - [ ] **Advanced Help System**: Context-sensitive help and tutorials
-
-## 🎉 Recently Completed
-
-### ✅ Architecture & Auto-Start (Latest)
-- ✅ **One-Command Startup**: `cd cli && cargo run` starts entire system
-- ✅ **API-Centric Architecture**: CLI uses API endpoints exclusively
-- ✅ **Auto-Start Functionality**: Automatic API server startup
-- ✅ **Code Quality**: Fixed deprecated features and compiler warnings
-- ✅ **Port Standardization**: System runs on port 3001
-
-### ✅ Core System Implementation
-- ✅ **Library/Binary Split**: Clean architectural separation
-- ✅ **SurrealDB Integration**: Graph database with persistence
-- ✅ **REST API Server**: Comprehensive HTTP endpoints
-- ✅ **Database Centralization**: Moved to `/data/systematics.db`
-- ✅ **All Major Structures**: 9/12 systematic structures implemented
-- ✅ **Six Permutations**: Named pattern generation system
-- ✅ **Bennett Schema Integration**: Authentic canonical terms
-- ✅ **JSON Export/Import**: Complete database export capability
-- ✅ **Search & Discovery**: Full-text search across all fields
-- ✅ **Relationship Analysis**: Graph-based connection exploration
-
-### ✅ Developer Experience
-- ✅ **Unified Error System**: Comprehensive `SystematicsError` handling
-- ✅ **Clean Builder Pattern**: Consistent API across structures
-- ✅ **Bidirectional Mapping**: Complete position ↔ term navigation
-- ✅ **Comprehensive Testing**: 51+ tests passing
-- ✅ **Interactive CLI**: User-friendly menu system
-- ✅ **Zero Configuration**: No manual setup required
 
 ---
 

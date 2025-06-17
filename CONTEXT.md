@@ -1,5 +1,7 @@
 # SysteMaster - Development Context
 
+*For strategic roadmap see [roadmap.md](roadmap.md) | For development tasks see [TODO.md](TODO.md)*
+
 ## 🎯 Current System Status
 
 ### ✅ **Fully Operational Architecture**
