@@ -6,6 +6,7 @@ edition = "2021"
 [features]
 default = ["serde"]
 serde = ["dep:serde"]
+server = ["dep:axum", "dep:tower", "dep:tower-http"]
 
 [dependencies]
 systematics-library = { path = "../library" }
@@ -15,6 +16,11 @@ surrealdb = { version = "2.3", features = ["kv-mem", "kv-rocksdb"] }
 tokio = { version = "1.0", features = ["full"] }
 uuid = { version = "1.0", features = ["v4"] }
 chrono = { version = "0.4", features = ["serde"] }
+
+# HTTP Server dependencies (optional)
+axum = { version = "0.7", optional = true }
+tower = { version = "0.4", optional = true }
+tower-http = { version = "0.5", features = ["cors"], optional = true }
 
 [dependencies.wasm-bindgen]
 version = "0.2"

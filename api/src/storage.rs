@@ -43,6 +43,7 @@ pub struct GraphEdge {
     pub created_at: Datetime,
 }
 
+#[derive(Clone)]
 pub struct SurrealStorage {
     db: Surreal<Db>,
 }
@@ -59,6 +60,13 @@ impl SurrealStorage {
         Self::init_schema(&db).await?;
         
         Ok(Self { db })
+    }
+
+    /// Create a new SurrealStorage with default project data path
+    pub async fn new_default() -> Result<Self, SystematicsError> {
+        let default_path = std::env::var("SYSTEMATICS_DB_PATH")
+            .unwrap_or_else(|_| "./data/systematics.db".to_string());
+        Self::new(&default_path).await
     }
 
     async fn init_schema(db: &Surreal<Db>) -> Result<(), SystematicsError> {

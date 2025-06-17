@@ -27,14 +27,15 @@ Systematics allows you to:
 
 ### ✅ **SurrealDB Graph Storage**
 Complete database integration with graph-based storage architecture:
-- **Persistent Storage**: Auto-save structures during creation with unique UUIDs
+- **Persistent Storage**: File-based RocksDB storage persists across sessions with unique UUIDs
 - **Graph Representation**: Each structure creates nodes (terms) and edges (relationships)
 - **Semantic Search**: Search across structure names, descriptions, and terms
 - **Relationship Analysis**: Find related structures through shared terms
 - **Full CRUD Operations**: Create, Read, Update, Delete with comprehensive error handling
-- **Database Commands**: CLI interface for all storage operations (list, search, view, delete, stats)
+- **Database Commands**: CLI interface for all storage operations (list, search, view, delete, stats, export)
 - **Metadata Management**: Additional properties and custom attributes storage
 - **Term Usage Tracking**: Find all structures containing specific terms
+- **JSON Export**: Export all structures with metadata, timestamps, and complete connectives data
 
 ### ✅ **Schema-Based Implementation**
 All systematic structures now use a unified system-based architecture:
@@ -186,7 +187,14 @@ cargo run storage related <id>                       # Find related structures
 cargo run storage find-term "term"                   # Find structures with term
 cargo run storage graph <id>                         # Show structure graph
 cargo run storage stats                              # Database statistics
+cargo run storage export                             # Export all structures to JSON
 ```
+
+### Data Storage & Export
+- **Database Location**: `cli/systematics.db/` (RocksDB format)
+- **Persistent Storage**: All structures persist across application sessions
+- **Export Format**: JSON with complete metadata, timestamps, and connectives
+- **Export Command**: `cargo run storage export` creates timestamped export files
 
 ### Example: Creating a Monad
 ```
@@ -238,8 +246,9 @@ cargo test schemas                       # Run schema refactoring tests
 ## Development Status
 
 ### 🎯 **Recent Major Achievements**
+- ✅ **Persistent Storage**: File-based RocksDB storage with session persistence and JSON export
 - ✅ **SurrealDB Integration**: Complete graph-based storage with auto-save, search, and relationship analysis
-- ✅ **Storage CLI Commands**: Full database management interface with 10+ storage operations
+- ✅ **Storage CLI Commands**: Full database management interface with 11 storage operations including export
 - ✅ **Graph Architecture**: Nodes (terms) and edges (relationships) for advanced querying
 - ✅ **Terminology Refactor**: Renamed `canonical_terms` → `term_characters` throughout codebase for semantic clarity and consistency
 - ✅ **Schema Refactoring & Enhancement**: Added coherence attributes, term designations, and first-order connectives names to all schemas and structures

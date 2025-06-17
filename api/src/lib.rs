@@ -32,6 +32,9 @@ pub mod structures;
 pub mod permutations;
 pub mod storage;
 
+#[cfg(feature = "server")]
+pub mod server;
+
 // =============================================================================
 // Public Re-exports
 // =============================================================================
@@ -41,6 +44,9 @@ pub use structures::*;
 pub use systematics_library::{System, LibraryProvider, BennettLibrary};
 pub use permutations::{Permutation, PermutationSet};
 pub use storage::{SurrealStorage, StoredStructure, GraphNode, GraphEdge};
+
+#[cfg(feature = "server")]
+pub use server::{start_server, create_router, AppState, ApiResponse};
 
 // =============================================================================
 // Core Traits

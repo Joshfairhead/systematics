@@ -56,6 +56,12 @@ pub enum StorageCommand {
     Init,
     /// Database statistics
     Stats,
+    /// Export database to JSON file
+    Export {
+        /// Output file path
+        #[arg(short, long, default_value = "systematics_export.json")]
+        output: String,
+    },
 }
 
 pub struct StorageCli {
@@ -64,7 +70,7 @@ pub struct StorageCli {
 
 impl StorageCli {
     pub async fn new() -> Result<Self, SystematicsError> {
-        let db_path = "./systematics.db";
+        let db_path = "../data/systematics.db";
         let storage = SurrealStorage::new(db_path).await?;
         
         println!("📚 Connected to SurrealDB at: {}", db_path);
@@ -87,6 +93,7 @@ impl StorageCli {
             },
             StorageCommand::Init => self.init_database().await,
             StorageCommand::Stats => self.show_stats().await,
+            StorageCommand::Export { output } => self.export_database(output).await,
         }
     }
 
@@ -384,6 +391,32 @@ impl StorageCli {
             println!("\nOldest: {} ({})", oldest.name, oldest.created_at);
             println!("Newest: {} ({})", newest.name, newest.created_at);
         }
+        
+        Ok(())
+    }
+
+    async fn export_database(&self, output_path: &str) -> Result<(), SystematicsError> {
+        let structures = self.storage.list_structures().await?;
+        
+        // Create export data structure
+        let export_data = serde_json::json!({
+            "export_info": {
+                "timestamp": chrono::Utc::now().to_rfc3339(),
+                "version": "1.0",
+                "total_structures": structures.len()
+            },
+            "structures": structures
+        });
+        
+        // Write to file
+        let json_string = serde_json::to_string_pretty(&export_data)
+            .map_err(|e| SystematicsError::Serialization(e.to_string()))?;
+        std::fs::write(output_path, json_string)?;
+        
+        println!("📤 Database exported successfully!");
+        println!("   File: {}", output_path);
+        println!("   Structures: {}", structures.len());
+        println!("   Size: {} bytes", std::fs::metadata(output_path)?.len());
         
         Ok(())
     }
