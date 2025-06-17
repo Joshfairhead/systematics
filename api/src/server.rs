@@ -131,13 +131,66 @@ async fn get_structure(
 
 #[cfg(feature = "server")]
 async fn create_structure(
-    State(_state): State<AppState>,
-    Json(_payload): Json<CreateStructureRequest>,
+    State(state): State<AppState>,
+    Json(payload): Json<CreateStructureRequest>,
 ) -> Result<Json<ApiResponse<String>>, StatusCode> {
-    // Note: This is a simplified create endpoint
-    // In practice, you'd want to validate the structure type and create the appropriate structure
-    // For now, we'll return an error indicating this needs to be implemented
-    Err(StatusCode::NOT_IMPLEMENTED)
+    // Validate structure type
+    let valid_types = ["monad", "dyad", "triad", "tetrad", "pentad", "hexad", "heptad", "octad", "dodecad"];
+    if !valid_types.contains(&payload.structure_type.as_str()) {
+        return Ok(Json(ApiResponse::error(format!(
+            "Invalid structure type '{}'. Valid types: {}",
+            payload.structure_type,
+            valid_types.join(", ")
+        ))));
+    }
+
+    // Validate term count matches structure type
+    let expected_term_count = match payload.structure_type.as_str() {
+        "monad" => 1,
+        "dyad" => 2,
+        "triad" => 3,
+        "tetrad" => 4,
+        "pentad" => 5,
+        "hexad" => 6,
+        "heptad" => 7,
+        "octad" => 8,
+        "dodecad" => 12,
+        _ => return Ok(Json(ApiResponse::error("Invalid structure type".to_string()))),
+    };
+
+    if payload.terms.len() != expected_term_count {
+        return Ok(Json(ApiResponse::error(format!(
+            "Structure type '{}' requires exactly {} terms, got {}",
+            payload.structure_type,
+            expected_term_count,
+            payload.terms.len()
+        ))));
+    }
+
+    // Validate terms are not empty
+    for (i, term) in payload.terms.iter().enumerate() {
+        if term.trim().is_empty() {
+            return Ok(Json(ApiResponse::error(format!(
+                "Term at position {} cannot be empty",
+                i + 1
+            ))));
+        }
+    }
+
+    // Store the structure
+    match state.storage.store_structure_direct(
+        &payload.name,
+        &payload.structure_type,
+        payload.terms,
+        payload.connectives,
+        payload.description,
+    ).await {
+        Ok(id) => Ok(Json(ApiResponse::success(id))),
+        Err(e) => {
+            eprintln!("Error creating structure: {}", e);
+            Err(StatusCode::INTERNAL_SERVER_ERROR)
+        }
+    }
 }
 
 #[cfg(feature = "server")]
@@ -179,9 +232,13 @@ pub async fn start_server(storage: SurrealStorage, port: u16) -> Result<(), Syst
         .await
         .map_err(|e| SystematicsError::Storage(format!("Failed to bind to {}: {}", addr, e)))?;
     
+    println!("✅ Server successfully bound to {}", addr);
+    println!("🌐 Server is now listening for connections...");
+    
     axum::serve(listener, app)
         .await
         .map_err(|e| SystematicsError::Storage(format!("Server error: {}", e)))?;
     
+    println!("⚠️  Server has stopped");
     Ok(())
 } 

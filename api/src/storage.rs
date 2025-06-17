@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use surrealdb::engine::local::{Db, File};
 use surrealdb::Surreal;
+use uuid::Uuid;
 
 use surrealdb::sql::{Datetime, Thing};
 
@@ -111,7 +112,7 @@ impl SurrealStorage {
         name: &str,
         description: Option<&str>,
     ) -> Result<String, SystematicsError> {
-        let id_string = uuid::Uuid::new_v4().to_string();
+        let id_string = Uuid::new_v4().to_string();
         let now = Datetime::default();
         
         // Convert connectives from (usize, usize) keys to string keys for storage
@@ -312,6 +313,43 @@ impl SurrealStorage {
         let structures: Vec<StoredStructure> = result.take(0)?;
         
         Ok(structures)
+    }
+
+    /// Store a structure directly from API request data
+    pub async fn store_structure_direct(
+        &self,
+        name: &str,
+        structure_type: &str,
+        terms: Vec<String>,
+        connectives: HashMap<String, String>,
+        description: Option<String>,
+    ) -> Result<String, SystematicsError> {
+        let id_string = Uuid::new_v4().to_string();
+        let now = Datetime::default();
+        
+        let stored_structure = StoredStructure {
+            id: Thing::from(("structures", id_string.as_str())),
+            name: name.to_string(),
+            structure_type: structure_type.to_string(),
+            terms: terms.clone(),
+            connectives,
+            created_at: now.clone(),
+            updated_at: now,
+            description,
+            metadata: HashMap::new(),
+        };
+
+        // Store the structure
+        let _: Option<StoredStructure> = self.db
+            .create(("structures", id_string.as_str()))
+            .content(stored_structure)
+            .await?;
+
+        // Store nodes and create graph representation
+        let nodes = self.create_nodes(&id_string, &terms).await?;
+        let _edges = self.create_edges(&nodes).await?;
+
+        Ok(id_string)
     }
 }
 

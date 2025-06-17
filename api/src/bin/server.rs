@@ -16,12 +16,25 @@ async fn main() -> Result<(), SystematicsError> {
     println!("   Port: {}", port);
     println!("   Database: {}", db_path);
     
-    // Initialize storage
-    let storage = SurrealStorage::new(&db_path).await?;
-    println!("✅ Database connected");
+    // Initialize storage with detailed logging
+    println!("📡 Initializing database connection...");
+    let storage = match SurrealStorage::new(&db_path).await {
+        Ok(storage) => {
+            println!("✅ Database connected successfully");
+            storage
+        }
+        Err(e) => {
+            eprintln!("❌ Database connection failed: {}", e);
+            return Err(e);
+        }
+    };
     
-    // Start the server
-    start_server(storage, port).await?;
+    // Start the server with detailed logging
+    println!("🌐 Starting HTTP server...");
+    if let Err(e) = start_server(storage, port).await {
+        eprintln!("❌ Server failed to start: {}", e);
+        return Err(e);
+    }
     
     Ok(())
 } 

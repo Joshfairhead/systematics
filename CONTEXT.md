@@ -83,6 +83,37 @@ We've successfully transformed SysteMaster from a CLI-only application to a **pr
   - May be related to RocksDB initialization or SurrealDB setup
   - Needs debugging in next session
 
+### 🚧 **Known Incomplete Items**
+
+#### Critical (Blocks API-first architecture)
+- [ ] **`POST /structures` endpoint** - Currently returns `StatusCode::NOT_IMPLEMENTED`
+  - Located in `api/src/server.rs:139`
+  - Needs validation and proper structure creation logic
+  - Should support all structure types (monad through dodecad)
+- [ ] **Server startup hanging issue** - Prevents API server from running
+- [ ] **CLI still uses direct database access** - Should use API calls instead
+  - Need to create HTTP client in CLI for API communication
+  - Remove direct SurrealStorage dependency from CLI
+
+#### Important (Production readiness)
+- [ ] **Bennett framework research gaps** - Multiple TODOs in systematic knowledge:
+  - `library/src/bennett/hexad.rs:28` - Research canonical Hexad connectives
+  - `library/src/bennett/heptad.rs:28` - Research canonical Heptad connectives  
+  - `library/src/bennett/octad.rs:28` - Research canonical Octad connectives
+  - `library/src/bennett/dodecad.rs:15-17` - Verify "educated guesses" with Bennett texts
+  - `library/src/bennett/dyad.rs:32` - Add proper Bennett framework relationships
+  - `api/src/structures/tetrad.rs:32,415` - Missing proper Bennett framework relationships
+- [ ] **Proper logging system** - Replace `println!`/`eprintln!` with structured logging
+- [ ] **Request validation** - API endpoints need input validation and sanitization
+- [ ] **Authentication/authorization** - No access control currently implemented
+
+#### Nice-to-have (Future enhancements)
+- [ ] **Rate limiting** - Protection against API abuse
+- [ ] **Advanced health checks** - More comprehensive monitoring endpoints
+- [ ] **Configuration management** - Beyond basic environment variables
+- [ ] **Error response standardization** - Consistent error formats across all endpoints
+- [ ] **API documentation** - OpenAPI/Swagger documentation generation
+
 ### 📁 **Current Project Structure**
 
 ```
