@@ -3,7 +3,7 @@ use crate::SystematicStructure;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use surrealdb::engine::local::{Db, Mem};
+use surrealdb::engine::local::{Db, File};
 use surrealdb::Surreal;
 
 use surrealdb::sql::{Datetime, Thing};
@@ -48,9 +48,9 @@ pub struct SurrealStorage {
 }
 
 impl SurrealStorage {
-    pub async fn new(_db_path: &str) -> Result<Self, SystematicsError> {
-        // Use in-memory storage (for now, until we fix persistence)
-        let db = Surreal::new::<Mem>(()).await?;
+    pub async fn new(db_path: &str) -> Result<Self, SystematicsError> {
+        // Use file-based storage for persistence
+        let db = Surreal::new::<File>(db_path).await?;
         
         // Use a namespace and database
         db.use_ns("systematics").use_db("structures").await?;
