@@ -103,12 +103,16 @@ impl StorageCli {
         
         for structure in structures {
             println!("🔹 {} ({})", structure.name, structure.structure_type);
-            println!("  ID: {}", structure.id.id);
             println!("  Terms: {}", structure.terms.join(" → "));
-            println!("  Created: {}", structure.created_at);
+            
+            // Show connectives if they exist
+            display_connectives(&structure.connectives, &structure.terms);
+            
             if let Some(desc) = &structure.description {
                 println!("  Description: {}", desc);
             }
+            println!("  ─────────────────────────────────────────");
+            println!("  ID: {} | Created: {}", structure.id.id, structure.created_at);
             println!();
         }
         
@@ -128,12 +132,16 @@ impl StorageCli {
         
         for structure in structures {
             println!("🔹 {} ({})", structure.name, structure.structure_type);
-            println!("  ID: {}", structure.id.id);
             println!("  Terms: {}", structure.terms.join(" → "));
-            println!("  Created: {}", structure.created_at);
+            
+            // Show connectives if they exist
+            display_connectives(&structure.connectives, &structure.terms);
+            
             if let Some(desc) = &structure.description {
                 println!("  Description: {}", desc);
             }
+            println!("  ─────────────────────────────────────────");
+            println!("  ID: {} | Created: {}", structure.id.id, structure.created_at);
             println!();
         }
         
@@ -160,6 +168,42 @@ impl StorageCli {
                 println!("\nTerms ({}):", s.terms.len());
                 for (i, term) in s.terms.iter().enumerate() {
                     println!("  {}: {}", i + 1, term);
+                }
+                
+                // Show connectives if they exist
+                if !s.connectives.is_empty() {
+                    println!("\nConnectives ({}):", s.connectives.len());
+                    
+                    // Collect and format all connectives for column alignment
+                    let mut formatted_connectives = Vec::new();
+                    let mut max_left_width = 0;
+                    let mut max_middle_width = 0;
+                    let mut max_right_width = 0;
+                    
+                    for (key, relationship) in &s.connectives {
+                        if let Some((from_str, to_str)) = key.split_once(':') {
+                            if let (Ok(from), Ok(to)) = (from_str.parse::<usize>(), to_str.parse::<usize>()) {
+                                let from_term = get_term_name(&s.terms, from);
+                                let to_term = get_term_name(&s.terms, to);
+                                
+                                max_left_width = max_left_width.max(from_term.len());
+                                max_middle_width = max_middle_width.max(relationship.len());
+                                max_right_width = max_right_width.max(to_term.len());
+                                
+                                formatted_connectives.push((from_term, relationship, to_term));
+                            }
+                        }
+                    }
+                    
+                    // Display with proper column alignment
+                    for (from_term, relationship, to_term) in formatted_connectives {
+                        println!("  {:^width_left$} <---({:^width_middle$})---> {:^width_right$}", 
+                            from_term, relationship, to_term,
+                            width_left = max_left_width,
+                            width_middle = max_middle_width,
+                            width_right = max_right_width
+                        );
+                    }
                 }
                 
                 if !s.metadata.is_empty() {
@@ -202,8 +246,13 @@ impl StorageCli {
         
         for structure in related {
             println!("🔹 {} ({})", structure.name, structure.structure_type);
-            println!("  ID: {}", structure.id.id);
             println!("  Terms: {}", structure.terms.join(" → "));
+            
+            // Show connectives if they exist
+            display_connectives(&structure.connectives, &structure.terms);
+            
+            println!("  ─────────────────────────────────────────");
+            println!("  ID: {}", structure.id.id);
             println!();
         }
         
@@ -223,8 +272,10 @@ impl StorageCli {
         
         for structure in structures {
             println!("🔹 {} ({})", structure.name, structure.structure_type);
-            println!("  ID: {}", structure.id.id);
             println!("  Terms: {}", structure.terms.join(" → "));
+            
+            // Show connectives if they exist
+            display_connectives(&structure.connectives, &structure.terms);
             
             // Highlight the matching term
             let positions: Vec<usize> = structure.terms
@@ -242,6 +293,8 @@ impl StorageCli {
                         .join(", ")
                 );
             }
+            println!("  ─────────────────────────────────────────");
+            println!("  ID: {}", structure.id.id);
             println!();
         }
         
@@ -352,4 +405,47 @@ fn parse_key_val(s: &str) -> Result<(String, String), Box<dyn std::error::Error 
         .find('=')
         .ok_or_else(|| format!("invalid KEY=value: no `=` found in `{s}`"))?;
     Ok((s[..pos].to_string(), s[pos + 1..].to_string()))
+}
+
+fn get_term_name(terms: &[String], index: usize) -> String {
+    terms.get(index)
+        .map(|s| s.clone())
+        .unwrap_or_else(|| format!("Term{}", index))
+}
+
+fn display_connectives(connectives: &HashMap<String, String>, terms: &[String]) {
+    if !connectives.is_empty() {
+        println!("  Connectives:");
+        
+        // Collect and format all connectives for column alignment
+        let mut formatted_connectives = Vec::new();
+        let mut max_left_width = 0;
+        let mut max_middle_width = 0;
+        let mut max_right_width = 0;
+        
+        for (key, relationship) in connectives {
+            if let Some((from_str, to_str)) = key.split_once(':') {
+                if let (Ok(from), Ok(to)) = (from_str.parse::<usize>(), to_str.parse::<usize>()) {
+                    let from_term = get_term_name(terms, from);
+                    let to_term = get_term_name(terms, to);
+                    
+                    max_left_width = max_left_width.max(from_term.len());
+                    max_middle_width = max_middle_width.max(relationship.len());
+                    max_right_width = max_right_width.max(to_term.len());
+                    
+                    formatted_connectives.push((from_term, relationship, to_term));
+                }
+            }
+        }
+        
+        // Display with proper column alignment
+        for (from_term, relationship, to_term) in formatted_connectives {
+            println!("    {:^width_left$} <---[{:^width_middle$}]---> {:^width_right$}", 
+                from_term, relationship, to_term,
+                width_left = max_left_width,
+                width_middle = max_middle_width,
+                width_right = max_right_width
+            );
+        }
+    }
 } 

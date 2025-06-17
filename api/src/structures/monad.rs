@@ -80,6 +80,11 @@ impl Monad {
     pub fn has_attribute(&self, attribute: &str) -> bool {
         self.attributes.contains(&attribute.to_string())
     }
+    
+    /// Get connectives (empty for monad but maintains pattern)
+    pub fn connectives(&self) -> &HashMap<(usize, usize), String> {
+        &self.connectives
+    }
 }
 
 // =============================================================================
@@ -125,12 +130,16 @@ impl SystematicStructure for Monad {
         self.system.term_characters().iter().map(|s| s.to_string()).collect()
     }
     
+    fn user_terms(&self) -> &[String] {
+        &self.user_term_index
+    }
+    
     fn first_order_connectives_name(&self) -> &str {
         self.system.first_order_connectives_name()
     }
     
-    fn user_terms(&self) -> &[String] {
-        &self.user_term_index
+    fn connectives(&self) -> &std::collections::HashMap<(usize, usize), String> {
+        &self.connectives
     }
     
     // -------------------------------------------------------------------------

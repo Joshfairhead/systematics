@@ -87,17 +87,21 @@ pub trait SystematicStructure {
     /// For a monad: `["Unity"]`, for a dyad: `["Essence", "Existence"]`.
     fn term_characters(&self) -> Vec<String>;
     
+    /// Get current user-provided term values for each position
+    fn user_terms(&self) -> &[String];
+    
     /// Get the name for the first order connectives of this structure type
     fn first_order_connectives_name(&self) -> &str;
+    
+    /// Get connective relationships between terms
+    /// Returns a map of (from_index, to_index) -> relationship_name
+    fn connectives(&self) -> &std::collections::HashMap<(usize, usize), String>;
     
     /// Get semantic coordinates/positions for this structure
     /// Returns the coordinate indices (0, 1, 2, etc.) that map to term positions.
     fn semantic_coordinates(&self) -> Vec<usize> {
         (0..Self::TERM_COUNT).collect()
     }
-    
-    /// Get current user-provided term values for each position
-    fn user_terms(&self) -> &[String];
     
     // -------------------------------------------------------------------------
     // Schema & Structure

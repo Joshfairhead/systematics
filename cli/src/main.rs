@@ -50,7 +50,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         }
                     };
                     
-                    handle_structure_creation(num_terms, &api).await?;
+                    // Initialize storage for command-line mode
+                    let storage_cli = match StorageCli::new().await {
+                        Ok(cli) => Some(cli),
+                        Err(e) => {
+                            eprintln!("⚠️  Warning: Could not initialize storage: {}", e);
+                            eprintln!("   Structures will not be auto-saved.");
+                            None
+                        }
+                    };
+                    
+                    handle_structure_creation(num_terms, &api, storage_cli.as_ref()).await?;
                 }
                 Commands::Storage(args) => {
                     let storage_cli = StorageCli::new().await?;
@@ -79,6 +89,20 @@ async fn run_interactive_menu() -> Result<(), Box<dyn std::error::Error>> {
     println!("=============");
     println!();
     
+    // Create a single shared storage instance for the entire session
+    let shared_storage = match StorageCli::new().await {
+        Ok(storage) => {
+            println!("📚 Database connected");
+            Some(storage)
+        }
+        Err(e) => {
+            println!("⚠️  Database unavailable: {}", e);
+            println!("   Structures will not be saved between operations");
+            None
+        }
+    };
+    println!();
+    
     loop {
         println!("Options:");
         println!("1. Create structure    4. Permutations");
@@ -104,20 +128,15 @@ async fn run_interactive_menu() -> Result<(), Box<dyn std::error::Error>> {
                 let num_terms = terms_input.trim().parse::<u32>().unwrap_or(0);
                 
                 let api = SystematicsApi::new();
-                if let Err(e) = handle_structure_creation(num_terms, &api).await {
+                if let Err(e) = handle_structure_creation(num_terms, &api, shared_storage.as_ref()).await {
                     eprintln!("❌ {}", e);
                 }
                 println!();
             }
             "2" => {
                 println!();
-                print!("📚 Loading...");
-                io::stdout().flush()?;
-                
-                let timeout_duration = std::time::Duration::from_secs(3);
-                match tokio::time::timeout(timeout_duration, StorageCli::new()).await {
-                    Ok(Ok(storage_cli)) => {
-                        println!(" Done!");
+                match &shared_storage {
+                    Some(storage_cli) => {
                         let args = StorageArgs {
                             command: storage::StorageCommand::List,
                         };
@@ -125,13 +144,8 @@ async fn run_interactive_menu() -> Result<(), Box<dyn std::error::Error>> {
                             eprintln!("❌ {}", e);
                         }
                     }
-                    Ok(Err(e)) => {
-                        println!();
-                        eprintln!("❌ Storage unavailable: {}", e);
-                    }
-                    Err(_) => {
-                        println!();
-                        eprintln!("❌ Storage timeout (using in-memory database)");
+                    None => {
+                        eprintln!("❌ Database not available");
                     }
                 }
                 println!();
@@ -146,13 +160,8 @@ async fn run_interactive_menu() -> Result<(), Box<dyn std::error::Error>> {
                 let search_term = search_input.trim().to_string();
                 
                 if !search_term.is_empty() {
-                    print!("🔍 Searching...");
-                    io::stdout().flush()?;
-                    
-                    let timeout_duration = std::time::Duration::from_secs(3);
-                    match tokio::time::timeout(timeout_duration, StorageCli::new()).await {
-                        Ok(Ok(storage_cli)) => {
-                            println!(" Done!");
+                    match &shared_storage {
+                        Some(storage_cli) => {
                             let args = StorageArgs {
                                 command: storage::StorageCommand::Search { query: search_term },
                             };
@@ -160,13 +169,8 @@ async fn run_interactive_menu() -> Result<(), Box<dyn std::error::Error>> {
                                 eprintln!("❌ {}", e);
                             }
                         }
-                        Ok(Err(e)) => {
-                            println!();
-                            eprintln!("❌ Storage unavailable: {}", e);
-                        }
-                        Err(_) => {
-                            println!();
-                            eprintln!("❌ Storage timeout");
+                        None => {
+                            eprintln!("❌ Database not available");
                         }
                     }
                 } else {
@@ -198,68 +202,58 @@ async fn run_interactive_menu() -> Result<(), Box<dyn std::error::Error>> {
     }
 }
 
-async fn handle_structure_creation(num_terms: u32, api: &SystematicsApi) -> Result<(), Box<dyn std::error::Error>> {
-    // Initialize storage for auto-saving (only if needed)
-    let storage_cli = match StorageCli::new().await {
-        Ok(cli) => Some(cli),
-        Err(e) => {
-            eprintln!("⚠️  Warning: Could not initialize storage: {}", e);
-            eprintln!("   Structures will not be auto-saved.");
-            None
-        }
-    };
-    
+async fn handle_structure_creation(num_terms: u32, api: &SystematicsApi, storage_cli: Option<&StorageCli>) -> Result<(), Box<dyn std::error::Error>> {
     match num_terms {
         1 => {
-            match create_monad_interactive(&api, storage_cli.as_ref()).await {
+            match create_monad_interactive(&api, storage_cli).await {
                 Ok(_) => {}, // Successfully created
                 Err(e) => eprintln!("Error creating monad: {}", e),
             }
         }
         2 => {
-            match create_dyad_interactive(&api, storage_cli.as_ref()).await {
+            match create_dyad_interactive(&api, storage_cli).await {
                 Ok(_) => {}, // Successfully created
                 Err(e) => eprintln!("Error creating dyad: {}", e),
             }
         }
         3 => {
-            match create_triad_interactive(&api, storage_cli.as_ref()).await {
+            match create_triad_interactive(&api, storage_cli).await {
                 Ok(_) => {}, // Successfully created
                 Err(e) => eprintln!("Error creating triad: {}", e),
             }
         }
         4 => { 
-            match create_tetrad_interactive(&api, storage_cli.as_ref()).await {
+            match create_tetrad_interactive(&api, storage_cli).await {
                 Ok(_) => {}, // Successfully created
                 Err(e) => eprintln!("Error creating tetrad: {}", e),
             }
         }
         5 => {
-            match create_pentad_interactive(&api, storage_cli.as_ref()).await {
+            match create_pentad_interactive(&api, storage_cli).await {
                 Ok(_) => {}, // Successfully created
                 Err(e) => eprintln!("Error creating pentad: {}", e),
             }
         }
         6 => {
-            match create_hexad_interactive(&api, storage_cli.as_ref()).await {
+            match create_hexad_interactive(&api, storage_cli).await {
                 Ok(_) => {}, // Successfully created
                 Err(e) => eprintln!("Error creating hexad: {}", e),
             }
         }
         7 => {
-            match create_heptad_interactive(&api, storage_cli.as_ref()).await {
+            match create_heptad_interactive(&api, storage_cli).await {
                 Ok(_) => {}, // Successfully created
                 Err(e) => eprintln!("Error creating heptad: {}", e),
             }
         }
         8 => {
-            match create_octad_interactive(&api, storage_cli.as_ref()).await {
+            match create_octad_interactive(&api, storage_cli).await {
                 Ok(_) => {}, // Successfully created
                 Err(e) => eprintln!("Error creating octad: {}", e),
             }
         }
         12 => {
-            match create_dodecad_interactive(&api, storage_cli.as_ref()).await {
+            match create_dodecad_interactive(&api, storage_cli).await {
                 Ok(_) => {}, // Successfully created
                 Err(e) => eprintln!("Error creating dodecad: {}", e),
             }
@@ -548,17 +542,21 @@ async fn create_tetrad_interactive(api: &SystematicsApi, storage_cli: Option<&St
         let max_rel_len = canonical_connectives.iter()
             .map(|c| c.relationship.len())
             .max().unwrap_or(0);
+        let max_right_len = canonical_connectives.iter()
+            .map(|c| terms[c.to_position].len())
+            .max().unwrap_or(0);
         
         for connective in canonical_connectives {
             let from_term = &terms[connective.from_position];
             let to_term = &terms[connective.to_position];
             
-            print!("{:>left_width$} <--{:^rel_width$}--> {}: ", 
+            print!("{:^left_width$} <---[{:^rel_width$}]---> {:^right_width$}: ", 
                 from_term, 
                 connective.relationship, 
                 to_term,
                 left_width = max_left_len,
-                rel_width = max_rel_len);
+                rel_width = max_rel_len,
+                right_width = max_right_len);
             std::io::stdout().flush()?;
             
             let mut input = String::new();
@@ -636,17 +634,21 @@ async fn create_pentad_interactive(api: &SystematicsApi, storage_cli: Option<&St
         let max_rel_len = canonical_connectives.iter()
             .map(|c| c.relationship.len())
             .max().unwrap_or(0);
+        let max_right_len = canonical_connectives.iter()
+            .map(|c| terms[c.to_position].len())
+            .max().unwrap_or(0);
         
         for connective in canonical_connectives {
             let from_term = &terms[connective.from_position];
             let to_term = &terms[connective.to_position];
             
-            print!("{:>left_width$} <--{:^rel_width$}--> {}: ", 
+            print!("{:^left_width$} <---[{:^rel_width$}]---> {:^right_width$}: ", 
                 from_term, 
                 connective.relationship, 
                 to_term,
                 left_width = max_left_len,
-                rel_width = max_rel_len);
+                rel_width = max_rel_len,
+                right_width = max_right_len);
             std::io::stdout().flush()?;
             
             let mut input = String::new();

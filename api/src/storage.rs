@@ -15,6 +15,7 @@ pub struct StoredStructure {
     pub name: String,
     pub structure_type: String,
     pub terms: Vec<String>,
+    pub connectives: HashMap<String, String>,
     pub created_at: Datetime,
     pub updated_at: Datetime,
     pub description: Option<String>,
@@ -48,8 +49,7 @@ pub struct SurrealStorage {
 
 impl SurrealStorage {
     pub async fn new(_db_path: &str) -> Result<Self, SystematicsError> {
-        // For development, we'll use in-memory storage
-        // In production, you can switch to File backend
+        // Use in-memory storage (for now, until we fix persistence)
         let db = Surreal::new::<Mem>(()).await?;
         
         // Use a namespace and database
@@ -62,17 +62,9 @@ impl SurrealStorage {
     }
 
     async fn init_schema(db: &Surreal<Db>) -> Result<(), SystematicsError> {
-        // Create tables and indexes
+        // Create tables and indexes - using SCHEMALESS to avoid type conflicts
         db.query("
-            DEFINE TABLE structures SCHEMAFULL;
-            DEFINE FIELD id ON structures TYPE string;
-            DEFINE FIELD name ON structures TYPE string;
-            DEFINE FIELD structure_type ON structures TYPE string;
-            DEFINE FIELD terms ON structures TYPE array<string>;
-            DEFINE FIELD created_at ON structures TYPE datetime;
-            DEFINE FIELD updated_at ON structures TYPE datetime;
-            DEFINE FIELD description ON structures TYPE option<string>;
-            DEFINE FIELD metadata ON structures TYPE object;
+            DEFINE TABLE structures SCHEMALESS;
             DEFINE INDEX idx_name ON structures COLUMNS name;
             DEFINE INDEX idx_type ON structures COLUMNS structure_type;
             DEFINE INDEX idx_created ON structures COLUMNS created_at;
@@ -114,11 +106,20 @@ impl SurrealStorage {
         let id_string = uuid::Uuid::new_v4().to_string();
         let now = Datetime::default();
         
+        // Convert connectives from (usize, usize) keys to string keys for storage
+        let connectives: HashMap<String, String> = structure.connectives()
+            .iter()
+            .map(|((from, to), relationship)| {
+                (format!("{}:{}", from, to), relationship.clone())
+            })
+            .collect();
+        
         let stored_structure = StoredStructure {
             id: Thing::from(("structures", id_string.as_str())),
             name: name.to_string(),
             structure_type: structure.structure_type().to_string(),
             terms: structure.terms().to_vec(),
+            connectives,
             created_at: now.clone(),
             updated_at: now,
             description: description.map(|s| s.to_string()),

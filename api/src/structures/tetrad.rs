@@ -170,12 +170,16 @@ impl SystematicStructure for Tetrad {
         self.system.term_characters().iter().map(|s| s.to_string()).collect()
     }
     
+    fn user_terms(&self) -> &[String] {
+        &self.user_term_index
+    }
+    
     fn first_order_connectives_name(&self) -> &str {
         self.system.first_order_connectives_name()
     }
     
-    fn user_terms(&self) -> &[String] {
-        &self.user_term_index
+    fn connectives(&self) -> &std::collections::HashMap<(usize, usize), String> {
+        &self.connectives
     }
     
     fn system(&self) -> &dyn systematics_library::System {
@@ -277,15 +281,17 @@ impl SystematicStructure for Tetrad {
             // Calculate column widths
             let max_left_len = display_items.iter().map(|(left, _, _)| left.len()).max().unwrap_or(0);
             let max_rel_len = display_items.iter().map(|(_, rel, _)| rel.len()).max().unwrap_or(0);
+            let max_right_len = display_items.iter().map(|(_, _, right)| right.len()).max().unwrap_or(0);
             
             // Display with proper column alignment
             for (left_term, relationship, right_term) in display_items {
-                println!("  {:>left_width$} <--{:^rel_width$}--> {}", 
+                println!("  {:^left_width$} <---[{:^rel_width$}]---> {:^right_width$}", 
                     left_term,
                     relationship,
                     right_term,
                     left_width = max_left_len,
-                    rel_width = max_rel_len);
+                    rel_width = max_rel_len,
+                    right_width = max_right_len);
             }
         }
         

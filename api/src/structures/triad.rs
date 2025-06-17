@@ -169,12 +169,16 @@ impl SystematicStructure for Triad {
         self.system.term_characters().iter().map(|s| s.to_string()).collect()
     }
     
+    fn user_terms(&self) -> &[String] {
+        &self.user_instances
+    }
+    
     fn first_order_connectives_name(&self) -> &str {
         self.system.first_order_connectives_name()
     }
     
-    fn user_terms(&self) -> &[String] {
-        &self.user_instances
+    fn connectives(&self) -> &std::collections::HashMap<(usize, usize), String> {
+        &self.connectives
     }
     
     fn system(&self) -> &dyn systematics_library::System {
