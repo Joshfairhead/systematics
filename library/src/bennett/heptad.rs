@@ -14,7 +14,7 @@ impl crate::System for HeptadicSystem {
     }
     
     fn coherence_attribute(&self) -> &'static str {
-        "Transformation"
+        "Generation" // Updated from "Transformation" per Tony's QualSystems slides - Ennead has "Transformation"
     }
     
     fn term_designation(&self) -> &'static str {
@@ -54,5 +54,9 @@ impl crate::System for HeptadicSystem {
             Connective { from_position: 4, to_position: 6, relationship: "Application <> Value".to_string(), description: None },
             Connective { from_position: 5, to_position: 6, relationship: "Delivery <> Value".to_string(), description: None },
         ]
+    }
+    
+    fn source(&self) -> &'static str {
+        "H3uni.org: Hodgson's QualSystems Course (Module 3) / QualSystems Book"
     }
 } 

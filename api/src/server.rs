@@ -135,7 +135,7 @@ async fn create_structure(
     Json(payload): Json<CreateStructureRequest>,
 ) -> Result<Json<ApiResponse<String>>, StatusCode> {
     // Validate structure type
-    let valid_types = ["monad", "dyad", "triad", "tetrad", "pentad", "hexad", "heptad", "octad", "dodecad"];
+    let valid_types = ["monad", "dyad", "triad", "tetrad", "pentad", "hexad", "heptad", "octad", "ennead", "decad", "undecad", "dodecad"];
     if !valid_types.contains(&payload.structure_type.as_str()) {
         return Ok(Json(ApiResponse::error(format!(
             "Invalid structure type '{}'. Valid types: {}",
@@ -154,6 +154,9 @@ async fn create_structure(
         "hexad" => 6,
         "heptad" => 7,
         "octad" => 8,
+        "ennead" => 9,
+        "decad" => 10,
+        "undecad" => 11,
         "dodecad" => 12,
         _ => return Ok(Json(ApiResponse::error("Invalid structure type".to_string()))),
     };

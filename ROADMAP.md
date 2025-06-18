@@ -19,7 +19,7 @@
 - **REA Integration**: Resource-Event-Agent accounting for systematic structures
 - **Pattern Recognition**: AI-assisted systematic thinking with cross-structure analysis
 - **Web Frontend Platform**: Browser-based systematic thinking with interactive visualization
-- **Accounts**: Multi-user provider system with capability delegation
+- **Accounts**: Multi-user provider system with capability delegation, possibly AD4M??
 - **Alternative Systems**: Landry/Gurdjieff perspective implementations
 - **Holochain Integration**: Decentralized storage and sharing
 - **Semantic Research**: Holonic vector space, qualitative position hashing
@@ -29,6 +29,10 @@
 ### **Core System Completion**
 - **Missing Structures**: Enneagram (9), Decad (10), Hendecad (11)
 - **Bennett Research**: Fill canonical term knowledge gaps
+  - **Complex Systems Terminology**: Research Bennett's complex systems framework and terminology
+  - **QualSystems Slides vs Book Discrepancies**: QS slides have 'nature' field that book doesn't - investigate structural differences between Hodgson's materials
+  - **Heptad vs Ennead Coherence Conflict**: Both currently use "Transformation" - Heptad should be "Generation/Generative Power" per Tony's slides
+  - **Source Attribution System**: Add source field to each system - now implemented with proper Hodgson QualSystems Course (H3uni.org) / Book / slides attributions
   - Hexad, Heptad, Octad connectives research
   - Dyad and Triad relationship frameworks
   - Dodecad verification with Bennett texts

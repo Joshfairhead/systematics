@@ -49,4 +49,8 @@ impl crate::System for HexadicSystem {
             Connective { from_position: 4, to_position: 5, relationship: "Facts <> Priorities".to_string(), description: None },
         ]
     }
+    
+    fn source(&self) -> &'static str {
+        "H3uni.org: Hodgson's QualSystems Course (Module 3) / QualSystems Book"
+    }
 } 

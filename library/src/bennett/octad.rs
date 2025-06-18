@@ -62,4 +62,8 @@ impl crate::System for OctadicSystem {
             Connective { from_position: 6, to_position: 7, relationship: "Intrinsic Nature <> Organisational Modes".to_string(), description: None },
         ]
     }
+    
+    fn source(&self) -> &'static str {
+        "H3uni.org: Hodgson's QualSystems Course (Module 3) / QualSystems Book"
+    }
 } 

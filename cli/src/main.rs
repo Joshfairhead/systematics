@@ -120,7 +120,7 @@ async fn run_interactive_menu() -> Result<(), Box<dyn std::error::Error>> {
         match choice {
             "1" => {
                 println!();
-                println!("Terms: 1=Monad 2=Dyad 3=Triad 4=Tetrad 5=Pentad 6=Hexad 7=Heptad 8=Octad 12=Dodecad");
+                println!("Terms: 1=Monad 2=Dyad 3=Triad 4=Tetrad 5=Pentad 6=Hexad 7=Heptad 8=Octad 9=Ennead 10=Decad 11=Undecad 12=Dodecad");
                 print!("Number of terms: ");
                 io::stdout().flush()?;
                 
@@ -253,6 +253,24 @@ async fn handle_structure_creation(num_terms: u32, api: &SystematicsApi, storage
                     Err(e) => eprintln!("Error creating octad: {}", e),
                 }
             }
+            9 => {
+            match create_ennead_interactive(&api, storage_cli).await {
+                Ok(_) => {}, // Successfully created
+                    Err(e) => eprintln!("Error creating ennead: {}", e),
+                }
+            }
+            10 => {
+            match create_decad_interactive(&api, storage_cli).await {
+                Ok(_) => {}, // Successfully created
+                    Err(e) => eprintln!("Error creating decad: {}", e),
+                }
+            }
+            11 => {
+            match create_undecad_interactive(&api, storage_cli).await {
+                Ok(_) => {}, // Successfully created
+                    Err(e) => eprintln!("Error creating undecad: {}", e),
+                }
+            }
             12 => {
             match create_dodecad_interactive(&api, storage_cli).await {
                 Ok(_) => {}, // Successfully created
@@ -260,7 +278,7 @@ async fn handle_structure_creation(num_terms: u32, api: &SystematicsApi, storage
                 }
             }
             _ => {
-            println!("❌ Invalid number of terms. Please choose 1, 2, 3, 4, 5, 6, 7, 8, or 12.");
+            println!("❌ Invalid number of terms. Please choose 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, or 12.");
             }
     }
     
@@ -851,6 +869,151 @@ async fn create_dodecad_interactive(api: &SystematicsApi, storage_cli: Option<&S
     
     if let Some(storage_cli) = storage_cli {
         let _ = storage_cli.auto_save_structure(&dodecad, &name, None).await?;
+    }
+    
+    Ok(())
+}
+
+async fn create_ennead_interactive(api: &SystematicsApi, storage_cli: Option<&StorageCli>) -> Result<(), Box<dyn std::error::Error>> {
+    println!("\n--- Creating an Ennead ---");
+    
+    // Get term characters and term designation from the schema
+    use systematics_library::EnneadicSystem;
+    use systematics_library::System;
+    let system = EnneadicSystem;
+    let term_characters = system.term_characters();
+    let term_designation = system.term_designation();
+    let system_name = system.name();
+    
+    let name = get_optional_input(&format!("Enter name (Press enter for {}): ", system_name), system_name)?;
+    
+    println!("Term {}: {} / {} / {} / {} / {} / {} / {} / {} / {}", 
+        term_designation.to_lowercase(), 
+        term_characters[0], term_characters[1], term_characters[2], term_characters[3], 
+        term_characters[4], term_characters[5], term_characters[6], term_characters[7], term_characters[8]);
+    
+    let mut terms = Vec::new();
+    for &term_character in term_characters.iter() {
+        let term = get_optional_input(
+            &format!("Enter {} {} (Press enter for '{}'): ", term_character, term_designation.trim_end_matches('s'), term_character),
+            term_character
+        )?;
+        terms.push(term);
+    }
+
+    let ennead = api.create_ennead()
+        .name(name.clone())
+        .terms(terms[0].clone(), terms[1].clone(), terms[2].clone(), terms[3].clone(), terms[4].clone(), terms[5].clone(), terms[6].clone(), terms[7].clone(), terms[8].clone())
+        .build()?;
+    
+    println!("\n✅ Created Ennead:");
+    ennead.display();
+    ennead.validate()?;
+    
+    if let Some(storage_cli) = storage_cli {
+        let _ = storage_cli.auto_save_structure(&ennead, &name, None).await?;
+    }
+    
+    Ok(())
+}
+
+async fn create_decad_interactive(api: &SystematicsApi, storage_cli: Option<&StorageCli>) -> Result<(), Box<dyn std::error::Error>> {
+    println!("\n--- Creating a Decad ---");
+    
+    // Get term characters and term designation from the schema
+    use systematics_library::DecadicSystem;
+    use systematics_library::System;
+    let system = DecadicSystem;
+    let term_characters = system.term_characters();
+    let term_designation = system.term_designation();
+    let system_name = system.name();
+    
+    let name = get_optional_input(&format!("Enter name (Press enter for {}): ", system_name), system_name)?;
+    
+    println!("Term {}: {} / {} / {} / {} / {} / {} / {} / {} / {} / {}", 
+        term_designation.to_lowercase(), 
+        term_characters[0], term_characters[1], term_characters[2], term_characters[3], 
+        term_characters[4], term_characters[5], term_characters[6], term_characters[7], 
+        term_characters[8], term_characters[9]);
+    
+    let mut terms = Vec::new();
+    for &term_character in term_characters.iter() {
+        let term = get_optional_input(
+            &format!("Enter {} {} (Press enter for '{}'): ", term_character, term_designation.trim_end_matches('s'), term_character),
+            term_character
+        )?;
+        terms.push(term);
+    }
+
+    // Convert Vec<String> to [String; 10] array
+    let terms_array: [String; 10] = [
+        terms[0].clone(), terms[1].clone(), terms[2].clone(), terms[3].clone(),
+        terms[4].clone(), terms[5].clone(), terms[6].clone(), terms[7].clone(),
+        terms[8].clone(), terms[9].clone()
+    ];
+
+    let decad = api.create_decad()
+        .name(name.clone())
+        .terms(terms_array)
+        .build()?;
+    
+    println!("\n✅ Created Decad:");
+    decad.display();
+    decad.validate()?;
+    
+    if let Some(storage_cli) = storage_cli {
+        let _ = storage_cli.auto_save_structure(&decad, &name, None).await?;
+    }
+    
+    Ok(())
+}
+
+async fn create_undecad_interactive(api: &SystematicsApi, storage_cli: Option<&StorageCli>) -> Result<(), Box<dyn std::error::Error>> {
+    println!("\n--- Creating an Undecad ---");
+    
+    // Get term characters and term designation from the schema
+    use systematics_library::UndecadicSystem;
+    use systematics_library::System;
+    let system = UndecadicSystem;
+    let term_characters = system.term_characters();
+    let term_designation = system.term_designation();
+    let system_name = system.name();
+    
+    let name = get_optional_input(&format!("Enter name (Press enter for {}): ", system_name), system_name)?;
+    
+    println!("Term {}: {} / {} / {} / {} / {} / {} / {} / {} / {} / {} / {}", 
+        term_designation.to_lowercase(), 
+        term_characters[0], term_characters[1], term_characters[2], term_characters[3], 
+        term_characters[4], term_characters[5], term_characters[6], term_characters[7], 
+        term_characters[8], term_characters[9], term_characters[10]);
+    
+    let mut terms = Vec::new();
+    for &term_character in term_characters.iter() {
+        let term = get_optional_input(
+            &format!("Enter {} {} (Press enter for '{}'): ", term_character, term_designation.trim_end_matches('s'), term_character),
+            term_character
+        )?;
+        terms.push(term);
+    }
+
+    // Convert Vec<String> to [String; 11] array
+    let terms_array: [String; 11] = [
+        terms[0].clone(), terms[1].clone(), terms[2].clone(), terms[3].clone(),
+        terms[4].clone(), terms[5].clone(), terms[6].clone(), terms[7].clone(),
+        terms[8].clone(), terms[9].clone(), terms[10].clone()
+    ];
+
+    let undecad = api.create_undecad()
+        .name(name.clone())
+        .terms(terms_array)
+        .build()?;
+    
+    println!("\n✅ Created Undecad:");
+    undecad.display();
+    undecad.validate()?;
+    
+    if let Some(storage_cli) = storage_cli {
+        let _ = storage_cli.auto_save_structure(&undecad, &name, None).await?;
     }
     
     Ok(())

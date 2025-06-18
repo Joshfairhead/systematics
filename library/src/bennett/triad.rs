@@ -52,4 +52,8 @@ impl crate::System for TriadicSystem {
             },
         ]
     }
+    
+    fn source(&self) -> &'static str {
+        "H3uni.org: Hodgson's QualSystems Course (Module 2) / QualSystems Book / Bennett's Elementary Systematics"
+    }
 } 

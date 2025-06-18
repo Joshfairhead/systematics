@@ -40,6 +40,9 @@ pub trait System: Send + Sync {
     /// The term designation - what individual elements should be called (replaces "terms")
     fn term_designation(&self) -> &'static str;
     
+    /// The source material where this system definition comes from
+    fn source(&self) -> &'static str;
+    
     fn term_characters(&self) -> &'static [&'static str];
     
     /// The name for the 1st order connectives within this system
@@ -63,5 +66,6 @@ pub use error::{LibraryError, Result};
 pub use providers::{LibraryProvider, BennettLibrary};
 pub use bennett::{
     MonadicSystem, DyadicSystem, TriadicSystem, TetradicSystem, 
-    PentadicSystem, HexadicSystem, HeptadicSystem, OctadicSystem, DodecadicSystem
+    PentadicSystem, HexadicSystem, HeptadicSystem, OctadicSystem, 
+    EnneadicSystem, DecadicSystem, UndecadicSystem, DodecadicSystem
 }; 

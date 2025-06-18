@@ -123,4 +123,8 @@ impl crate::System for DodecadicSystem {
         ]
         // Total: 11+10+9+8+7+6+5+4+3+2+1 = 66 connectives ✅
     }
+    
+    fn source(&self) -> &'static str {
+        "H3uni.org: Hodgson's QualSystems Course (Module 6)"
+    }
 } 

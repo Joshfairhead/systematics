@@ -6,6 +6,9 @@ pub mod pentad;
 pub mod hexad;
 pub mod heptad;
 pub mod octad;
+pub mod ennead;
+pub mod decad;
+pub mod undecad;
 pub mod dodecad;
 
 pub use monad::MonadicSystem;
@@ -16,4 +19,7 @@ pub use pentad::PentadicSystem;
 pub use hexad::HexadicSystem;
 pub use heptad::HeptadicSystem;
 pub use octad::OctadicSystem;
+pub use ennead::EnneadicSystem;
+pub use decad::DecadicSystem;
+pub use undecad::UndecadicSystem;
 pub use dodecad::DodecadicSystem; 

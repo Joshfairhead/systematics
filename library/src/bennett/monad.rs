@@ -32,4 +32,8 @@ impl crate::System for MonadicSystem {
     fn connectives(&self) -> Vec<Connective> { 
         vec![] 
     }
+    
+    fn source(&self) -> &'static str {
+        "H3uni.org: Hodgson's QualSystems Course (Module 2) / QualSystems Book / Bennett's Elementary Systematics"
+    }
 } 

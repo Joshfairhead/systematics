@@ -85,6 +85,9 @@ pub trait SystematicStructure {
     /// This defines what individual elements should be called
     fn term_designation(&self) -> &str;
     
+    /// Get the source material where this system definition comes from
+    fn source(&self) -> &str;
+    
     // -------------------------------------------------------------------------
     // Content Access
     // -------------------------------------------------------------------------
@@ -210,6 +213,21 @@ impl SystematicsApi {
     /// Create a new octad structure
     pub fn create_octad(&self) -> structures::octad::OctadBuilder {
         structures::octad::OctadBuilder::new()
+    }
+    
+    /// Create a new ennead structure
+    pub fn create_ennead(&self) -> structures::ennead::EnneadBuilder {
+        structures::ennead::EnneadBuilder::new()
+    }
+    
+    /// Create a new decad structure
+    pub fn create_decad(&self) -> structures::decad::DecadBuilder {
+        structures::decad::DecadBuilder::new()
+    }
+    
+    /// Create a new undecad structure
+    pub fn create_undecad(&self) -> structures::undecad::UndecadBuilder {
+        structures::undecad::UndecadBuilder::new()
     }
     
     /// Create a new dodecad structure

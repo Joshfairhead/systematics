@@ -6,6 +6,9 @@ pub mod pentad;
 pub mod hexad;
 pub mod heptad;
 pub mod octad;
+pub mod ennead;
+pub mod decad;
+pub mod undecad;
 pub mod dodecad;
 
 // Re-export all structure types
@@ -17,6 +20,9 @@ pub use pentad::{Pentad, PentadBuilder};
 pub use hexad::{Hexad, HexadBuilder};
 pub use heptad::{Heptad, HeptadBuilder};
 pub use octad::{Octad, OctadBuilder};
+pub use ennead::{Ennead, EnneadBuilder};
+pub use decad::{Decad, DecadBuilder};
+pub use undecad::{Undecad, UndecadBuilder};
 pub use dodecad::{Dodecad, DodecadBuilder}; 
 
 #[cfg(test)]
@@ -114,6 +120,47 @@ mod tests {
         assert_eq!(octad.term_designation(), "Elements");
         assert_eq!(octad.first_order_connectives_name(), "Connectives");
 
+        // Test Ennead
+        let ennead = EnneadBuilder::new()
+            .name("Test Ennead".to_string())
+            .terms("A".to_string(), "B".to_string(), "C".to_string(), "D".to_string(), "E".to_string(), "F".to_string(), "G".to_string(), "H".to_string(), "I".to_string())
+            .build()
+            .unwrap();
+            
+        assert_eq!(ennead.coherence_attribute(), "Transformation");
+        assert_eq!(ennead.term_designation(), "Elements");
+        assert_eq!(ennead.first_order_connectives_name(), "Connectives");
+
+        // Test Decad
+        let decad = DecadBuilder::new()
+            .name("Test Decad".to_string())
+            .terms([
+                "A".to_string(), "B".to_string(), "C".to_string(), "D".to_string(), 
+                "E".to_string(), "F".to_string(), "G".to_string(), "H".to_string(), 
+                "I".to_string(), "J".to_string()
+            ])
+            .build()
+            .unwrap();
+            
+        assert_eq!(decad.coherence_attribute(), "Intrinsic Harmony");
+        assert_eq!(decad.term_designation(), "Elements");
+        assert_eq!(decad.first_order_connectives_name(), "Connectives");
+
+        // Test Undecad
+        let undecad = UndecadBuilder::new()
+            .name("Test Undecad".to_string())
+            .terms([
+                "A".to_string(), "B".to_string(), "C".to_string(), "D".to_string(), 
+                "E".to_string(), "F".to_string(), "G".to_string(), "H".to_string(), 
+                "I".to_string(), "J".to_string(), "K".to_string()
+            ])
+            .build()
+            .unwrap();
+            
+        assert_eq!(undecad.coherence_attribute(), "Articulate Symmetry");
+        assert_eq!(undecad.term_designation(), "Elements");
+        assert_eq!(undecad.first_order_connectives_name(), "Connectives");
+
         // Test Dodecad
         let dodecad = DodecadBuilder::new()
             .name("Test Dodecad".to_string())
@@ -161,6 +208,18 @@ mod tests {
         assert!(!octad.coherence_attribute().is_empty());
         assert!(!octad.term_designation().is_empty());
         assert!(!octad.first_order_connectives_name().is_empty());
+        
+        assert!(!ennead.coherence_attribute().is_empty());
+        assert!(!ennead.term_designation().is_empty());
+        assert!(!ennead.first_order_connectives_name().is_empty());
+        
+        assert!(!decad.coherence_attribute().is_empty());
+        assert!(!decad.term_designation().is_empty());
+        assert!(!decad.first_order_connectives_name().is_empty());
+        
+        assert!(!undecad.coherence_attribute().is_empty());
+        assert!(!undecad.term_designation().is_empty());
+        assert!(!undecad.first_order_connectives_name().is_empty());
         
         assert!(!dodecad.coherence_attribute().is_empty());
         assert!(!dodecad.term_designation().is_empty());
