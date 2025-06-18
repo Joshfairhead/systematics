@@ -162,52 +162,61 @@ impl SystemOverlay {
     fn render_monad(&self, _structure: &Option<StoredStructure>) -> Html {
         let term = self.get_canonical_term(0, "Unity");
         
+        let svg_size = 400.0;
+        let center = svg_size / 2.0;
+        
         html! {
             <div class="system-overlay">
-                {self.render_point(&term, "50%", "50%")}
+                {self.render_point(&term, &self.svg_to_css_percent(center, svg_size), &self.svg_to_css_percent(center, svg_size))}
             </div>
         }
     }
 
     fn render_dyad(&self, _structure: &Option<StoredStructure>) -> Html {
-        let term1 = self.get_canonical_term(0, "Essence");
-        let term2 = self.get_canonical_term(1, "Existence");
+        // API canonical order: [Action, Reaction]
+        // Map API indices to visual positions:
+        let term1 = self.get_canonical_term(0, "Action");     // Index 0 → Left
+        let term2 = self.get_canonical_term(1, "Reaction");   // Index 1 → Right
         
-        // Match the geometric renderer's dyad positioning
-        let svg_size = 500.0;
-        let center = svg_size / 2.0;
-        let offset = svg_size * 0.15;
+        let svg_size = 400.0;
+        let points = self.get_system_layout("dyad", svg_size);
         
-        let left1 = self.svg_to_css_percent(center - offset, svg_size);
-        let left2 = self.svg_to_css_percent(center + offset, svg_size);
+        // Custom positioning for dyad labels - centered ON nodes
+        let action_top = self.svg_to_css_percent(points[0].1, svg_size);
+        let action_left = self.svg_to_css_percent(points[0].0, svg_size);
+        
+        let reaction_top = self.svg_to_css_percent(points[1].1, svg_size);
+        let reaction_left = self.svg_to_css_percent(points[1].0, svg_size);
         
         html! {
             <div class="system-overlay">
-                {self.render_point(&term1, "50%", &left1)}
-                {self.render_point(&term2, "50%", &left2)}
+                {self.render_point(&term1, &action_top, &action_left)}
+                {self.render_point(&term2, &reaction_top, &reaction_left)}
             </div>
         }
     }
 
     fn render_triad(&self, _structure: &Option<StoredStructure>) -> Html {
-        // Use canonical terms from API instead of hardcoded values
-        let term1 = self.get_canonical_term(0, "Will");      // Index 0: canonical first term
-        let term2 = self.get_canonical_term(1, "Being");     // Index 1: canonical second term  
-        let term3 = self.get_canonical_term(2, "Function");  // Index 2: canonical third term
+        // API canonical order: [Will, Being, Function]
+        // Map API indices to visual positions:
+        let term1 = self.get_canonical_term(0, "Will");       // Index 0 → Top-left
+        let term2 = self.get_canonical_term(1, "Being");      // Index 1 → Right
+        let term3 = self.get_canonical_term(2, "Function");   // Index 2 → Bottom-left
         
-        let svg_size = 500.0;
+        let svg_size = 400.0;
         let points = self.get_system_layout("triad", svg_size);
         
-        // Custom positioning for triad labels to avoid node overlap
-        // Will and Function positions were good, keep them as they were
-        let will_top = self.svg_to_css_percent(points[0].1, svg_size);
+        // Custom positioning for labels - fine-tuned positioning
+        // Will (top-left) - pull closer to node
+        let will_top = self.svg_to_css_percent(points[0].1 - 45.0, svg_size);
         let will_left = self.svg_to_css_percent(points[0].0, svg_size);
         
-        // Being (right) - position label to the right of the node
+        // Being (right) - push further to the right
         let being_top = self.svg_to_css_percent(points[1].1, svg_size);
-        let being_left = self.svg_to_css_percent(points[1].0 + 25.0, svg_size);
+        let being_left = self.svg_to_css_percent(points[1].0 + 60.0, svg_size);
         
-        let function_top = self.svg_to_css_percent(points[2].1, svg_size);
+        // Function (bottom-left) - pull closer to node
+        let function_top = self.svg_to_css_percent(points[2].1 + 45.0, svg_size);
         let function_left = self.svg_to_css_percent(points[2].0, svg_size);
         
         html! {
@@ -227,23 +236,24 @@ impl SystemOverlay {
         let instrumental = self.get_canonical_term(2, "Instrumental"); // Index 2 → Left
         let ground = self.get_canonical_term(3, "Ground");            // Index 3 → Bottom
         
-        let svg_size = 500.0;
+        let svg_size = 400.0;
         let points = self.get_system_layout("tetrad", svg_size);
         
-        // Custom positioning for labels to avoid node overlap
-        // Ideal (top) and Ground (bottom) - keep centered
-        let ideal_top = self.svg_to_css_percent(points[0].1, svg_size);
+        // Custom positioning for labels - fine-tuned positioning
+        // Ideal (top) - keep current position (good as is)
+        let ideal_top = self.svg_to_css_percent(points[0].1 - 50.0, svg_size);
         let ideal_left = self.svg_to_css_percent(points[0].0, svg_size);
         
-        // Directive (right) - position label to the right of the node
+        // Directive (right) - push further right on horizontal axis
         let directive_top = self.svg_to_css_percent(points[1].1, svg_size);
-        let directive_left = self.svg_to_css_percent(points[1].0 + 25.0, svg_size);
+        let directive_left = self.svg_to_css_percent(points[1].0 + 60.0, svg_size);
         
-        // Instrumental (left) - position label to the left of the node
+        // Instrumental (left) - push further left on horizontal axis
         let instrumental_top = self.svg_to_css_percent(points[2].1, svg_size);
-        let instrumental_left = self.svg_to_css_percent(points[2].0 - 25.0, svg_size);
+        let instrumental_left = self.svg_to_css_percent(points[2].0 - 60.0, svg_size);
         
-        let ground_top = self.svg_to_css_percent(points[3].1, svg_size);
+        // Ground (bottom) - keep current position (good as is)
+        let ground_top = self.svg_to_css_percent(points[3].1 + 50.0, svg_size);
         let ground_left = self.svg_to_css_percent(points[3].0, svg_size);
         
         html! {
@@ -261,7 +271,7 @@ impl SystemOverlay {
             .map(|i| self.get_canonical_term(i, &format!("Term {}", i + 1)))
             .collect();
         
-        let svg_size = 500.0;
+        let svg_size = 400.0;
         let center = svg_size / 2.0;
         let radius = svg_size * 0.15;
         let points = self.regular_polygon_points(5, center, center, radius, -PI/2.0);
@@ -280,7 +290,7 @@ impl SystemOverlay {
             .map(|i| self.get_canonical_term(i, &format!("Term {}", i + 1)))
             .collect();
         
-        let svg_size = 500.0;
+        let svg_size = 400.0;
         let center = svg_size / 2.0;
         let radius = svg_size * 0.15;
         let points = self.regular_polygon_points(6, center, center, radius, 0.0);
@@ -299,7 +309,7 @@ impl SystemOverlay {
             .map(|i| self.get_canonical_term(i, &format!("Term {}", i + 1)))
             .collect();
         
-        let svg_size = 500.0;
+        let svg_size = 400.0;
         let center = svg_size / 2.0;
         let radius = svg_size * 0.18;
         let points = self.regular_polygon_points(7, center, center, radius, -PI/2.0);
@@ -318,7 +328,7 @@ impl SystemOverlay {
             .map(|i| self.get_canonical_term(i, &format!("Element {}", i + 1)))
             .collect();
 
-        let svg_size = 500.0;
+        let svg_size = 400.0;
         let center = svg_size / 2.0;
         let radius = svg_size * 0.18;
         let points = self.regular_polygon_points(8, center, center, radius, PI/8.0);
@@ -337,7 +347,7 @@ impl SystemOverlay {
             .map(|i| self.get_canonical_term(i, &format!("Term {}", i + 1)))
             .collect();
         
-        let svg_size = 500.0;
+        let svg_size = 400.0;
         let center = svg_size / 2.0;
         let radius = svg_size * 0.20;
         let points = self.regular_polygon_points(9, center, center, radius, -PI/2.0);
@@ -356,7 +366,7 @@ impl SystemOverlay {
             .map(|i| self.get_canonical_term(i, &format!("Term {}", i + 1)))
             .collect();
         
-        let svg_size = 500.0;
+        let svg_size = 400.0;
         let center = svg_size / 2.0;
         let radius = svg_size * 0.20;
         let points = self.regular_polygon_points(10, center, center, radius, -PI/2.0);
@@ -375,7 +385,7 @@ impl SystemOverlay {
             .map(|i| self.get_canonical_term(i, &format!("Term {}", i + 1)))
             .collect();
         
-        let svg_size = 500.0;
+        let svg_size = 400.0;
         let center = svg_size / 2.0;
         let radius = svg_size * 0.22;
         let points = self.regular_polygon_points(11, center, center, radius, -PI/2.0);
@@ -394,7 +404,7 @@ impl SystemOverlay {
             .map(|i| self.get_canonical_term(i, &format!("Term {}", i + 1)))
             .collect();
         
-        let svg_size = 500.0;
+        let svg_size = 400.0;
         let center = svg_size / 2.0;
         let radius = svg_size * 0.22;
         let points = self.regular_polygon_points(12, center, center, radius, -PI/2.0);

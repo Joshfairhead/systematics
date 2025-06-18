@@ -1,10 +1,13 @@
 use yew::{html, Component, Context, Html, Properties};
 use crate::core::geometry::{GeometryCalculator, Point, Edge, SymbolicCircle, SymbolicTriangle};
+use crate::services::api::ConnectiveInfo;
 
 #[derive(Properties, PartialEq)]
 pub struct Props {
     pub system_type: String,
     pub size: f64,
+    #[prop_or_default]
+    pub connectives: Option<Vec<ConnectiveInfo>>,
 }
 
 pub struct GeometricRenderer;
@@ -22,36 +25,29 @@ impl Component for GeometricRenderer {
         let size = props.size;
         let system_type = &props.system_type;
         
-        // Expand viewBox to prevent truncation of large geometry
-        let padding = size * 0.2;  // 20% padding on all sides
-        let viewbox = format!("{} {} {} {}", 
-            -padding, -padding, 
-            size + 2.0 * padding, size + 2.0 * padding);
+        // Fix viewBox - use simpler coordinates that match the actual size
+        let viewbox = format!("0 0 {} {}", size, size);
         let center_x = size / 2.0;
         let center_y = size / 2.0;
         
-        // Use framework-agnostic core logic
+        // Use simple structural layout - edges are just connections
         let layout = GeometryCalculator::calculate_system_layout(
-            system_type, 
-            center_x, 
-            center_y, 
-            size
+            system_type,
+            center_x,
+            center_y,
+            size,
         );
         
         html! {
             <svg 
-                width={size.to_string()} 
-                height={size.to_string()} 
+                class="geometric-renderer" 
+                width={size.to_string()}
+                height={size.to_string()}
                 viewBox={viewbox}
-                class="geometric-structure"
+                xmlns="http://www.w3.org/2000/svg"
             >
-                // Render symbolic shapes first (behind everything)
-                {self.render_symbolic_circle(&layout.symbolic_circle)}
-                {self.render_symbolic_circles(&layout.symbolic_circles)}
-                {self.render_symbolic_triangle(&layout.symbolic_triangle)}
-                // Render edges (behind nodes)
-                {self.render_edges(&layout.edges, &layout.nodes)}
-                // Render nodes on top
+                {self.render_symbolic_elements(&layout)}
+                {self.render_edges_with_connectives(&layout.edges, &layout.nodes, &props.connectives)}
                 {self.render_nodes(&layout.nodes, layout.node_radius)}
             </svg>
         }
@@ -108,37 +104,9 @@ impl GeometricRenderer {
 
     /// Framework-specific rendering of edges (Yew HTML)
     /// Core logic is in GeometryCalculator (framework-agnostic)
-    fn render_edges(&self, edges: &[Edge], nodes: &[Point]) -> Html {
-        if edges.is_empty() {
-            return html! {};
-        }
-
-        let edge_elements: Vec<Html> = edges.iter().map(|edge| {
-            let from_node = &nodes[edge.from];
-            let to_node = &nodes[edge.to];
-            
-            html! {
-                <line 
-                    x1={from_node.x.to_string()} 
-                    y1={from_node.y.to_string()} 
-                    x2={to_node.x.to_string()} 
-                    y2={to_node.y.to_string()}
-                    stroke="#667eea" 
-                    stroke-width="2" 
-                    opacity="0.5"
-                />
-            }
-        }).collect();
-
-        html! {
-            <>
-                {for edge_elements}
-            </>
-        }
-    }
-
+    /// REPLACED BY: render_edges_with_connectives (extrinsic approach)
+    
     /// Framework-specific rendering of nodes (Yew HTML)
-    /// Core logic is in GeometryCalculator (framework-agnostic)
     fn render_nodes(&self, nodes: &[Point], node_radius: f64) -> Html {
         let node_elements: Vec<Html> = nodes.iter().map(|node| {
             html! {
@@ -185,5 +153,86 @@ impl GeometricRenderer {
         }
     }
 
+    /// Framework-specific rendering of symbolic elements (Yew HTML)
+    /// Used for monad's outer circle representation and dyad's vesica piscis representation
+    fn render_symbolic_elements(&self, layout: &crate::core::geometry::GraphLayout) -> Html {
+        html! {
+            <>
+                {self.render_symbolic_circle(&layout.symbolic_circle)}
+                {self.render_symbolic_circles(&layout.symbolic_circles)}
+                {self.render_symbolic_triangle(&layout.symbolic_triangle)}
+            </>
+        }
+    }
 
+    /// Framework-specific rendering of edges with connectives (Yew HTML)
+    /// Core logic is in GeometryCalculator (framework-agnostic)
+    fn render_edges_with_connectives(&self, edges: &[Edge], nodes: &[Point], connectives: &Option<Vec<ConnectiveInfo>>) -> Html {
+        if edges.is_empty() {
+            return html! {};
+        }
+
+        let edge_elements: Vec<Html> = edges.iter().map(|edge| {
+            let from_node = &nodes[edge.from];
+            let to_node = &nodes[edge.to];
+            
+            // Calculate midpoint for label positioning
+            let mid_x = (from_node.x + to_node.x) / 2.0;
+            let mid_y = (from_node.y + to_node.y) / 2.0;
+            
+            // Look up connective relationship for this edge (extrinsic approach)
+            let relationship = if let Some(connectives) = connectives {
+                connectives.iter()
+                    .find(|c| (c.from_position == edge.from && c.to_position == edge.to) ||
+                             (c.from_position == edge.to && c.to_position == edge.from))
+                    .map(|c| c.relationship.clone())
+            } else {
+                None
+            };
+            
+            html! {
+                <>
+                    // Render the edge line
+                    <line 
+                        x1={from_node.x.to_string()} 
+                        y1={from_node.y.to_string()} 
+                        x2={to_node.x.to_string()} 
+                        y2={to_node.y.to_string()}
+                        stroke="#667eea" 
+                        stroke-width="2" 
+                        opacity="0.5"
+                    />
+                    // Render the connective label if available
+                    {
+                        if let Some(relationship) = relationship {
+                            html! {
+                                <text
+                                    x={mid_x.to_string()}
+                                    y={mid_y.to_string()}
+                                    text-anchor="middle"
+                                    dominant-baseline="middle"
+                                    font-size="10"
+                                    font-family="Arial, sans-serif"
+                                    fill="#333"
+                                    stroke="white"
+                                    stroke-width="3"
+                                    paint-order="stroke"
+                                >
+                                    {relationship}
+                                </text>
+                            }
+                        } else {
+                            html! {}
+                        }
+                    }
+                </>
+            }
+        }).collect();
+
+        html! {
+            <>
+                {for edge_elements}
+            </>
+        }
+    }
 } 

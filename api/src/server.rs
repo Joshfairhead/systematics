@@ -39,6 +39,15 @@ pub struct CreateStructureRequest {
 
 #[cfg(feature = "server")]
 #[derive(Serialize)]
+pub struct ConnectiveInfo {
+    pub from_position: usize,
+    pub to_position: usize,
+    pub relationship: String,
+    pub description: Option<String>,
+}
+
+#[cfg(feature = "server")]
+#[derive(Serialize)]
 pub struct StructureSchema {
     pub structure_type: String,
     pub term_count: usize,
@@ -47,6 +56,7 @@ pub struct StructureSchema {
     pub term_designation: String,
     pub source: String,
     pub first_order_connectives_name: String,
+    pub connectives: Vec<ConnectiveInfo>,
 }
 
 #[cfg(feature = "server")]
@@ -259,6 +269,7 @@ async fn get_structure_schema(
                 term_designation: system.term_designation().to_string(),
                 source: system.source().to_string(),
                 first_order_connectives_name: system.first_order_connectives_name().to_string(),
+                connectives: Vec::new(),
             }
         },
         "monad" => {
@@ -271,6 +282,7 @@ async fn get_structure_schema(
                 term_designation: system.term_designation().to_string(),
                 source: system.source().to_string(),
                 first_order_connectives_name: system.first_order_connectives_name().to_string(),
+                connectives: Vec::new(),
             }
         },
         "dyad" => {
@@ -283,10 +295,17 @@ async fn get_structure_schema(
                 term_designation: system.term_designation().to_string(),
                 source: system.source().to_string(),
                 first_order_connectives_name: system.first_order_connectives_name().to_string(),
+                connectives: Vec::new(),
             }
         },
         "tetrad" => {
             let system = systematics_library::TetradicSystem;
+            let connectives = system.connectives().into_iter().map(|c| ConnectiveInfo {
+                from_position: c.from_position,
+                to_position: c.to_position,
+                relationship: c.relationship,
+                description: c.description,
+            }).collect();
             StructureSchema {
                 structure_type: "tetrad".to_string(),
                 term_count: system.term_count(),
@@ -295,6 +314,7 @@ async fn get_structure_schema(
                 term_designation: system.term_designation().to_string(),
                 source: system.source().to_string(),
                 first_order_connectives_name: system.first_order_connectives_name().to_string(),
+                connectives,
             }
         },
         "pentad" => {
@@ -307,6 +327,7 @@ async fn get_structure_schema(
                 term_designation: system.term_designation().to_string(),
                 source: system.source().to_string(),
                 first_order_connectives_name: system.first_order_connectives_name().to_string(),
+                connectives: Vec::new(),
             }
         },
         "hexad" => {
@@ -319,6 +340,7 @@ async fn get_structure_schema(
                 term_designation: system.term_designation().to_string(),
                 source: system.source().to_string(),
                 first_order_connectives_name: system.first_order_connectives_name().to_string(),
+                connectives: Vec::new(),
             }
         },
         "heptad" => {
@@ -331,6 +353,7 @@ async fn get_structure_schema(
                 term_designation: system.term_designation().to_string(),
                 source: system.source().to_string(),
                 first_order_connectives_name: system.first_order_connectives_name().to_string(),
+                connectives: Vec::new(),
             }
         },
         "octad" => {
@@ -343,6 +366,7 @@ async fn get_structure_schema(
                 term_designation: system.term_designation().to_string(),
                 source: system.source().to_string(),
                 first_order_connectives_name: system.first_order_connectives_name().to_string(),
+                connectives: Vec::new(),
             }
         },
         "ennead" => {
@@ -355,6 +379,7 @@ async fn get_structure_schema(
                 term_designation: system.term_designation().to_string(),
                 source: system.source().to_string(),
                 first_order_connectives_name: system.first_order_connectives_name().to_string(),
+                connectives: Vec::new(),
             }
         },
         "decad" => {
@@ -367,6 +392,7 @@ async fn get_structure_schema(
                 term_designation: system.term_designation().to_string(),
                 source: system.source().to_string(),
                 first_order_connectives_name: system.first_order_connectives_name().to_string(),
+                connectives: Vec::new(),
             }
         },
         "undecad" => {
@@ -379,6 +405,7 @@ async fn get_structure_schema(
                 term_designation: system.term_designation().to_string(),
                 source: system.source().to_string(),
                 first_order_connectives_name: system.first_order_connectives_name().to_string(),
+                connectives: Vec::new(),
             }
         },
         "dodecad" => {
@@ -391,6 +418,7 @@ async fn get_structure_schema(
                 term_designation: system.term_designation().to_string(),
                 source: system.source().to_string(),
                 first_order_connectives_name: system.first_order_connectives_name().to_string(),
+                connectives: Vec::new(),
             }
         },
         _ => {

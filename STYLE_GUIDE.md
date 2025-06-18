@@ -23,6 +23,10 @@
 - **Positional mapping**: Clear indication of which user instance maps to which canonical term
 - Tetrad indexing is ad hoc
 
+### Layout
+#### Servers
+- server.rs fn fet_structure_schema needs a reordering for triad schema 
+
 ### Documentation Standards
 - Method comments should clearly distinguish between:
   - User data access (what user provided)

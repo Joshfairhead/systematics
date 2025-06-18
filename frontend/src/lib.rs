@@ -10,13 +10,14 @@ mod core;       // Declare the core module (framework-agnostic)
 use components::system_selector::SystemSelector; // Import the SystemSelector
 use components::system_overlay::SystemOverlay;
 use components::geometric_renderer::GeometricRenderer;
-use services::api::{ApiClient, StoredStructure, spawn_api_call};
+use services::api::{ApiClient, StoredStructure, StructureSchema, spawn_api_call};
 
 pub struct App {
     // Replace hardcoded system selection with dynamic data
     structures: Vec<StoredStructure>,
     filtered_structures: Vec<StoredStructure>,
     selected_structure: Option<StoredStructure>,
+    current_schema: Option<StructureSchema>,
     loading: bool,
     error: Option<String>,
     api_client: ApiClient,
@@ -37,6 +38,8 @@ pub enum Msg {
     ToggleStructureBrowser,
     SearchStructures,
     SearchResultsLoaded(Result<Vec<StoredStructure>, anyhow::Error>),
+    // Schema loading
+    SchemaLoaded(Result<StructureSchema, anyhow::Error>),
 }
 
 impl Component for App {
@@ -54,6 +57,7 @@ impl Component for App {
             structures: placeholder_structures.clone(),
             filtered_structures: placeholder_structures,
             selected_structure: initial_monad,
+            current_schema: None,
             loading: true,
             error: None,
             api_client: ApiClient::new(),
@@ -63,6 +67,9 @@ impl Component for App {
         
         // Load structures on component creation
         ctx.link().send_message(Msg::LoadStructures);
+        
+        // Load schema for the initially selected structure (monad)
+        ctx.link().send_message(Msg::SystemSelected(1));
         
         app
     }
@@ -93,16 +100,22 @@ impl Component for App {
                     .cloned() 
                 {
                     self.selected_structure = Some(structure);
-                    true
                 } else {
                     // If no API data yet, create a placeholder
                     self.selected_structure = Some(self.create_placeholder_structure(structure_type, system_num));
-                    true
                 }
+                
+                // Load schema for the selected structure type
+                self.load_schema_for_structure_type(ctx, structure_type);
+                true
             }
             Msg::StructureSelected(structure) => {
+                let structure_type = structure.structure_type.clone();
                 self.selected_structure = Some(structure);
                 self.show_structure_browser = false; // Close browser after selection
+                
+                // Load schema for the selected structure type
+                self.load_schema_for_structure_type(ctx, &structure_type);
                 true
             }
             Msg::LoadStructures => {
@@ -185,6 +198,19 @@ impl Component for App {
                 self.error = Some(error);
                 true
             }
+            Msg::SchemaLoaded(result) => {
+                self.loading = false;
+                match result {
+                    Ok(schema) => {
+                        self.current_schema = Some(schema);
+                        self.error = None;
+                    }
+                    Err(e) => {
+                        self.error = Some(format!("Failed to load schema: {}", e));
+                    }
+                }
+                true
+            }
         }
     }
 
@@ -212,7 +238,11 @@ impl Component for App {
                 <div class={format!("main-content {}", system_class)}>
                     {self.render_loading_or_error()}
                     <div class="geometric-container">
-                        <GeometricRenderer system_type={structure_type} size={500.0} />
+                        <GeometricRenderer 
+                            system_type={structure_type} 
+                            size={400.0}
+                            connectives={self.current_schema.as_ref().map(|s| s.connectives.clone())}
+                        />
                         {self.render_structure_overlay()}
                     </div>
                 </div>
@@ -508,6 +538,19 @@ impl App {
             description: Some(format!("Default {} structure", structure_type)),
             metadata: HashMap::new(),
         }
+    }
+
+    fn load_schema_for_structure_type(&self, ctx: &Context<Self>, structure_type: &str) {
+        let api_client = self.api_client.clone();
+        let structure_type = structure_type.to_string();
+        let callback = ctx.link().callback(Msg::SchemaLoaded);
+        
+        spawn_api_call(
+            async move {
+                api_client.get_structure_schema(&structure_type).await
+            },
+            callback,
+        );
     }
 }
 

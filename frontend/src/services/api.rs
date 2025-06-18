@@ -34,6 +34,14 @@ pub struct ApiResponse<T> {
     pub error: Option<String>,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct ConnectiveInfo {
+    pub from_position: usize,
+    pub to_position: usize,
+    pub relationship: String,
+    pub description: Option<String>,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct StructureSchema {
     pub structure_type: String,
@@ -43,6 +51,7 @@ pub struct StructureSchema {
     pub term_designation: String,
     pub source: String,
     pub first_order_connectives_name: String,
+    pub connectives: Vec<ConnectiveInfo>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

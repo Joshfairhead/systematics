@@ -87,7 +87,7 @@ impl GeometryCalculator {
         match node_count {
             1 => vec![Point { x: cx, y: cy }],
             2 => {
-                let radius = size * 0.4;     // Match symbolic circle radius
+                let radius = size * 0.3;     // Reduced from 0.4 to prevent truncation
                 let offset = radius / 2.0;   // Match symbolic circle offset
                 vec![
                     Point { x: cx - offset, y: cy },
@@ -211,7 +211,7 @@ impl GeometryCalculator {
     fn get_symbolic_circles(system_type: &str, center_x: f64, center_y: f64, size: f64) -> Vec<SymbolicCircle> {
         match system_type {
             "dyad" => {
-                let radius = size * 0.4;     // Larger radius for more prominent circles
+                let radius = size * 0.3;     // Reduced to match node positioning
                 let offset = radius / 2.0;   // Distance = half radius so circles pass through centers
                 vec![
                     SymbolicCircle {
