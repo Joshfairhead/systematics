@@ -219,23 +219,39 @@ impl SystemOverlay {
         }
     }
 
-    fn render_tetrad(&self, structure: &Option<StoredStructure>) -> Html {
-        let term1 = self.get_canonical_term(0, "Ground");
-        let term2 = self.get_canonical_term(1, "Ideal");
-        let term3 = self.get_canonical_term(2, "Instrumental");
-        let term4 = self.get_canonical_term(3, "Directive");
+    fn render_tetrad(&self, _structure: &Option<StoredStructure>) -> Html {
+        // API canonical order: [Ideal, Directive, Instrumental, Ground]
+        // Map to visual diamond positions:
+        let ideal = self.get_canonical_term(0, "Ideal");              // Index 0 → Top
+        let directive = self.get_canonical_term(1, "Directive");      // Index 1 → Right
+        let instrumental = self.get_canonical_term(2, "Instrumental"); // Index 2 → Left
+        let ground = self.get_canonical_term(3, "Ground");            // Index 3 → Bottom
         
         let svg_size = 500.0;
-        let center = svg_size / 2.0;
-        let radius = svg_size * 0.15;
-        let points = self.regular_polygon_points(4, center, center, radius, PI/4.0);
+        let points = self.get_system_layout("tetrad", svg_size);
+        
+        // Custom positioning for labels to avoid node overlap
+        // Ideal (top) and Ground (bottom) - keep centered
+        let ideal_top = self.svg_to_css_percent(points[0].1, svg_size);
+        let ideal_left = self.svg_to_css_percent(points[0].0, svg_size);
+        
+        // Directive (right) - position label to the right of the node
+        let directive_top = self.svg_to_css_percent(points[1].1, svg_size);
+        let directive_left = self.svg_to_css_percent(points[1].0 + 25.0, svg_size);
+        
+        // Instrumental (left) - position label to the left of the node
+        let instrumental_top = self.svg_to_css_percent(points[2].1, svg_size);
+        let instrumental_left = self.svg_to_css_percent(points[2].0 - 25.0, svg_size);
+        
+        let ground_top = self.svg_to_css_percent(points[3].1, svg_size);
+        let ground_left = self.svg_to_css_percent(points[3].0, svg_size);
         
         html! {
             <div class="system-overlay">
-                {self.render_point(&term1, &self.svg_to_css_percent(points[0].1, svg_size), &self.svg_to_css_percent(points[0].0, svg_size))}
-                {self.render_point(&term2, &self.svg_to_css_percent(points[1].1, svg_size), &self.svg_to_css_percent(points[1].0, svg_size))}
-                {self.render_point(&term3, &self.svg_to_css_percent(points[2].1, svg_size), &self.svg_to_css_percent(points[2].0, svg_size))}
-                {self.render_point(&term4, &self.svg_to_css_percent(points[3].1, svg_size), &self.svg_to_css_percent(points[3].0, svg_size))}
+                {self.render_point(&ideal, &ideal_top, &ideal_left)}
+                {self.render_point(&directive, &directive_top, &directive_left)}
+                {self.render_point(&instrumental, &instrumental_top, &instrumental_left)}
+                {self.render_point(&ground, &ground_top, &ground_left)}
             </div>
         }
     }

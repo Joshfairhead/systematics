@@ -115,6 +115,27 @@ impl GeometryCalculator {
                     Point { x: cx - height / 2.0, y: cy + half_side },
                 ]
             }
+            4 => {
+                // Diamond shape for tetrad
+                // API canonical order: [Ideal, Directive, Instrumental, Ground]
+                // Map API indices to visual positions:
+                // API Index 0 (Ideal) → Top
+                // API Index 1 (Directive) → Right
+                // API Index 2 (Instrumental) → Left
+                // API Index 3 (Ground) → Bottom
+                let diamond_size = size * 0.35;  // Larger diamond for better visibility
+                
+                vec![
+                    // Index 0: Ideal → Top
+                    Point { x: cx, y: cy - diamond_size },
+                    // Index 1: Directive → Right
+                    Point { x: cx + diamond_size, y: cy },
+                    // Index 2: Instrumental → Left
+                    Point { x: cx - diamond_size, y: cy },
+                    // Index 3: Ground → Bottom
+                    Point { x: cx, y: cy + diamond_size },
+                ]
+            }
             _ => {
                 let radius = Self::get_radius_for_system(node_count, size);
                 let rotation = Self::get_rotation_for_system(node_count);
