@@ -136,6 +136,29 @@ impl GeometryCalculator {
                     Point { x: cx, y: cy + diamond_size },
                 ]
             }
+            5 => {
+                // Hierarchical pentad structure - Three column layout
+                // API canonical order: [Purpose, Higher Potential, Quintessence, Lower Potential, Source]
+                // Layout: Quintessence(left) | Higher/Lower Potential(middle) | Purpose/Source(right)
+                // The potential axis (middle) acts as a fold line with equidistant left/right columns
+                
+                let col_spacing = size * 0.45;     // Increased from 0.35 - even more horizontal spacing
+                let middle_v_spacing = size * 0.25; // Increased from 0.20 - more vertical spacing for middle column
+                let right_v_spacing = size * 0.30;  // Increased from 0.25 - more vertical spacing for right column
+                
+                vec![
+                    // Index 0: Purpose → Top-right (equidistant from center as Quintessence)
+                    Point { x: cx + col_spacing, y: cy - right_v_spacing },
+                    // Index 1: Higher Potential → Top-middle (on the fold line)
+                    Point { x: cx, y: cy - middle_v_spacing },
+                    // Index 2: Quintessence (Ipensity) → Left center (equidistant from center as Purpose/Source)
+                    Point { x: cx - col_spacing, y: cy },
+                    // Index 3: Lower Potential → Bottom-middle (on the fold line)
+                    Point { x: cx, y: cy + middle_v_spacing },
+                    // Index 4: Source → Bottom-right (equidistant from center as Quintessence)
+                    Point { x: cx + col_spacing, y: cy + right_v_spacing },
+                ]
+            }
             _ => {
                 let radius = Self::get_radius_for_system(node_count, size);
                 let rotation = Self::get_rotation_for_system(node_count);
@@ -155,11 +178,11 @@ impl GeometryCalculator {
 
     fn get_radius_for_system(node_count: usize, size: f64) -> f64 {
         match node_count {
-            3..=6 => size * 0.15,
-            7..=8 => size * 0.18,
-            9..=10 => size * 0.20,
-            11..=12 => size * 0.22,
-            _ => size * 0.15,
+            3..=6 => size * 0.35,  // Increased from 0.15 to match custom implementations
+            7..=8 => size * 0.30,  // Slightly smaller for more nodes
+            9..=10 => size * 0.28,
+            11..=12 => size * 0.26,
+            _ => size * 0.35,
         }
     }
 

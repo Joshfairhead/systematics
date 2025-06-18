@@ -319,6 +319,12 @@ async fn get_structure_schema(
         },
         "pentad" => {
             let system = systematics_library::PentadicSystem;
+            let connectives = system.connectives().into_iter().map(|c| ConnectiveInfo {
+                from_position: c.from_position,
+                to_position: c.to_position,
+                relationship: c.relationship,
+                description: c.description,
+            }).collect();
             StructureSchema {
                 structure_type: "pentad".to_string(),
                 term_count: system.term_count(),
@@ -327,7 +333,7 @@ async fn get_structure_schema(
                 term_designation: system.term_designation().to_string(),
                 source: system.source().to_string(),
                 first_order_connectives_name: system.first_order_connectives_name().to_string(),
-                connectives: Vec::new(),
+                connectives,
             }
         },
         "hexad" => {

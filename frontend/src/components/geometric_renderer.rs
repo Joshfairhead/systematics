@@ -176,9 +176,18 @@ impl GeometricRenderer {
             let from_node = &nodes[edge.from];
             let to_node = &nodes[edge.to];
             
-            // Calculate midpoint for label positioning
-            let mid_x = (from_node.x + to_node.x) / 2.0;
-            let mid_y = (from_node.y + to_node.y) / 2.0;
+            // Calculate edge angle for text alignment
+            let dx = to_node.x - from_node.x;
+            let dy = to_node.y - from_node.y;
+            let angle_rad = dy.atan2(dx);
+            let angle_deg = angle_rad * 180.0 / std::f64::consts::PI;
+            
+            // Adjust angle to keep text readable (not upside down)
+            let text_angle = if angle_deg > 90.0 || angle_deg < -90.0 {
+                angle_deg + 180.0
+            } else {
+                angle_deg
+            };
             
             // Look up connective relationship for this edge (extrinsic approach)
             let relationship = if let Some(connectives) = connectives {
@@ -188,6 +197,68 @@ impl GeometricRenderer {
                     .map(|c| c.relationship.clone())
             } else {
                 None
+            };
+            
+            // Handle connective label positioning
+            let render_labels = if let Some(relationship) = relationship {
+                // TETRAD-SPECIFIC: Split multi-word connectives for axis edges to create gaps
+                // Only apply this logic to tetrad (4 nodes) with its specific cross pattern
+                if nodes.len() == 4 && (dx.abs() < 10.0 || dy.abs() < 10.0) {
+                    // Tetrad axis edge - split words if multi-word
+                    let words: Vec<&str> = relationship.split_whitespace().collect();
+                    if words.len() >= 2 {
+                        // Multi-word: split across the axis
+                        let first_word = words[0].to_string();
+                        let second_word = words[1..].join(" ");
+                        
+                        if dx.abs() < 10.0 {
+                            // Vertical axis - first word at top, second word at bottom (reading order)
+                            let center_x = (from_node.x + to_node.x) / 2.0;
+                            let center_y = (from_node.y + to_node.y) / 2.0;
+                            // Position words so gap is centered on crossing point
+                            // Calculate actual text widths and create symmetric gap around center
+                            let avg_char_width = 7.0; // Approximate width per character for 12px font
+                            let first_word_width = first_word.len() as f64 * avg_char_width;
+                            let second_word_width = second_word.len() as f64 * avg_char_width;
+                            let gap_from_center = 15.0; // Distance from center to text edge
+                            vec![
+                                (first_word, center_x, center_y - gap_from_center - first_word_width / 2.0),
+                                (second_word, center_x, center_y + gap_from_center + second_word_width / 2.0),
+                            ]
+                        } else {
+                            // Horizontal axis - first word on left, second word on right (reading order)
+                            let center_x = (from_node.x + to_node.x) / 2.0;
+                            let center_y = (from_node.y + to_node.y) / 2.0;
+                            
+                            // Optical centering - adjust based on text length difference
+                            let avg_char_width = 7.0;
+                            let first_word_width = first_word.len() as f64 * avg_char_width;
+                            let second_word_width = second_word.len() as f64 * avg_char_width;
+                            let base_gap = 15.0;
+                            
+                            // Optical adjustment: longer text moves further, shorter text moves closer
+                            let length_diff = first_word_width - second_word_width;
+                            let optical_adjustment = length_diff * 0.15; // 15% compensation
+                            
+                            vec![
+                                (first_word, center_x - base_gap - optical_adjustment - first_word_width / 2.0, center_y),
+                                (second_word, center_x + base_gap - optical_adjustment + second_word_width / 2.0, center_y),
+                            ]
+                        }
+                    } else {
+                        // Single word - use midpoint
+                        let mid_x = (from_node.x + to_node.x) / 2.0;
+                        let mid_y = (from_node.y + to_node.y) / 2.0;
+                        vec![(relationship, mid_x, mid_y)]
+                    }
+                } else {
+                    // ALL OTHER SYSTEMS: Use simple midpoint positioning for all edges
+                    let mid_x = (from_node.x + to_node.x) / 2.0;
+                    let mid_y = (from_node.y + to_node.y) / 2.0;
+                    vec![(relationship, mid_x, mid_y)]
+                }
+            } else {
+                vec![]
             };
             
             html! {
@@ -202,28 +273,27 @@ impl GeometricRenderer {
                         stroke-width="2" 
                         opacity="0.5"
                     />
-                    // Render the connective label if available
+                    // Render the connective label(s)
                     {
-                        if let Some(relationship) = relationship {
+                        for render_labels.into_iter().map(|(text, x, y)| {
                             html! {
                                 <text
-                                    x={mid_x.to_string()}
-                                    y={mid_y.to_string()}
+                                    x={x.to_string()}
+                                    y={y.to_string()}
                                     text-anchor="middle"
                                     dominant-baseline="middle"
-                                    font-size="10"
+                                    font-size="12"
                                     font-family="Arial, sans-serif"
                                     fill="#333"
                                     stroke="white"
-                                    stroke-width="3"
+                                    stroke-width="2"
                                     paint-order="stroke"
+                                    transform={format!("rotate({} {} {})", text_angle, x, y)}
                                 >
-                                    {relationship}
+                                    {text}
                                 </text>
                             }
-                        } else {
-                            html! {}
-                        }
+                        })
                     }
                 </>
             }

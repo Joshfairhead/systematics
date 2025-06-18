@@ -31,60 +31,70 @@ impl crate::System for PentadicSystem {
     
     fn connectives(&self) -> Vec<Connective> {
         vec![
+            // Index 0: Range of potential
             Connective { 
                 from_position: 1, 
                 to_position: 3, 
-                relationship: "Range of potential".to_string(), 
+                relationship: "Range Of Potential".to_string(), 
                 description: Some("Higher-Lower Potential".to_string()) 
             },
+            // Index 1: Range of significance
             Connective { 
                 from_position: 0, 
                 to_position: 4, 
-                relationship: "Range of significance".to_string(), 
+                relationship: "Range Of Significance".to_string(), 
                 description: Some("Purpose-Source".to_string()) 
             },
+            // Index 2: Aspiration
             Connective { 
                 from_position: 2, 
                 to_position: 1, 
                 relationship: "Aspiration".to_string(), 
                 description: Some("Quintessence-Higher Potential".to_string()) 
             },
+            // Index 3: Operation
             Connective { 
                 from_position: 2, 
                 to_position: 3, 
                 relationship: "Operation".to_string(), 
                 description: Some("Quintessence-Lower Potential".to_string()) 
             },
+            // Index 4: Output
             Connective { 
                 from_position: 1, 
                 to_position: 0, 
                 relationship: "Output".to_string(), 
                 description: Some("Higher Potential-Purpose".to_string()) 
             },
+            // Index 5: Input
             Connective { 
                 from_position: 3, 
                 to_position: 4, 
                 relationship: "Input".to_string(), 
                 description: Some("Lower Potential-Source".to_string()) 
             },
+            // Index 6: Qualitive match
             Connective { 
                 from_position: 2, 
                 to_position: 0, 
-                relationship: "Inspiration".to_string(), 
+                relationship: "Qualitive Match".to_string(), 
                 description: Some("Quintessence-Purpose".to_string()) 
             },
+            // Index 7: Quantitive match
             Connective { 
                 from_position: 2, 
                 to_position: 4, 
-                relationship: "Quantitive match".to_string(), 
+                relationship: "Quantitive Match".to_string(), 
                 description: Some("Quintessence-Source".to_string()) 
             },
+            // Index 8: Form
             Connective { 
                 from_position: 3, 
                 to_position: 0, 
                 relationship: "Form".to_string(), 
                 description: Some("Lower Potential-Purpose".to_string()) 
             },
+            // Index 9: Function
             Connective { 
                 from_position: 1, 
                 to_position: 4, 

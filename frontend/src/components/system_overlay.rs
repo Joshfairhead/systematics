@@ -250,7 +250,7 @@ impl SystemOverlay {
         
         // Instrumental (left) - push further left on horizontal axis
         let instrumental_top = self.svg_to_css_percent(points[2].1, svg_size);
-        let instrumental_left = self.svg_to_css_percent(points[2].0 - 60.0, svg_size);
+        let instrumental_left = self.svg_to_css_percent(points[2].0 - 65.0, svg_size);
         
         // Ground (bottom) - keep current position (good as is)
         let ground_top = self.svg_to_css_percent(points[3].1 + 50.0, svg_size);
@@ -266,21 +266,46 @@ impl SystemOverlay {
         }
     }
 
-    fn render_pentad(&self, structure: &Option<StoredStructure>) -> Html {
-        let terms: Vec<String> = (0..5)
-            .map(|i| self.get_canonical_term(i, &format!("Term {}", i + 1)))
-            .collect();
+    fn render_pentad(&self, _structure: &Option<StoredStructure>) -> Html {
+        // API canonical order: [Purpose, Higher Potential, Quintessence, Lower Potential, Source]
+        // Map to our three-column layout:
+        let purpose = self.get_canonical_term(0, "Purpose");                    // Index 0 → Top-right
+        let higher_potential = self.get_canonical_term(1, "Higher Potential");  // Index 1 → Top-middle
+        let quintessence = self.get_canonical_term(2, "Quintessence");          // Index 2 → Left center
+        let lower_potential = self.get_canonical_term(3, "Lower Potential");    // Index 3 → Bottom-middle
+        let source = self.get_canonical_term(4, "Source");                      // Index 4 → Bottom-right
         
         let svg_size = 400.0;
-        let center = svg_size / 2.0;
-        let radius = svg_size * 0.15;
-        let points = self.regular_polygon_points(5, center, center, radius, -PI/2.0);
+        let points = self.get_system_layout("pentad", svg_size);
+        
+        // Adjust label positions away from nodes
+        // Purpose: above top-right node
+        let purpose_top = self.svg_to_css_percent(points[0].1 - 45.0, svg_size);
+        let purpose_left = self.svg_to_css_percent(points[0].0, svg_size);
+        
+        // Higher Potential: above top-middle node
+        let higher_potential_top = self.svg_to_css_percent(points[1].1 - 45.0, svg_size);
+        let higher_potential_left = self.svg_to_css_percent(points[1].0, svg_size);
+        
+        // Quintessence: left of left-center node
+        let quintessence_top = self.svg_to_css_percent(points[2].1, svg_size);
+        let quintessence_left = self.svg_to_css_percent(points[2].0 - 65.0, svg_size);
+        
+        // Lower Potential: below bottom-middle node
+        let lower_potential_top = self.svg_to_css_percent(points[3].1 + 45.0, svg_size);
+        let lower_potential_left = self.svg_to_css_percent(points[3].0, svg_size);
+        
+        // Source: below bottom-right node
+        let source_top = self.svg_to_css_percent(points[4].1 + 45.0, svg_size);
+        let source_left = self.svg_to_css_percent(points[4].0, svg_size);
         
         html! {
             <div class="system-overlay">
-                {for points.iter().enumerate().map(|(i, (x, y))| {
-                    self.render_point(&terms[i], &self.svg_to_css_percent(*y, svg_size), &self.svg_to_css_percent(*x, svg_size))
-                })}
+                {self.render_point(&purpose, &purpose_top, &purpose_left)}
+                {self.render_point(&higher_potential, &higher_potential_top, &higher_potential_left)}
+                {self.render_point(&quintessence, &quintessence_top, &quintessence_left)}
+                {self.render_point(&lower_potential, &lower_potential_top, &lower_potential_left)}
+                {self.render_point(&source, &source_top, &source_left)}
             </div>
         }
     }
