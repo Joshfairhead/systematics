@@ -83,6 +83,8 @@
 
 *Three Horizons Strategic Roadmap - Balancing Vision with Execution*
 
+---
+
 ## 📚 **Related Documentation**
 
 - **[TODO.md](TODO.md)**: Detailed implementation tasks and development priorities
