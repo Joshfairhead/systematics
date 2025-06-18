@@ -198,11 +198,23 @@ impl SystemOverlay {
         let svg_size = 500.0;
         let points = self.get_system_layout("triad", svg_size);
         
+        // Custom positioning for triad labels to avoid node overlap
+        // Will and Function positions were good, keep them as they were
+        let will_top = self.svg_to_css_percent(points[0].1, svg_size);
+        let will_left = self.svg_to_css_percent(points[0].0, svg_size);
+        
+        // Being (right) - position label to the right of the node
+        let being_top = self.svg_to_css_percent(points[1].1, svg_size);
+        let being_left = self.svg_to_css_percent(points[1].0 + 25.0, svg_size);
+        
+        let function_top = self.svg_to_css_percent(points[2].1, svg_size);
+        let function_left = self.svg_to_css_percent(points[2].0, svg_size);
+        
         html! {
             <div class="system-overlay">
-                {self.render_point(&term1, &self.svg_to_css_percent(points[0].1, svg_size), &self.svg_to_css_percent(points[0].0, svg_size))}
-                {self.render_point(&term2, &self.svg_to_css_percent(points[1].1, svg_size), &self.svg_to_css_percent(points[1].0, svg_size))}
-                {self.render_point(&term3, &self.svg_to_css_percent(points[2].1, svg_size), &self.svg_to_css_percent(points[2].0, svg_size))}
+                {self.render_point(&term1, &will_top, &will_left)}
+                {self.render_point(&term2, &being_top, &being_left)}
+                {self.render_point(&term3, &function_top, &function_left)}
             </div>
         }
     }

@@ -101,15 +101,16 @@ impl GeometryCalculator {
                 // API Index 0 (Will) → Top-left
                 // API Index 1 (Being) → Right
                 // API Index 2 (Function) → Bottom-left
-                let side_length = size * 0.6;  // Even bigger equilateral triangle
+                let side_length = size * 0.65;  // Slightly bigger triangle
                 let height = side_length * (3.0_f64.sqrt() / 2.0);  // Height of equilateral triangle
                 let half_side = side_length / 2.0;
+                let right_offset = height / 2.0 + size * 0.05;  // Move Being further right
                 
                 vec![
                     // Index 0: Will → Top-left
                     Point { x: cx - height / 2.0, y: cy - half_side },
-                    // Index 1: Being → Right
-                    Point { x: cx + height / 2.0, y: cy },
+                    // Index 1: Being → Right (moved further right)
+                    Point { x: cx + right_offset, y: cy },
                     // Index 2: Function → Bottom-left
                     Point { x: cx - height / 2.0, y: cy + half_side },
                 ]
@@ -166,12 +167,13 @@ impl GeometryCalculator {
 
     fn get_node_radius(node_count: usize) -> f64 {
         match node_count {
-            1 => 12.0,      // Monad: back to original dot size
-            2 => 10.0,
-            3..=6 => 8.0,
-            7..=9 => 6.0,
-            10..=12 => 5.0,
-            _ => 6.0,
+            1 => 12.0,      // Monad
+            2 => 12.0,      // Dyad: same size as monad
+            3 => 12.0,      // Triad: same size as monad
+            4..=6 => 12.0,  // Tetrad-Hexad: same size as monad
+            7..=9 => 12.0,  // Heptad-Ennead: same size as monad
+            10..=12 => 12.0, // Decad-Dodecad: same size as monad
+            _ => 12.0,
         }
     }
 
