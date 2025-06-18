@@ -2,7 +2,7 @@
 *Strategic Development Using Three Horizons Framework*
 
 ## 🌟 Horizon 3: Visionary Use Cases
-
+- **Generative Intelligence**: Autopoietic holonic intelligence
 - **Generative Interfaces**: Tools that transform a systematic structure into an interface (e.g. triad to three horizons)
 - **Expert Interview Framework**: Systematic scaffolding for knowledge elicitation
 - **PhD Promptor**: AI that guides doctoral students through systematic domain exploration
@@ -19,7 +19,7 @@
 - **REA Integration**: Resource-Event-Agent accounting for systematic structures
 - **Pattern Recognition**: AI-assisted systematic thinking with cross-structure analysis
 - **Web Frontend Platform**: Browser-based systematic thinking with interactive visualization
-- **Accounts**: Multi-user provider system with capability delegation, possibly AD4M??
+- **Accounts**: Multi-user provider system with capability delegation, possibly AD4M??             
 - **Alternative Systems**: Landry/Gurdjieff perspective implementations
 - **Holochain Integration**: Decentralized storage and sharing
 - **Semantic Research**: Holonic vector space, qualitative position hashing

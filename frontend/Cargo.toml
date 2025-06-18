@@ -9,4 +9,12 @@ crate-type = ["cdylib", "rlib"]
 [dependencies]
 yew = { version = "0.21", features = ["csr"] }
 wasm-bindgen = "0.2.92"
-web-sys = { version = "0.3", features = ["HtmlSelectElement"] } 
+web-sys = { version = "0.3", features = ["HtmlSelectElement"] }
+# API Integration dependencies
+reqwest = { version = "0.11", features = ["json"] }
+wasm-bindgen-futures = "0.4"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+gloo-net = { version = "0.4", features = ["http"] }
+# Error handling
+anyhow = "1.0" 

@@ -1,8 +1,12 @@
 use yew::{html, Component, Context, Html, Properties};
+use crate::services::api::StoredStructure;
+use std::f64::consts::PI;
 
 #[derive(Properties, PartialEq)]
 pub struct Props {
     pub system_num: i32,
+    #[prop_or_default]
+    pub structure: Option<StoredStructure>,
 }
 
 pub struct SystemOverlay;
@@ -17,250 +21,277 @@ impl Component for SystemOverlay {
 
     fn view(&self, ctx: &Context<Self>) -> Html {
         let system_num = ctx.props().system_num;
+        let structure = &ctx.props().structure;
         
         match system_num {
-            1 => self.render_monad(),
-            2 => self.render_dyad(),
-            3 => self.render_triad(),
-            4 => self.render_tetrad(),
-            5 => self.render_pentad(),
-            6 => self.render_hexad(),
-            7 => self.render_heptad(),
-            8 => self.render_octad(),
-            _ => html! { <div></div> },
+            1 => self.render_monad(structure),
+            2 => self.render_dyad(structure),
+            3 => self.render_triad(structure),
+            4 => self.render_tetrad(structure),
+            5 => self.render_pentad(structure),
+            6 => self.render_hexad(structure),
+            7 => self.render_heptad(structure),
+            8 => self.render_octad(structure),
+            9 => self.render_ennead(structure),
+            10 => self.render_decad(structure),
+            11 => self.render_undecad(structure),
+            12 => self.render_dodecad(structure),
+            _ => html! { <div class="system-overlay">{"Unsupported system"}</div> },
         }
     }
 }
 
 impl SystemOverlay {
-    fn render_monad(&self) -> Html {
+    fn get_term(&self, structure: &Option<StoredStructure>, position: usize, fallback: &str) -> String {
+        structure
+            .as_ref()
+            .and_then(|s| s.terms.get(position))
+            .cloned()
+            .unwrap_or_else(|| fallback.to_string())
+    }
+
+    // Helper function to calculate polygon points (matching the geometric renderer)
+    fn regular_polygon_points(&self, n: usize, cx: f64, cy: f64, radius: f64, rotation: f64) -> Vec<(f64, f64)> {
+        (0..n).map(|i| {
+            let angle = 2.0 * PI * i as f64 / n as f64 + rotation;
+            let x = cx + radius * angle.cos();
+            let y = cy + radius * angle.sin();
+            (x, y)
+        }).collect()
+    }
+
+    // Convert SVG coordinates to CSS percentages
+    fn svg_to_css_percent(&self, coord: f64, svg_size: f64) -> String {
+        format!("{}%", (coord / svg_size) * 100.0)
+    }
+
+    fn render_point(&self, term: &str, top: &str, left: &str) -> Html {
         html! {
-            <div class="system-overlay">
-                <div class="point-container" style="top: 50%; left: 50%; transform: translate(-50%, -50%);">
-                    <input class="point-input" placeholder="Instance" />
-                </div>
+            <div class="point-container" style={format!("top: {}; left: {}; transform: translate(-50%, -50%);", top, left)}>
+                <div class="point-label">{term}</div>
+                <input class="point-input" placeholder="Instance" />
             </div>
         }
     }
 
-    fn render_dyad(&self) -> Html {
+    fn render_monad(&self, structure: &Option<StoredStructure>) -> Html {
+        let term = self.get_term(structure, 0, "Unity");
+        
         html! {
             <div class="system-overlay">
-                <div class="point-container" style="top: 50%; left: 34%; transform: translate(-50%, -50%);">
-                    <div class="point-label">{"Essence"}</div>
-                    <input class="point-input" placeholder="Instance" />
-                </div>
-                <div class="point-container" style="top: 50%; left: 66%; transform: translate(-50%, -50%);">
-                    <div class="point-label">{"Existence"}</div>
-                    <input class="point-input" placeholder="Instance" />
-                </div>
+                {self.render_point(&term, "50%", "50%")}
             </div>
         }
     }
 
-    fn render_triad(&self) -> Html {
+    fn render_dyad(&self, structure: &Option<StoredStructure>) -> Html {
+        let term1 = self.get_term(structure, 0, "Essence");
+        let term2 = self.get_term(structure, 1, "Existence");
+        
+        // Match the geometric renderer's dyad positioning
+        let svg_size = 500.0;
+        let center = svg_size / 2.0;
+        let offset = svg_size * 0.15;
+        
+        let left1 = self.svg_to_css_percent(center - offset, svg_size);
+        let left2 = self.svg_to_css_percent(center + offset, svg_size);
+        
         html! {
             <div class="system-overlay">
-                // Right point - Reconciling
-                <div class="point-container" style="top: 50%; left: 63%; transform: translate(-50%, -50%);">
-                    <div class="point-label">{"Reconciling"}</div>
-                    <input class="point-input" placeholder="Instance" />
-                </div>
-                // Left top - Active
-                <div class="point-container" style="top: 35%; left: 37%; transform: translate(-50%, -50%);">
-                    <div class="point-label">{"Active"}</div>
-                    <input class="point-input" placeholder="Instance" />
-                </div>
-                // Left bottom - Passive
-                <div class="point-container" style="top: 65%; left: 37%; transform: translate(-50%, -50%);">
-                    <div class="point-label">{"Passive"}</div>
-                    <input class="point-input" placeholder="Instance" />
-                </div>
+                {self.render_point(&term1, "50%", &left1)}
+                {self.render_point(&term2, "50%", &left2)}
             </div>
         }
     }
 
-    fn render_tetrad(&self) -> Html {
+    fn render_triad(&self, structure: &Option<StoredStructure>) -> Html {
+        let term1 = self.get_term(structure, 0, "Active");
+        let term2 = self.get_term(structure, 1, "Passive");
+        let term3 = self.get_term(structure, 2, "Reconciling");
+        
+        let svg_size = 500.0;
+        let center = svg_size / 2.0;
+        let radius = svg_size * 0.15;
+        let points = self.regular_polygon_points(3, center, center, radius, -PI/2.0);
+        
         html! {
             <div class="system-overlay">
-                // Top center - Ideal
-                <div class="point-container" style="top: 25%; left: 50%; transform: translate(-50%, -50%);">
-                    <div class="point-label">{"Ideal"}</div>
-                    <input class="point-input" placeholder="Instance" />
-                </div>
-                // Right center - Directive
-                <div class="point-container" style="top: 50%; left: 67%; transform: translate(-50%, -50%);">
-                    <div class="point-label">{"Directive"}</div>
-                    <input class="point-input" placeholder="Instance" />
-                </div>
-                // Bottom center - Ground
-                <div class="point-container" style="top: 75%; left: 50%; transform: translate(-50%, -50%);">
-                    <div class="point-label">{"Ground"}</div>
-                    <input class="point-input" placeholder="Instance" />
-                </div>
-                // Left center - Instrument
-                <div class="point-container" style="top: 50%; left: 33%; transform: translate(-50%, -50%);">
-                    <div class="point-label">{"Instrument"}</div>
-                    <input class="point-input" placeholder="Instance" />
-                </div>
+                {self.render_point(&term1, &self.svg_to_css_percent(points[0].1, svg_size), &self.svg_to_css_percent(points[0].0, svg_size))}
+                {self.render_point(&term2, &self.svg_to_css_percent(points[1].1, svg_size), &self.svg_to_css_percent(points[1].0, svg_size))}
+                {self.render_point(&term3, &self.svg_to_css_percent(points[2].1, svg_size), &self.svg_to_css_percent(points[2].0, svg_size))}
             </div>
         }
     }
 
-    fn render_pentad(&self) -> Html {
+    fn render_tetrad(&self, structure: &Option<StoredStructure>) -> Html {
+        let term1 = self.get_term(structure, 0, "Ground");
+        let term2 = self.get_term(structure, 1, "Ideal");
+        let term3 = self.get_term(structure, 2, "Instrumental");
+        let term4 = self.get_term(structure, 3, "Directive");
+        
+        let svg_size = 500.0;
+        let center = svg_size / 2.0;
+        let radius = svg_size * 0.15;
+        let points = self.regular_polygon_points(4, center, center, radius, PI/4.0);
+        
         html! {
             <div class="system-overlay">
-                // Left middle - shared tip point
-                <div class="point-container" style="top: 50%; left: 32%; transform: translate(-50%, -50%);">
-                    <div class="point-label">{"Intrinsic Limit"}</div>
-                    <input class="point-input" placeholder="Instance" />
-                </div>
-                // Right short triangle - upper
-                <div class="point-container" style="top: 31%; left: 47%; transform: translate(-50%, -50%);">
-                    <div class="point-label">{"Inner Upper Limit"}</div>
-                    <input class="point-input" placeholder="Instance" />
-                </div>
-                // Right short triangle - lower
-                <div class="point-container" style="top: 69%; left: 47%; transform: translate(-50%, -50%);">
-                    <div class="point-label">{"Inner Lower Limit"}</div>
-                    <input class="point-input" placeholder="Instance" />
-                </div>
-                // Right long triangle - upper
-                <div class="point-container" style="top: 27%; left: 62%; transform: translate(-50%, -50%);">
-                    <div class="point-label">{"Outer Upper Limit"}</div>
-                    <input class="point-input" placeholder="Instance" />
-                </div>
-                // Right long triangle - lower
-                <div class="point-container" style="top: 73%; left: 62%; transform: translate(-50%, -50%);">
-                    <div class="point-label">{"Outer Lower Limit"}</div>
-                    <input class="point-input" placeholder="Instance" />
-                </div>
+                {self.render_point(&term1, &self.svg_to_css_percent(points[0].1, svg_size), &self.svg_to_css_percent(points[0].0, svg_size))}
+                {self.render_point(&term2, &self.svg_to_css_percent(points[1].1, svg_size), &self.svg_to_css_percent(points[1].0, svg_size))}
+                {self.render_point(&term3, &self.svg_to_css_percent(points[2].1, svg_size), &self.svg_to_css_percent(points[2].0, svg_size))}
+                {self.render_point(&term4, &self.svg_to_css_percent(points[3].1, svg_size), &self.svg_to_css_percent(points[3].0, svg_size))}
             </div>
         }
     }
 
-    fn render_hexad(&self) -> Html {
+    fn render_pentad(&self, structure: &Option<StoredStructure>) -> Html {
+        let terms: Vec<String> = (0..5)
+            .map(|i| self.get_term(structure, i, &format!("Term {}", i + 1)))
+            .collect();
+        
+        let svg_size = 500.0;
+        let center = svg_size / 2.0;
+        let radius = svg_size * 0.15;
+        let points = self.regular_polygon_points(5, center, center, radius, -PI/2.0);
+        
         html! {
             <div class="system-overlay">
-                // Top
-                <div class="point-container" style="top: 22%; left: 50%; transform: translate(-50%, -50%);">
-                    <div class="point-label">{"Values"}</div>
-                    <input class="point-input" placeholder="Instance" />
-                </div>
-                // Upper right
-                <div class="point-container" style="top: 35%; left: 65%; transform: translate(-50%, -50%);">
-                    <div class="point-label">{"Options"}</div>
-                    <input class="point-input" placeholder="Instance" />
-                </div>
-                // Lower right
-                <div class="point-container" style="top: 65%; left: 65%; transform: translate(-50%, -50%);">
-                    <div class="point-label">{"Criteria"}</div>
-                    <input class="point-input" placeholder="Instance" />
-                </div>
-                // Bottom
-                <div class="point-container" style="top: 78%; left: 50%; transform: translate(-50%, -50%);">
-                    <div class="point-label">{"Facts"}</div>
-                    <input class="point-input" placeholder="Instance" />
-                </div>
-                // Lower left
-                <div class="point-container" style="top: 65%; left: 35%; transform: translate(-50%, -50%);">
-                    <div class="point-label">{"Priorities"}</div>
-                    <input class="point-input" placeholder="Instance" />
-                </div>
-                // Upper left
-                <div class="point-container" style="top: 35%; left: 35%; transform: translate(-50%, -50%);">
-                    <div class="point-label">{"Resources"}</div>
-                    <input class="point-input" placeholder="Instance" />
-                </div>
+                {for points.iter().enumerate().map(|(i, (x, y))| {
+                    self.render_point(&terms[i], &self.svg_to_css_percent(*y, svg_size), &self.svg_to_css_percent(*x, svg_size))
+                })}
             </div>
         }
     }
 
-    fn render_heptad(&self) -> Html {
+    fn render_hexad(&self, structure: &Option<StoredStructure>) -> Html {
+        let terms: Vec<String> = (0..6)
+            .map(|i| self.get_term(structure, i, &format!("Term {}", i + 1)))
+            .collect();
+        
+        let svg_size = 500.0;
+        let center = svg_size / 2.0;
+        let radius = svg_size * 0.15;
+        let points = self.regular_polygon_points(6, center, center, radius, 0.0);
+        
         html! {
             <div class="system-overlay">
-                // Insight - top (correct position)
-                <div class="point-container" style="top: 20%; left: 50%; transform: translate(-50%, -50%);">
-                    <div class="point-label">{"Insight"}</div>
-                    <input class="point-input" placeholder="Instance" />
-                </div>
-                // Research - right height but move left
-                <div class="point-container" style="top: 35%; left: 67%; transform: translate(-50%, -50%);">
-                    <div class="point-label">{"Research"}</div>
-                    <input class="point-input" placeholder="Instance" />
-                </div>
-                // Value - align with delivery
-                <div class="point-container" style="top: 35%; left: 33%; transform: translate(-50%, -50%);">
-                    <div class="point-label">{"Value"}</div>
-                    <input class="point-input" placeholder="Instance" />
-                </div>
-                // Design - higher and to the left
-                <div class="point-container" style="top: 58%; left: 70%; transform: translate(-50%, -50%);">
-                    <div class="point-label">{"Design"}</div>
-                    <input class="point-input" placeholder="Instance" />
-                </div>
-                // Delivery - same height as design and move right
-                <div class="point-container" style="top: 58%; left: 30%; transform: translate(-50%, -50%);">
-                    <div class="point-label">{"Delivery"}</div>
-                    <input class="point-input" placeholder="Instance" />
-                </div>
-                // Synthesis - right height, move right
-                <div class="point-container" style="top: 80%; left: 60%; transform: translate(-50%, -50%);">
-                    <div class="point-label">{"Synthesis"}</div>
-                    <input class="point-input" placeholder="Instance" />
-                </div>
-                // Application - same height as synthesis, move down and right
-                <div class="point-container" style="top: 80%; left: 40%; transform: translate(-50%, -50%);">
-                    <div class="point-label">{"Application"}</div>
-                    <input class="point-input" placeholder="Instance" />
-                </div>
+                {for points.iter().enumerate().map(|(i, (x, y))| {
+                    self.render_point(&terms[i], &self.svg_to_css_percent(*y, svg_size), &self.svg_to_css_percent(*x, svg_size))
+                })}
             </div>
         }
     }
 
-    fn render_octad(&self) -> Html {
+    fn render_heptad(&self, structure: &Option<StoredStructure>) -> Html {
+        let terms: Vec<String> = (0..7)
+            .map(|i| self.get_term(structure, i, &format!("Term {}", i + 1)))
+            .collect();
+        
+        let svg_size = 500.0;
+        let center = svg_size / 2.0;
+        let radius = svg_size * 0.18;
+        let points = self.regular_polygon_points(7, center, center, radius, -PI/2.0);
+        
         html! {
             <div class="system-overlay">
-                // North - Intrinsic Nature
-                <div class="point-container" style="top: 17%; left: 50%; transform: translate(-50%, -50%);">
-                    <div class="point-label">{"Intrinsic Nature"}</div>
-                    <input class="point-input" placeholder="Instance" />
-                </div>
-                // Northeast - Organisational Modes
-                <div class="point-container" style="top: 28%; left: 67%; transform: translate(-50%, -50%);">
-                    <div class="point-label">{"Organisational Modes"}</div>
-                    <input class="point-input" placeholder="Instance" />
-                </div>
-                // East - Smallest Significant Holon
-                <div class="point-container" style="top: 50%; left: 72%; transform: translate(-50%, -50%);">
-                    <div class="point-label">{"Smallest Significant Holon"}</div>
-                    <input class="point-input" placeholder="Instance" />
-                </div>
-                // Southeast - Critical Functions
-                <div class="point-container" style="top: 72%; left: 67%; transform: translate(-50%, -50%);">
-                    <div class="point-label">{"Critical Functions"}</div>
-                    <input class="point-input" placeholder="Instance" />
-                </div>
-                // South - Supportive Platform
-                <div class="point-container" style="top: 83%; left: 50%; transform: translate(-50%, -50%);">
-                    <div class="point-label">{"Supportive Platform"}</div>
-                    <input class="point-input" placeholder="Instance" />
-                </div>
-                // Southwest - Necessary Resourcing
-                <div class="point-container" style="top: 72%; left: 33%; transform: translate(-50%, -50%);">
-                    <div class="point-label">{"Necessary Resourcing"}</div>
-                    <input class="point-input" placeholder="Instance" />
-                </div>
-                // West - Integrative Totality
-                <div class="point-container" style="top: 50%; left: 28%; transform: translate(-50%, -50%);">
-                    <div class="point-label">{"Integrative Totality"}</div>
-                    <input class="point-input" placeholder="Instance" />
-                </div>
-                // Northwest - Inherent Values
-                <div class="point-container" style="top: 28%; left: 33%; transform: translate(-50%, -50%);">
-                    <div class="point-label">{"Inherent Values"}</div>
-                    <input class="point-input" placeholder="Instance" />
-                </div>
+                {for points.iter().enumerate().map(|(i, (x, y))| {
+                    self.render_point(&terms[i], &self.svg_to_css_percent(*y, svg_size), &self.svg_to_css_percent(*x, svg_size))
+                })}
+            </div>
+        }
+    }
+
+    fn render_octad(&self, structure: &Option<StoredStructure>) -> Html {
+        let terms: Vec<String> = (0..8)
+            .map(|i| self.get_term(structure, i, &format!("Element {}", i + 1)))
+            .collect();
+
+        let svg_size = 500.0;
+        let center = svg_size / 2.0;
+        let radius = svg_size * 0.18;
+        let points = self.regular_polygon_points(8, center, center, radius, PI/8.0);
+
+        html! {
+            <div class="system-overlay">
+                {for points.iter().enumerate().map(|(i, (x, y))| {
+                    self.render_point(&terms[i], &self.svg_to_css_percent(*y, svg_size), &self.svg_to_css_percent(*x, svg_size))
+                })}
+            </div>
+        }
+    }
+
+    fn render_ennead(&self, structure: &Option<StoredStructure>) -> Html {
+        let terms: Vec<String> = (0..9)
+            .map(|i| self.get_term(structure, i, &format!("Term {}", i + 1)))
+            .collect();
+        
+        let svg_size = 500.0;
+        let center = svg_size / 2.0;
+        let radius = svg_size * 0.20;
+        let points = self.regular_polygon_points(9, center, center, radius, -PI/2.0);
+        
+        html! {
+            <div class="system-overlay">
+                {for points.iter().enumerate().map(|(i, (x, y))| {
+                    self.render_point(&terms[i], &self.svg_to_css_percent(*y, svg_size), &self.svg_to_css_percent(*x, svg_size))
+                })}
+            </div>
+        }
+    }
+
+    fn render_decad(&self, structure: &Option<StoredStructure>) -> Html {
+        let terms: Vec<String> = (0..10)
+            .map(|i| self.get_term(structure, i, &format!("Term {}", i + 1)))
+            .collect();
+        
+        let svg_size = 500.0;
+        let center = svg_size / 2.0;
+        let radius = svg_size * 0.20;
+        let points = self.regular_polygon_points(10, center, center, radius, -PI/2.0);
+        
+        html! {
+            <div class="system-overlay">
+                {for points.iter().enumerate().map(|(i, (x, y))| {
+                    self.render_point(&terms[i], &self.svg_to_css_percent(*y, svg_size), &self.svg_to_css_percent(*x, svg_size))
+                })}
+            </div>
+        }
+    }
+
+    fn render_undecad(&self, structure: &Option<StoredStructure>) -> Html {
+        let terms: Vec<String> = (0..11)
+            .map(|i| self.get_term(structure, i, &format!("Term {}", i + 1)))
+            .collect();
+        
+        let svg_size = 500.0;
+        let center = svg_size / 2.0;
+        let radius = svg_size * 0.22;
+        let points = self.regular_polygon_points(11, center, center, radius, -PI/2.0);
+        
+        html! {
+            <div class="system-overlay">
+                {for points.iter().enumerate().map(|(i, (x, y))| {
+                    self.render_point(&terms[i], &self.svg_to_css_percent(*y, svg_size), &self.svg_to_css_percent(*x, svg_size))
+                })}
+            </div>
+        }
+    }
+
+    fn render_dodecad(&self, structure: &Option<StoredStructure>) -> Html {
+        let terms: Vec<String> = (0..12)
+            .map(|i| self.get_term(structure, i, &format!("Term {}", i + 1)))
+            .collect();
+        
+        let svg_size = 500.0;
+        let center = svg_size / 2.0;
+        let radius = svg_size * 0.22;
+        let points = self.regular_polygon_points(12, center, center, radius, -PI/2.0);
+        
+        html! {
+            <div class="system-overlay">
+                {for points.iter().enumerate().map(|(i, (x, y))| {
+                    self.render_point(&terms[i], &self.svg_to_css_percent(*y, svg_size), &self.svg_to_css_percent(*x, svg_size))
+                })}
             </div>
         }
     }
