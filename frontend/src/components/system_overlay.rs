@@ -1,5 +1,6 @@
 use yew::{html, Component, Context, Html, Properties};
 use crate::services::api::StoredStructure;
+use crate::core::geometry::GeometryCalculator;
 use std::f64::consts::PI;
 
 #[derive(Properties, PartialEq)]
@@ -50,7 +51,14 @@ impl SystemOverlay {
             .unwrap_or_else(|| fallback.to_string())
     }
 
-    // Helper function to calculate polygon points (matching the geometric renderer)
+    // Use the framework-agnostic geometry calculator
+    fn get_system_layout(&self, system_type: &str, svg_size: f64) -> Vec<(f64, f64)> {
+        let center = svg_size / 2.0;
+        let layout = GeometryCalculator::calculate_system_layout(system_type, center, center, svg_size);
+        layout.nodes.into_iter().map(|point| (point.x, point.y)).collect()
+    }
+
+    // Temporary method for backward compatibility - will be removed as we migrate all systems
     fn regular_polygon_points(&self, n: usize, cx: f64, cy: f64, radius: f64, rotation: f64) -> Vec<(f64, f64)> {
         (0..n).map(|i| {
             let angle = 2.0 * PI * i as f64 / n as f64 + rotation;
@@ -110,9 +118,7 @@ impl SystemOverlay {
         let term3 = self.get_term(structure, 2, "Reconciling");
         
         let svg_size = 500.0;
-        let center = svg_size / 2.0;
-        let radius = svg_size * 0.15;
-        let points = self.regular_polygon_points(3, center, center, radius, -PI/2.0);
+        let points = self.get_system_layout("triad", svg_size);
         
         html! {
             <div class="system-overlay">

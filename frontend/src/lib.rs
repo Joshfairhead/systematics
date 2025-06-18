@@ -5,6 +5,7 @@ use web_sys::{HtmlInputElement, InputEvent};
 
 mod components; // Declare the components module
 mod services;   // Declare the services module
+mod core;       // Declare the core module (framework-agnostic)
 
 use components::system_selector::SystemSelector; // Import the SystemSelector
 use components::system_overlay::SystemOverlay;
