@@ -3,7 +3,8 @@ members = [
     "api",
     "library",
     "cli",
-    "frontend"
+    "frontend",
+    "dev-runner"
 ]
 default-members = ["cli"]
 resolver = "2"

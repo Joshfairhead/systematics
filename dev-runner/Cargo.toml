@@ -1,0 +1,8 @@
+[package]
+name = "dev-runner"
+version.workspace = true
+edition.workspace = true
+
+[[bin]]
+name = "dev"
+path = "src/main.rs" 

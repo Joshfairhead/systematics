@@ -1,5 +1,5 @@
 use yew::{html, Component, Context, Html, Properties};
-use crate::services::api::StoredStructure;
+use crate::services::api::{StoredStructure, ApiClient, StructureSchema, spawn_api_call};
 use crate::core::geometry::GeometryCalculator;
 use std::f64::consts::PI;
 
@@ -10,14 +10,58 @@ pub struct Props {
     pub structure: Option<StoredStructure>,
 }
 
-pub struct SystemOverlay;
+pub enum Msg {
+    SchemaLoaded(Result<StructureSchema, anyhow::Error>),
+}
+
+pub struct SystemOverlay {
+    schema: Option<StructureSchema>,
+    api_client: ApiClient,
+    loading_schema: bool,
+}
 
 impl Component for SystemOverlay {
-    type Message = ();
+    type Message = Msg;
     type Properties = Props;
 
-    fn create(_ctx: &Context<Self>) -> Self {
-        Self
+    fn create(ctx: &Context<Self>) -> Self {
+        let mut component = Self {
+            schema: None,
+            api_client: ApiClient::new(),
+            loading_schema: false,
+        };
+        
+        // Load schema for the current system
+        component.load_schema_for_system(ctx, ctx.props().system_num);
+        
+        component
+    }
+
+    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
+        match msg {
+            Msg::SchemaLoaded(result) => {
+                self.loading_schema = false;
+                match result {
+                    Ok(schema) => {
+                        self.schema = Some(schema);
+                        true
+                    }
+                    Err(err) => {
+                        web_sys::console::error_1(&format!("Failed to load schema: {}", err).into());
+                        true
+                    }
+                }
+            }
+        }
+    }
+
+    fn changed(&mut self, ctx: &Context<Self>, old_props: &Self::Properties) -> bool {
+        if ctx.props().system_num != old_props.system_num {
+            self.load_schema_for_system(ctx, ctx.props().system_num);
+            true
+        } else {
+            false
+        }
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
@@ -43,10 +87,43 @@ impl Component for SystemOverlay {
 }
 
 impl SystemOverlay {
-    fn get_term(&self, structure: &Option<StoredStructure>, position: usize, fallback: &str) -> String {
-        structure
+    fn load_schema_for_system(&mut self, ctx: &Context<Self>, system_num: i32) {
+        if self.loading_schema {
+            return;
+        }
+        
+        let structure_type = match system_num {
+            1 => "monad",
+            2 => "dyad", 
+            3 => "triad",
+            4 => "tetrad",
+            5 => "pentad",
+            6 => "hexad",
+            7 => "heptad",
+            8 => "octad",
+            9 => "ennead",
+            10 => "decad",
+            11 => "undecad",
+            12 => "dodecad",
+            _ => return,
+        };
+        
+        self.loading_schema = true;
+        let api_client = self.api_client.clone();
+        let callback = ctx.link().callback(Msg::SchemaLoaded);
+        
+        spawn_api_call(
+            async move {
+                api_client.get_structure_schema(structure_type).await
+            },
+            callback,
+        );
+    }
+
+    fn get_canonical_term(&self, position: usize, fallback: &str) -> String {
+        self.schema
             .as_ref()
-            .and_then(|s| s.terms.get(position))
+            .and_then(|s| s.canonical_terms.get(position))
             .cloned()
             .unwrap_or_else(|| fallback.to_string())
     }
@@ -82,8 +159,8 @@ impl SystemOverlay {
         }
     }
 
-    fn render_monad(&self, structure: &Option<StoredStructure>) -> Html {
-        let term = self.get_term(structure, 0, "Unity");
+    fn render_monad(&self, _structure: &Option<StoredStructure>) -> Html {
+        let term = self.get_canonical_term(0, "Unity");
         
         html! {
             <div class="system-overlay">
@@ -92,9 +169,9 @@ impl SystemOverlay {
         }
     }
 
-    fn render_dyad(&self, structure: &Option<StoredStructure>) -> Html {
-        let term1 = self.get_term(structure, 0, "Essence");
-        let term2 = self.get_term(structure, 1, "Existence");
+    fn render_dyad(&self, _structure: &Option<StoredStructure>) -> Html {
+        let term1 = self.get_canonical_term(0, "Essence");
+        let term2 = self.get_canonical_term(1, "Existence");
         
         // Match the geometric renderer's dyad positioning
         let svg_size = 500.0;
@@ -112,11 +189,11 @@ impl SystemOverlay {
         }
     }
 
-    fn render_triad(&self, structure: &Option<StoredStructure>) -> Html {
-        // Use canonical terms from library instead of unreliable database data
-        let term1 = "Will";      // Index 0: canonical first term
-        let term2 = "Being";     // Index 1: canonical second term  
-        let term3 = "Function";  // Index 2: canonical third term
+    fn render_triad(&self, _structure: &Option<StoredStructure>) -> Html {
+        // Use canonical terms from API instead of hardcoded values
+        let term1 = self.get_canonical_term(0, "Will");      // Index 0: canonical first term
+        let term2 = self.get_canonical_term(1, "Being");     // Index 1: canonical second term  
+        let term3 = self.get_canonical_term(2, "Function");  // Index 2: canonical third term
         
         let svg_size = 500.0;
         let points = self.get_system_layout("triad", svg_size);
@@ -131,10 +208,10 @@ impl SystemOverlay {
     }
 
     fn render_tetrad(&self, structure: &Option<StoredStructure>) -> Html {
-        let term1 = self.get_term(structure, 0, "Ground");
-        let term2 = self.get_term(structure, 1, "Ideal");
-        let term3 = self.get_term(structure, 2, "Instrumental");
-        let term4 = self.get_term(structure, 3, "Directive");
+        let term1 = self.get_canonical_term(0, "Ground");
+        let term2 = self.get_canonical_term(1, "Ideal");
+        let term3 = self.get_canonical_term(2, "Instrumental");
+        let term4 = self.get_canonical_term(3, "Directive");
         
         let svg_size = 500.0;
         let center = svg_size / 2.0;
@@ -153,7 +230,7 @@ impl SystemOverlay {
 
     fn render_pentad(&self, structure: &Option<StoredStructure>) -> Html {
         let terms: Vec<String> = (0..5)
-            .map(|i| self.get_term(structure, i, &format!("Term {}", i + 1)))
+            .map(|i| self.get_canonical_term(i, &format!("Term {}", i + 1)))
             .collect();
         
         let svg_size = 500.0;
@@ -172,7 +249,7 @@ impl SystemOverlay {
 
     fn render_hexad(&self, structure: &Option<StoredStructure>) -> Html {
         let terms: Vec<String> = (0..6)
-            .map(|i| self.get_term(structure, i, &format!("Term {}", i + 1)))
+            .map(|i| self.get_canonical_term(i, &format!("Term {}", i + 1)))
             .collect();
         
         let svg_size = 500.0;
@@ -191,7 +268,7 @@ impl SystemOverlay {
 
     fn render_heptad(&self, structure: &Option<StoredStructure>) -> Html {
         let terms: Vec<String> = (0..7)
-            .map(|i| self.get_term(structure, i, &format!("Term {}", i + 1)))
+            .map(|i| self.get_canonical_term(i, &format!("Term {}", i + 1)))
             .collect();
         
         let svg_size = 500.0;
@@ -210,7 +287,7 @@ impl SystemOverlay {
 
     fn render_octad(&self, structure: &Option<StoredStructure>) -> Html {
         let terms: Vec<String> = (0..8)
-            .map(|i| self.get_term(structure, i, &format!("Element {}", i + 1)))
+            .map(|i| self.get_canonical_term(i, &format!("Element {}", i + 1)))
             .collect();
 
         let svg_size = 500.0;
@@ -229,7 +306,7 @@ impl SystemOverlay {
 
     fn render_ennead(&self, structure: &Option<StoredStructure>) -> Html {
         let terms: Vec<String> = (0..9)
-            .map(|i| self.get_term(structure, i, &format!("Term {}", i + 1)))
+            .map(|i| self.get_canonical_term(i, &format!("Term {}", i + 1)))
             .collect();
         
         let svg_size = 500.0;
@@ -248,7 +325,7 @@ impl SystemOverlay {
 
     fn render_decad(&self, structure: &Option<StoredStructure>) -> Html {
         let terms: Vec<String> = (0..10)
-            .map(|i| self.get_term(structure, i, &format!("Term {}", i + 1)))
+            .map(|i| self.get_canonical_term(i, &format!("Term {}", i + 1)))
             .collect();
         
         let svg_size = 500.0;
@@ -267,7 +344,7 @@ impl SystemOverlay {
 
     fn render_undecad(&self, structure: &Option<StoredStructure>) -> Html {
         let terms: Vec<String> = (0..11)
-            .map(|i| self.get_term(structure, i, &format!("Term {}", i + 1)))
+            .map(|i| self.get_canonical_term(i, &format!("Term {}", i + 1)))
             .collect();
         
         let svg_size = 500.0;
@@ -286,7 +363,7 @@ impl SystemOverlay {
 
     fn render_dodecad(&self, structure: &Option<StoredStructure>) -> Html {
         let terms: Vec<String> = (0..12)
-            .map(|i| self.get_term(structure, i, &format!("Term {}", i + 1)))
+            .map(|i| self.get_canonical_term(i, &format!("Term {}", i + 1)))
             .collect();
         
         let svg_size = 500.0;

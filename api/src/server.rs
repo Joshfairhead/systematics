@@ -238,12 +238,29 @@ async fn get_related_structures(
 }
 
 #[cfg(feature = "server")]
+async fn test_simple_handler() -> Json<ApiResponse<String>> {
+    Json(ApiResponse::success("Simple test response".to_string()))
+}
+
+#[cfg(feature = "server")]
 async fn get_structure_schema(
     Path(structure_type): Path<String>,
 ) -> Result<Json<ApiResponse<StructureSchema>>, StatusCode> {
     use systematics_library::System;
     
     let schema = match structure_type.as_str() {
+        "triad" => {
+            let system = systematics_library::TriadicSystem;
+            StructureSchema {
+                structure_type: "triad".to_string(),
+                term_count: system.term_count(),
+                canonical_terms: system.term_characters().iter().map(|s| s.to_string()).collect(),
+                coherence_attribute: system.coherence_attribute().to_string(),
+                term_designation: system.term_designation().to_string(),
+                source: system.source().to_string(),
+                first_order_connectives_name: system.first_order_connectives_name().to_string(),
+            }
+        },
         "monad" => {
             let system = systematics_library::MonadicSystem;
             StructureSchema {
@@ -260,18 +277,6 @@ async fn get_structure_schema(
             let system = systematics_library::DyadicSystem;
             StructureSchema {
                 structure_type: "dyad".to_string(),
-                term_count: system.term_count(),
-                canonical_terms: system.term_characters().iter().map(|s| s.to_string()).collect(),
-                coherence_attribute: system.coherence_attribute().to_string(),
-                term_designation: system.term_designation().to_string(),
-                source: system.source().to_string(),
-                first_order_connectives_name: system.first_order_connectives_name().to_string(),
-            }
-        },
-        "triad" => {
-            let system = systematics_library::TriadicSystem;
-            StructureSchema {
-                structure_type: "triad".to_string(),
                 term_count: system.term_count(),
                 canonical_terms: system.term_characters().iter().map(|s| s.to_string()).collect(),
                 coherence_attribute: system.coherence_attribute().to_string(),
