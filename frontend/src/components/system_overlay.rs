@@ -113,9 +113,10 @@ impl SystemOverlay {
     }
 
     fn render_triad(&self, structure: &Option<StoredStructure>) -> Html {
-        let term1 = self.get_term(structure, 0, "Active");
-        let term2 = self.get_term(structure, 1, "Passive");
-        let term3 = self.get_term(structure, 2, "Reconciling");
+        // Use canonical terms from library instead of unreliable database data
+        let term1 = "Will";      // Index 0: canonical first term
+        let term2 = "Being";     // Index 1: canonical second term  
+        let term3 = "Function";  // Index 2: canonical third term
         
         let svg_size = 500.0;
         let points = self.get_system_layout("triad", svg_size);

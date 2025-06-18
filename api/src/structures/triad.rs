@@ -50,12 +50,12 @@ impl Triad {
         &self.user_instances[0]
     }
     
-    /// Get the second user instance (maps to "Function")
+    /// Get the second user instance (maps to "Being")
     pub fn second_instance(&self) -> &str {
         &self.user_instances[1]
     }
     
-    /// Get the third user instance (maps to "Being")
+    /// Get the third user instance (maps to "Function")
     pub fn third_instance(&self) -> &str {
         &self.user_instances[2]
     }
@@ -198,7 +198,7 @@ impl SystematicStructure for Triad {
         }
         
         // Validate all three instances are not empty
-        let canonical_names = ["Will", "Function", "Being"];
+        let canonical_names = ["Will", "Being", "Function"];
         for (i, instance) in self.user_instances.iter().enumerate() {
             if instance.trim().is_empty() {
                 return Err(SystematicsError::StructureValidation {
@@ -321,13 +321,13 @@ impl TriadBuilder {
         self
     }
     
-    /// Set the second instance (maps to "Function") 
+    /// Set the second instance (maps to "Being") 
     pub fn second_instance<S: Into<String>>(mut self, instance: S) -> Self {
         self.second_instance = Some(instance.into());
         self
     }
     
-    /// Set the third instance (maps to "Being")
+    /// Set the third instance (maps to "Function")
     pub fn third_instance<S: Into<String>>(mut self, instance: S) -> Self {
         self.third_instance = Some(instance.into());
         self
@@ -400,15 +400,15 @@ mod tests {
     fn test_triad_creation() {
         let triad = TriadBuilder::new()
             .name("Test Triad")
-            .instances("Will", "Function", "Being")
+            .instances("Will", "Being", "Function")
             .build()
             .unwrap();
         
         assert_eq!(triad.name(), "Test Triad");
         assert_eq!(triad.first_instance(), "Will");
-        assert_eq!(triad.second_instance(), "Function");
-        assert_eq!(triad.third_instance(), "Being");
-        assert_eq!(triad.instances_tuple(), ("Will", "Function", "Being"));
+        assert_eq!(triad.second_instance(), "Being");
+        assert_eq!(triad.third_instance(), "Function");
+        assert_eq!(triad.instances_tuple(), ("Will", "Being", "Function"));
         assert!(triad.validate().is_ok());
     }
 
@@ -421,27 +421,27 @@ mod tests {
             .unwrap();
         
         let characters = triad.term_characters();
-        assert_eq!(characters, vec!["Will", "Function", "Being"]);
+        assert_eq!(characters, vec!["Will", "Being", "Function"]);
     }
 
     #[test]
     fn test_positional_coordinate_mapping() {
         let triad = TriadBuilder::new()
             .name("Test")
-            .instances("MyWill", "MyFunction", "MyBeing")
+            .instances("MyWill", "MyBeing", "MyFunction")
             .build()
             .unwrap();
         
         // Test term character to position mapping
         assert_eq!(triad.term_character_to_position("Will"), Some(0));
-        assert_eq!(triad.term_character_to_position("Function"), Some(1));
-        assert_eq!(triad.term_character_to_position("Being"), Some(2));
+        assert_eq!(triad.term_character_to_position("Being"), Some(1));
+        assert_eq!(triad.term_character_to_position("Function"), Some(2));
         assert_eq!(triad.term_character_to_position("Invalid"), None);
         
         // Test position to term character mapping
         assert_eq!(triad.term_character_from_position(0), Some("Will"));
-        assert_eq!(triad.term_character_from_position(1), Some("Function"));
-        assert_eq!(triad.term_character_from_position(2), Some("Being"));
+        assert_eq!(triad.term_character_from_position(1), Some("Being"));
+        assert_eq!(triad.term_character_from_position(2), Some("Function"));
         assert_eq!(triad.term_character_from_position(3), None);
         
         // Test position count
@@ -449,14 +449,14 @@ mod tests {
         
         // Test user instance to position mapping
         assert_eq!(triad.instance_to_position("MyWill"), Some(0));
-        assert_eq!(triad.instance_to_position("MyFunction"), Some(1));
-        assert_eq!(triad.instance_to_position("MyBeing"), Some(2));
+        assert_eq!(triad.instance_to_position("MyBeing"), Some(1));
+        assert_eq!(triad.instance_to_position("MyFunction"), Some(2));
         assert_eq!(triad.instance_to_position("Invalid"), None);
         
         // Test position to user instance mapping
         assert_eq!(triad.instance_from_position(0), Some("MyWill"));
-        assert_eq!(triad.instance_from_position(1), Some("MyFunction"));
-        assert_eq!(triad.instance_from_position(2), Some("MyBeing"));
+        assert_eq!(triad.instance_from_position(1), Some("MyBeing"));
+        assert_eq!(triad.instance_from_position(2), Some("MyFunction"));
         assert_eq!(triad.instance_from_position(3), None);
     }
 
@@ -526,7 +526,7 @@ mod tests {
         assert_eq!(triad.user_terms()[0], "A");
         assert_eq!(triad.user_terms()[1], "B");
         assert_eq!(triad.user_terms()[2], "C");
-        assert_eq!(triad.term_characters(), vec!["Will", "Function", "Being"]);
+        assert_eq!(triad.term_characters(), vec!["Will", "Being", "Function"]);
         assert!(triad.validate().is_ok());
     }
     
@@ -548,30 +548,30 @@ mod tests {
     fn test_position_alias_methods() {
         let triad = TriadBuilder::new()
             .name("Test")
-            .instances("MyWill", "MyFunction", "MyBeing")
+            .instances("MyWill", "MyBeing", "MyFunction")
             .build()
             .unwrap();
         
         // Test term character position aliases
         assert_eq!(triad.position_to_term_character(0), Some("Will"));
-        assert_eq!(triad.position_to_term_character(1), Some("Function"));
-        assert_eq!(triad.position_to_term_character(2), Some("Being"));
+        assert_eq!(triad.position_to_term_character(1), Some("Being"));
+        assert_eq!(triad.position_to_term_character(2), Some("Function"));
         assert_eq!(triad.position_to_term_character(3), None);
         
         assert_eq!(triad.position_from_term_character("Will"), Some(0));
-        assert_eq!(triad.position_from_term_character("Function"), Some(1));
-        assert_eq!(triad.position_from_term_character("Being"), Some(2));
+        assert_eq!(triad.position_from_term_character("Being"), Some(1));
+        assert_eq!(triad.position_from_term_character("Function"), Some(2));
         assert_eq!(triad.position_from_term_character("NonExistent"), None);
         
         // Test user term position aliases
         assert_eq!(triad.position_to_user_term(0), Some("MyWill"));
-        assert_eq!(triad.position_to_user_term(1), Some("MyFunction"));
-        assert_eq!(triad.position_to_user_term(2), Some("MyBeing"));
+        assert_eq!(triad.position_to_user_term(1), Some("MyBeing"));
+        assert_eq!(triad.position_to_user_term(2), Some("MyFunction"));
         assert_eq!(triad.position_to_user_term(3), None);
         
         assert_eq!(triad.position_from_user_term("MyWill"), Some(0));
-        assert_eq!(triad.position_from_user_term("MyFunction"), Some(1));
-        assert_eq!(triad.position_from_user_term("MyBeing"), Some(2));
+        assert_eq!(triad.position_from_user_term("MyBeing"), Some(1));
+        assert_eq!(triad.position_from_user_term("MyFunction"), Some(2));
         assert_eq!(triad.position_from_user_term("Unknown"), None);
         
         // Verify aliases return same results as original methods

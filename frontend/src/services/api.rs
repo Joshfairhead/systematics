@@ -35,6 +35,17 @@ pub struct ApiResponse<T> {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct StructureSchema {
+    pub structure_type: String,
+    pub term_count: usize,
+    pub canonical_terms: Vec<String>,
+    pub coherence_attribute: String,
+    pub term_designation: String,
+    pub source: String,
+    pub first_order_connectives_name: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GraphNode {
     pub id: serde_json::Value,
     pub structure_id: String,
@@ -130,6 +141,18 @@ impl ApiClient {
             api_response.data.ok_or_else(|| anyhow::anyhow!("No data in response"))
         } else {
             Err(anyhow::anyhow!("Failed to search structures: {}", response.status()))
+        }
+    }
+
+    pub async fn get_structure_schema(&self, structure_type: &str) -> Result<StructureSchema, anyhow::Error> {
+        let url = format!("{}/schema/{}", self.base_url, structure_type);
+        let response = Request::get(&url).send().await?;
+        
+        if response.ok() {
+            let api_response: ApiResponse<StructureSchema> = response.json().await?;
+            api_response.data.ok_or_else(|| anyhow::anyhow!("No data in response"))
+        } else {
+            Err(anyhow::anyhow!("Failed to get structure schema: {}", response.status()))
         }
     }
 

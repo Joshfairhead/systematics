@@ -1,5 +1,5 @@
 use yew::{html, Component, Context, Html, Properties};
-use crate::core::geometry::{GeometryCalculator, Point, Edge};
+use crate::core::geometry::{GeometryCalculator, Point, Edge, SymbolicCircle, SymbolicTriangle};
 
 #[derive(Properties, PartialEq)]
 pub struct Props {
@@ -22,7 +22,11 @@ impl Component for GeometricRenderer {
         let size = props.size;
         let system_type = &props.system_type;
         
-        let viewbox = format!("0 0 {} {}", size, size);
+        // Expand viewBox to prevent truncation of large geometry
+        let padding = size * 0.2;  // 20% padding on all sides
+        let viewbox = format!("{} {} {} {}", 
+            -padding, -padding, 
+            size + 2.0 * padding, size + 2.0 * padding);
         let center_x = size / 2.0;
         let center_y = size / 2.0;
         
@@ -41,7 +45,11 @@ impl Component for GeometricRenderer {
                 viewBox={viewbox}
                 class="geometric-structure"
             >
-                // Render edges first (behind nodes)
+                // Render symbolic shapes first (behind everything)
+                {self.render_symbolic_circle(&layout.symbolic_circle)}
+                {self.render_symbolic_circles(&layout.symbolic_circles)}
+                {self.render_symbolic_triangle(&layout.symbolic_triangle)}
+                // Render edges (behind nodes)
                 {self.render_edges(&layout.edges, &layout.nodes)}
                 // Render nodes on top
                 {self.render_nodes(&layout.nodes, layout.node_radius)}
@@ -51,6 +59,53 @@ impl Component for GeometricRenderer {
 }
 
 impl GeometricRenderer {
+    /// Framework-specific rendering of symbolic circle (Yew HTML)
+    /// Used for monad's outer circle representation
+    fn render_symbolic_circle(&self, symbolic_circle: &Option<SymbolicCircle>) -> Html {
+        match symbolic_circle {
+            Some(circle) => html! {
+                <circle 
+                    cx={circle.center.x.to_string()} 
+                    cy={circle.center.y.to_string()} 
+                    r={circle.radius.to_string()} 
+                    fill="none"
+                    stroke="#667eea"
+                    stroke-width="2"
+                    opacity="0.6"
+                />
+            },
+            None => html! {},
+        }
+    }
+
+    /// Framework-specific rendering of multiple symbolic circles (Yew HTML)
+    /// Used for dyad's vesica piscis representation
+    fn render_symbolic_circles(&self, symbolic_circles: &[SymbolicCircle]) -> Html {
+        if symbolic_circles.is_empty() {
+            return html! {};
+        }
+
+        let circle_elements: Vec<Html> = symbolic_circles.iter().map(|circle| {
+            html! {
+                <circle 
+                    cx={circle.center.x.to_string()} 
+                    cy={circle.center.y.to_string()} 
+                    r={circle.radius.to_string()} 
+                    fill="none"
+                    stroke="#667eea"
+                    stroke-width="2"
+                    opacity="0.6"
+                />
+            }
+        }).collect();
+
+        html! {
+            <>
+                {for circle_elements}
+            </>
+        }
+    }
+
     /// Framework-specific rendering of edges (Yew HTML)
     /// Core logic is in GeometryCalculator (framework-agnostic)
     fn render_edges(&self, edges: &[Edge], nodes: &[Point]) -> Html {
@@ -69,8 +124,8 @@ impl GeometricRenderer {
                     x2={to_node.x.to_string()} 
                     y2={to_node.y.to_string()}
                     stroke="#667eea" 
-                    stroke-width="1" 
-                    opacity="0.3"
+                    stroke-width="2" 
+                    opacity="0.5"
                 />
             }
         }).collect();
@@ -102,6 +157,31 @@ impl GeometricRenderer {
             <>
                 {for node_elements}
             </>
+        }
+    }
+
+    /// Framework-specific rendering of symbolic triangle (Yew HTML)
+    /// Used for triad's triangular representation
+    fn render_symbolic_triangle(&self, symbolic_triangle: &Option<SymbolicTriangle>) -> Html {
+        match symbolic_triangle {
+            Some(triangle) => {
+                let points = format!("{},{} {},{} {},{}",
+                    triangle.vertices[0].x, triangle.vertices[0].y,
+                    triangle.vertices[1].x, triangle.vertices[1].y,
+                    triangle.vertices[2].x, triangle.vertices[2].y
+                );
+                
+                html! {
+                    <polygon 
+                        points={points}
+                        fill="none"
+                        stroke="#667eea"
+                        stroke-width="2"
+                        opacity="0.6"
+                    />
+                }
+            },
+            None => html! {},
         }
     }
 

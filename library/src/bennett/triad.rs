@@ -22,7 +22,7 @@ impl crate::System for TriadicSystem {
     }
     
     fn term_characters(&self) -> &'static [&'static str] { 
-        &["Will", "Function", "Being"] 
+        &["Will", "Being", "Function"] 
     }
     
     fn first_order_connectives_name(&self) -> &'static str {

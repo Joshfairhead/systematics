@@ -17,6 +17,20 @@ pub struct GraphLayout {
     pub nodes: Vec<Point>,
     pub edges: Vec<Edge>,
     pub node_radius: f64,
+    pub symbolic_circle: Option<SymbolicCircle>,
+    pub symbolic_circles: Vec<SymbolicCircle>,
+    pub symbolic_triangle: Option<SymbolicTriangle>,
+}
+
+#[derive(Debug, Clone)]
+pub struct SymbolicCircle {
+    pub center: Point,
+    pub radius: f64,
+}
+
+#[derive(Debug, Clone)]
+pub struct SymbolicTriangle {
+    pub vertices: [Point; 3],
 }
 
 pub struct GeometryCalculator;
@@ -32,11 +46,17 @@ impl GeometryCalculator {
         let nodes = Self::calculate_node_positions(node_count, center_x, center_y, size);
         let edges = Self::generate_complete_graph_edges(node_count);
         let node_radius = Self::get_node_radius(node_count);
+        let symbolic_circle = Self::get_symbolic_circle(system_type, center_x, center_y, size);
+        let symbolic_circles = Self::get_symbolic_circles(system_type, center_x, center_y, size);
+        let symbolic_triangle = Self::get_symbolic_triangle(system_type, center_x, center_y, size);
 
         GraphLayout {
             nodes,
             edges,
             node_radius,
+            symbolic_circle,
+            symbolic_circles,
+            symbolic_triangle,
         }
     }
 
@@ -67,10 +87,31 @@ impl GeometryCalculator {
         match node_count {
             1 => vec![Point { x: cx, y: cy }],
             2 => {
-                let offset = size * 0.15;
+                let radius = size * 0.4;     // Match symbolic circle radius
+                let offset = radius / 2.0;   // Match symbolic circle offset
                 vec![
                     Point { x: cx - offset, y: cy },
                     Point { x: cx + offset, y: cy },
+                ]
+            }
+            3 => {
+                // Equilateral triangle on its side: two nodes left, one right
+                // API canonical order: [Will, Being, Function]
+                // Map API indices to visual positions:
+                // API Index 0 (Will) → Top-left
+                // API Index 1 (Being) → Right
+                // API Index 2 (Function) → Bottom-left
+                let side_length = size * 0.6;  // Even bigger equilateral triangle
+                let height = side_length * (3.0_f64.sqrt() / 2.0);  // Height of equilateral triangle
+                let half_side = side_length / 2.0;
+                
+                vec![
+                    // Index 0: Will → Top-left
+                    Point { x: cx - height / 2.0, y: cy - half_side },
+                    // Index 1: Being → Right
+                    Point { x: cx + height / 2.0, y: cy },
+                    // Index 2: Function → Bottom-left
+                    Point { x: cx - height / 2.0, y: cy + half_side },
                 ]
             }
             _ => {
@@ -125,12 +166,47 @@ impl GeometryCalculator {
 
     fn get_node_radius(node_count: usize) -> f64 {
         match node_count {
-            1 => 12.0,
+            1 => 12.0,      // Monad: back to original dot size
             2 => 10.0,
             3..=6 => 8.0,
             7..=9 => 6.0,
             10..=12 => 5.0,
             _ => 6.0,
         }
+    }
+
+    fn get_symbolic_circle(system_type: &str, center_x: f64, center_y: f64, size: f64) -> Option<SymbolicCircle> {
+        match system_type {
+            "monad" => Some(SymbolicCircle {
+                center: Point { x: center_x, y: center_y },
+                radius: size * 0.45,  // Large circle for user attributes
+            }),
+            _ => None,
+        }
+    }
+
+    fn get_symbolic_circles(system_type: &str, center_x: f64, center_y: f64, size: f64) -> Vec<SymbolicCircle> {
+        match system_type {
+            "dyad" => {
+                let radius = size * 0.4;     // Larger radius for more prominent circles
+                let offset = radius / 2.0;   // Distance = half radius so circles pass through centers
+                vec![
+                    SymbolicCircle {
+                        center: Point { x: center_x - offset, y: center_y },
+                        radius,
+                    },
+                    SymbolicCircle {
+                        center: Point { x: center_x + offset, y: center_y },
+                        radius,
+                    },
+                ]
+            },
+            _ => vec![],
+        }
+    }
+
+    fn get_symbolic_triangle(system_type: &str, _center_x: f64, _center_y: f64, _size: f64) -> Option<SymbolicTriangle> {
+        // Triad uses edges between nodes to form triangle, no separate symbolic triangle needed
+        None
     }
 } 

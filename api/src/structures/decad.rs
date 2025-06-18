@@ -169,6 +169,10 @@ impl SystematicStructure for Decad {
         self.system.term_designation()
     }
     
+    fn source(&self) -> &str {
+        self.system.source()
+    }
+    
     fn term_characters(&self) -> Vec<String> {
         self.system.term_characters().iter().map(|s| s.to_string()).collect()
     }

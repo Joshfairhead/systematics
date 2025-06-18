@@ -44,10 +44,16 @@ impl Component for App {
     type Properties = ();
 
     fn create(ctx: &Context<Self>) -> Self {
+        // Create initial placeholder structures and select monad by default
+        let placeholder_structures = Self::create_initial_placeholder_structures();
+        let initial_monad = placeholder_structures.iter()
+            .find(|s| s.structure_type == "monad")
+            .cloned();
+        
         let app = Self {
-            structures: Vec::new(),
-            filtered_structures: Vec::new(),
-            selected_structure: None,
+            structures: placeholder_structures.clone(),
+            filtered_structures: placeholder_structures,
+            selected_structure: initial_monad,
             loading: true,
             error: None,
             api_client: ApiClient::new(),
@@ -458,6 +464,50 @@ impl App {
             };
             self.create_placeholder_structure(structure_type, i)
         }).collect()
+    }
+
+    // Static method for initial creation
+    fn create_initial_placeholder_structures() -> Vec<StoredStructure> {
+        (1..=8).map(|i| {
+            let structure_type = match i {
+                1 => "monad",
+                2 => "dyad",
+                3 => "triad", 
+                4 => "tetrad",
+                5 => "pentad",
+                6 => "hexad",
+                7 => "heptad",
+                8 => "octad",
+                _ => "unknown",
+            };
+            Self::create_static_placeholder_structure(structure_type, i)
+        }).collect()
+    }
+
+    fn create_static_placeholder_structure(structure_type: &str, system_num: i32) -> StoredStructure {
+        let terms = match system_num {
+            1 => vec!["Unity".to_string()],
+            2 => vec!["Essence".to_string(), "Existence".to_string()],
+            3 => vec!["Active".to_string(), "Passive".to_string(), "Reconciling".to_string()],
+            4 => vec!["Ground".to_string(), "Ideal".to_string(), "Instrumental".to_string(), "Directive".to_string()],
+            5 => vec!["Purpose".to_string(), "Higher Potential".to_string(), "Quintessence".to_string(), "Lower Potential".to_string(), "Source".to_string()],
+            6 => vec!["Resources".to_string(), "Values".to_string(), "Options".to_string(), "Criteria".to_string(), "Facts".to_string(), "Priorities".to_string()],
+            7 => vec!["Insight".to_string(), "Research".to_string(), "Design".to_string(), "Synthesis".to_string(), "Application".to_string(), "Delivery".to_string(), "Value".to_string()],
+            8 => vec!["Element 1".to_string(), "Element 2".to_string(), "Element 3".to_string(), "Element 4".to_string(), "Element 5".to_string(), "Element 6".to_string(), "Element 7".to_string(), "Element 8".to_string()],
+            _ => (1..=system_num).map(|i| format!("Term {}", i)).collect(),
+        };
+
+        StoredStructure {
+            id: serde_json::Value::String(format!("placeholder-{}", structure_type)),
+            name: format!("Default {}", structure_type.to_uppercase()),
+            structure_type: structure_type.to_string(),
+            terms,
+            connectives: HashMap::new(),
+            created_at: "placeholder".to_string(),
+            updated_at: "placeholder".to_string(),
+            description: Some(format!("Default {} structure", structure_type)),
+            metadata: HashMap::new(),
+        }
     }
 }
 

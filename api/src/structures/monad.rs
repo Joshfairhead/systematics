@@ -122,6 +122,10 @@ impl SystematicStructure for Monad {
         self.system.term_designation()
     }
     
+    fn source(&self) -> &str {
+        self.system.source()
+    }
+    
     // -------------------------------------------------------------------------
     // Content Access
     // -------------------------------------------------------------------------

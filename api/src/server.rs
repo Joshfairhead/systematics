@@ -39,6 +39,18 @@ pub struct CreateStructureRequest {
 
 #[cfg(feature = "server")]
 #[derive(Serialize)]
+pub struct StructureSchema {
+    pub structure_type: String,
+    pub term_count: usize,
+    pub canonical_terms: Vec<String>,
+    pub coherence_attribute: String,
+    pub term_designation: String,
+    pub source: String,
+    pub first_order_connectives_name: String,
+}
+
+#[cfg(feature = "server")]
+#[derive(Serialize)]
 pub struct ApiResponse<T> {
     pub success: bool,
     pub data: Option<T>,
@@ -75,6 +87,7 @@ pub fn create_router(storage: SurrealStorage) -> Router {
         .route("/structures/:id", get(get_structure))
         .route("/structures/:id", delete(delete_structure))
         .route("/structures/:id/related", get(get_related_structures))
+        .route("/schema/:structure_type", get(get_structure_schema))
         .route("/health", get(health_check))
         .layer(CorsLayer::permissive())
         .with_state(state)
@@ -222,6 +235,168 @@ async fn get_related_structures(
             Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
+}
+
+#[cfg(feature = "server")]
+async fn get_structure_schema(
+    Path(structure_type): Path<String>,
+) -> Result<Json<ApiResponse<StructureSchema>>, StatusCode> {
+    use systematics_library::System;
+    
+    let schema = match structure_type.as_str() {
+        "monad" => {
+            let system = systematics_library::MonadicSystem;
+            StructureSchema {
+                structure_type: "monad".to_string(),
+                term_count: system.term_count(),
+                canonical_terms: system.term_characters().iter().map(|s| s.to_string()).collect(),
+                coherence_attribute: system.coherence_attribute().to_string(),
+                term_designation: system.term_designation().to_string(),
+                source: system.source().to_string(),
+                first_order_connectives_name: system.first_order_connectives_name().to_string(),
+            }
+        },
+        "dyad" => {
+            let system = systematics_library::DyadicSystem;
+            StructureSchema {
+                structure_type: "dyad".to_string(),
+                term_count: system.term_count(),
+                canonical_terms: system.term_characters().iter().map(|s| s.to_string()).collect(),
+                coherence_attribute: system.coherence_attribute().to_string(),
+                term_designation: system.term_designation().to_string(),
+                source: system.source().to_string(),
+                first_order_connectives_name: system.first_order_connectives_name().to_string(),
+            }
+        },
+        "triad" => {
+            let system = systematics_library::TriadicSystem;
+            StructureSchema {
+                structure_type: "triad".to_string(),
+                term_count: system.term_count(),
+                canonical_terms: system.term_characters().iter().map(|s| s.to_string()).collect(),
+                coherence_attribute: system.coherence_attribute().to_string(),
+                term_designation: system.term_designation().to_string(),
+                source: system.source().to_string(),
+                first_order_connectives_name: system.first_order_connectives_name().to_string(),
+            }
+        },
+        "tetrad" => {
+            let system = systematics_library::TetradicSystem;
+            StructureSchema {
+                structure_type: "tetrad".to_string(),
+                term_count: system.term_count(),
+                canonical_terms: system.term_characters().iter().map(|s| s.to_string()).collect(),
+                coherence_attribute: system.coherence_attribute().to_string(),
+                term_designation: system.term_designation().to_string(),
+                source: system.source().to_string(),
+                first_order_connectives_name: system.first_order_connectives_name().to_string(),
+            }
+        },
+        "pentad" => {
+            let system = systematics_library::PentadicSystem;
+            StructureSchema {
+                structure_type: "pentad".to_string(),
+                term_count: system.term_count(),
+                canonical_terms: system.term_characters().iter().map(|s| s.to_string()).collect(),
+                coherence_attribute: system.coherence_attribute().to_string(),
+                term_designation: system.term_designation().to_string(),
+                source: system.source().to_string(),
+                first_order_connectives_name: system.first_order_connectives_name().to_string(),
+            }
+        },
+        "hexad" => {
+            let system = systematics_library::HexadicSystem;
+            StructureSchema {
+                structure_type: "hexad".to_string(),
+                term_count: system.term_count(),
+                canonical_terms: system.term_characters().iter().map(|s| s.to_string()).collect(),
+                coherence_attribute: system.coherence_attribute().to_string(),
+                term_designation: system.term_designation().to_string(),
+                source: system.source().to_string(),
+                first_order_connectives_name: system.first_order_connectives_name().to_string(),
+            }
+        },
+        "heptad" => {
+            let system = systematics_library::HeptadicSystem;
+            StructureSchema {
+                structure_type: "heptad".to_string(),
+                term_count: system.term_count(),
+                canonical_terms: system.term_characters().iter().map(|s| s.to_string()).collect(),
+                coherence_attribute: system.coherence_attribute().to_string(),
+                term_designation: system.term_designation().to_string(),
+                source: system.source().to_string(),
+                first_order_connectives_name: system.first_order_connectives_name().to_string(),
+            }
+        },
+        "octad" => {
+            let system = systematics_library::OctadicSystem;
+            StructureSchema {
+                structure_type: "octad".to_string(),
+                term_count: system.term_count(),
+                canonical_terms: system.term_characters().iter().map(|s| s.to_string()).collect(),
+                coherence_attribute: system.coherence_attribute().to_string(),
+                term_designation: system.term_designation().to_string(),
+                source: system.source().to_string(),
+                first_order_connectives_name: system.first_order_connectives_name().to_string(),
+            }
+        },
+        "ennead" => {
+            let system = systematics_library::EnneadicSystem;
+            StructureSchema {
+                structure_type: "ennead".to_string(),
+                term_count: system.term_count(),
+                canonical_terms: system.term_characters().iter().map(|s| s.to_string()).collect(),
+                coherence_attribute: system.coherence_attribute().to_string(),
+                term_designation: system.term_designation().to_string(),
+                source: system.source().to_string(),
+                first_order_connectives_name: system.first_order_connectives_name().to_string(),
+            }
+        },
+        "decad" => {
+            let system = systematics_library::DecadicSystem;
+            StructureSchema {
+                structure_type: "decad".to_string(),
+                term_count: system.term_count(),
+                canonical_terms: system.term_characters().iter().map(|s| s.to_string()).collect(),
+                coherence_attribute: system.coherence_attribute().to_string(),
+                term_designation: system.term_designation().to_string(),
+                source: system.source().to_string(),
+                first_order_connectives_name: system.first_order_connectives_name().to_string(),
+            }
+        },
+        "undecad" => {
+            let system = systematics_library::UndecadicSystem;
+            StructureSchema {
+                structure_type: "undecad".to_string(),
+                term_count: system.term_count(),
+                canonical_terms: system.term_characters().iter().map(|s| s.to_string()).collect(),
+                coherence_attribute: system.coherence_attribute().to_string(),
+                term_designation: system.term_designation().to_string(),
+                source: system.source().to_string(),
+                first_order_connectives_name: system.first_order_connectives_name().to_string(),
+            }
+        },
+        "dodecad" => {
+            let system = systematics_library::DodecadicSystem;
+            StructureSchema {
+                structure_type: "dodecad".to_string(),
+                term_count: system.term_count(),
+                canonical_terms: system.term_characters().iter().map(|s| s.to_string()).collect(),
+                coherence_attribute: system.coherence_attribute().to_string(),
+                term_designation: system.term_designation().to_string(),
+                source: system.source().to_string(),
+                first_order_connectives_name: system.first_order_connectives_name().to_string(),
+            }
+        },
+        _ => {
+            return Ok(Json(ApiResponse::error(format!(
+                "Unknown structure type: {}. Valid types: monad, dyad, triad, tetrad, pentad, hexad, heptad, octad, ennead, decad, undecad, dodecad",
+                structure_type
+            ))));
+        }
+    };
+    
+    Ok(Json(ApiResponse::success(schema)))
 }
 
 #[cfg(feature = "server")]

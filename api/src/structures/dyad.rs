@@ -187,6 +187,10 @@ impl SystematicStructure for Dyad {
         self.system.term_designation()
     }
     
+    fn source(&self) -> &str {
+        self.system.source()
+    }
+    
     // -------------------------------------------------------------------------
     // Content Access
     // -------------------------------------------------------------------------
