@@ -3,6 +3,8 @@
 
 ## 🌟 Horizon 3: Visionary Use Cases
 - **Generative Intelligence**: Autopoietic holonic intelligence
+- **Educational Portal to liberate Consciousness from function**: See Bennetts work on language DU1.
+- **Cosmic Clock** Multi-scale coordinate system for tracking the spatio temporal field. Cosmological logistics?
 - **Generative Interfaces**: Tools that transform a systematic structure into an interface (e.g. triad to three horizons)
 - **Expert Interview Framework**: Systematic scaffolding for knowledge elicitation
 - **PhD Promptor**: AI that guides doctoral students through systematic domain exploration
@@ -10,6 +12,7 @@
 - **Public Space**: Commons for shared systematic knowledge and collaboration
 - **Semantic Search**: Cross-tradition equivalence finder ("What does Buddhism call Bennett's 'Will'?")
 - **Character Coaches**: AI personalities that embody different systematic approaches for personalized guidance
+- **App designer**: AI prompts for the right information, then implements without needing a human in the loop. 
 - **Agent Maker**: Tool for creating specialized systematic thinking agents for specific domains  
 - **Cross-Tradition Translation**: Bridge different wisdom traditions through systematic equivalences
 

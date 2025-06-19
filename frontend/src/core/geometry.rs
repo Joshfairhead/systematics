@@ -159,6 +159,27 @@ impl GeometryCalculator {
                     Point { x: cx + col_spacing, y: cy + right_v_spacing },
                 ]
             }
+            6 => {
+                // Hexad: Regular hexagon positioned so geometry matches desired API mapping
+                // Position 0: top-left → API Term 0 (Resources)
+                // Position 1: top → API Term 1 (Values)  
+                // Position 2: top-right → API Term 2 (Options)
+                // Position 3: bottom-right → API Term 3 (Criteria)
+                // Position 4: bottom → API Term 4 (Facts)
+                // Position 5: bottom-left → API Term 5 (Priorities)
+                let radius = size * 0.35;  // Increased from 0.15 to make hexagon bigger
+                let rotation = -PI / 2.0 - PI / 3.0;  // Rotate so position 1 (Values) is at top
+                
+                (0..6)
+                    .map(|i| {
+                        let angle = 2.0 * PI * i as f64 / 6.0 + rotation;
+                        Point {
+                            x: cx + radius * angle.cos(),
+                            y: cy + radius * angle.sin(),
+                        }
+                    })
+                    .collect()
+            }
             _ => {
                 let radius = Self::get_radius_for_system(node_count, size);
                 let rotation = Self::get_rotation_for_system(node_count);
@@ -190,7 +211,7 @@ impl GeometryCalculator {
         match node_count {
             3 | 5 | 7 | 9 | 11 => -PI / 2.0,
             4 => PI / 4.0,
-            6 => 0.0,
+            6 => -PI / 2.0,  // Rotate hexad to have single point at top and bottom
             8 => PI / 8.0,
             10 | 12 => -PI / 2.0,
             _ => 0.0,

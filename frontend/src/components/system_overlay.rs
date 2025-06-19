@@ -311,20 +311,54 @@ impl SystemOverlay {
     }
 
     fn render_hexad(&self, structure: &Option<StoredStructure>) -> Html {
-        let terms: Vec<String> = (0..6)
-            .map(|i| self.get_canonical_term(i, &format!("Term {}", i + 1)))
-            .collect();
+        // API canonical order: [Resources, Values, Options, Criteria, Facts, Priorities]
+        let resources = self.get_canonical_term(0, "Resources");       // Index 0
+        let values = self.get_canonical_term(1, "Values");             // Index 1
+        let options = self.get_canonical_term(2, "Options");           // Index 2
+        let criteria = self.get_canonical_term(3, "Criteria");         // Index 3
+        let facts = self.get_canonical_term(4, "Facts");               // Index 4
+        let priorities = self.get_canonical_term(5, "Priorities");     // Index 5
         
         let svg_size = 400.0;
-        let center = svg_size / 2.0;
-        let radius = svg_size * 0.15;
-        let points = self.regular_polygon_points(6, center, center, radius, 0.0);
+        let points = self.get_system_layout("hexad", svg_size);
+        
+        // Push labels outward from nodes
+        let push_distance = 45.0;  // Reduced from 90.0 to bring labels closer
+        let diagonal_push = 60.0;  // Slightly more push for diagonal positions
+        
+        // Updated mapping to match new geometry rotation:
+        // Position 0: top-left → Resources
+        let resources_top = self.svg_to_css_percent(points[0].1 - diagonal_push * 0.7, svg_size);
+        let resources_left = self.svg_to_css_percent(points[0].0 - diagonal_push * 0.7, svg_size);
+        
+        // Position 1: top → Values  
+        let values_top = self.svg_to_css_percent(points[1].1 - push_distance, svg_size);
+        let values_left = self.svg_to_css_percent(points[1].0, svg_size);
+        
+        // Position 2: top-right → Options
+        let options_top = self.svg_to_css_percent(points[2].1 - diagonal_push * 0.7, svg_size);
+        let options_left = self.svg_to_css_percent(points[2].0 + diagonal_push * 0.7, svg_size);
+        
+        // Position 3: bottom-right → Criteria
+        let criteria_top = self.svg_to_css_percent(points[3].1 + diagonal_push * 0.7, svg_size);
+        let criteria_left = self.svg_to_css_percent(points[3].0 + diagonal_push * 0.7, svg_size);
+        
+        // Position 4: bottom → Facts
+        let facts_top = self.svg_to_css_percent(points[4].1 + push_distance, svg_size);
+        let facts_left = self.svg_to_css_percent(points[4].0, svg_size);
+        
+        // Position 5: bottom-left → Priorities
+        let priorities_top = self.svg_to_css_percent(points[5].1 + diagonal_push * 0.7, svg_size);
+        let priorities_left = self.svg_to_css_percent(points[5].0 - diagonal_push * 0.7, svg_size);
         
         html! {
             <div class="system-overlay">
-                {for points.iter().enumerate().map(|(i, (x, y))| {
-                    self.render_point(&terms[i], &self.svg_to_css_percent(*y, svg_size), &self.svg_to_css_percent(*x, svg_size))
-                })}
+                {self.render_point(&resources, &resources_top, &resources_left)}
+                {self.render_point(&values, &values_top, &values_left)}
+                {self.render_point(&options, &options_top, &options_left)}
+                {self.render_point(&criteria, &criteria_top, &criteria_left)}
+                {self.render_point(&facts, &facts_top, &facts_left)}
+                {self.render_point(&priorities, &priorities_top, &priorities_left)}
             </div>
         }
     }

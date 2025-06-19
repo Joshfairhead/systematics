@@ -8,6 +8,7 @@
 - **Geometric Rendering System**: SVG-based visualization for systematic structures
 - **System Overlay Components**: Interactive overlays with node and edge rendering
 - **Pentad Display Implementation**: Proper three-column hierarchical layout with fold line symmetry
+- **Hexad Mapping Architecture**: Clean 1:1 mapping between API indices, geometry positions, and overlay display with proper rotation and label positioning
 - **Label Positioning System**: Clean separation of labels from geometric nodes
 - **Edge Rendering Logic**: System-specific formatting (fixed tetrad-specific artifacts affecting other structures)
 - **Connectives Integration**: API endpoint mapping for structure relationships
