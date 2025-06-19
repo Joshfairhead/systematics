@@ -1,81 +1,90 @@
 # SysteMaster - Development Context
 
-*For strategic roadmap see [roadmap.md](roadmap.md) | For development tasks see [TODO.md](TODO.md)*
+*For strategic roadmap see [ROADMAP.md](ROADMAP.md) | For development tasks see [TODO.md](TODO.md)*
 
 ## 🎯 Current System Status
 
-### ✅ **Fully Operational Architecture**
+### **Working Components**
 
-The system has reached a mature, production-ready state with all major components working seamlessly together.
+The system has a functional architecture with core components operational and a frontend prototype in development.
 
-#### **Auto-Start System (Latest Achievement)**
-- ✅ **One-Command Startup**: `cd cli && cargo run` starts entire system
-- ✅ **Automatic API Server**: Starts API server in background if not running
-- ✅ **Port 3001**: Standardized on port 3001 to avoid Obsidian conflicts
-- ✅ **Cross-Platform**: Works on macOS, Linux, and Windows
-- ✅ **30-Second Timeout**: Robust error handling for server startup
-- ✅ **Background Process**: API server runs silently in background
+#### **Development Environment**
+- ✅ **Integrated Dev Runner**: `cargo dev` starts coordinated API and frontend servers
+- ✅ **API Server**: Port 3001 with REST endpoints for all structures
+- ✅ **Frontend Prototype**: Yew-based web interface with geometric rendering
+- ✅ **Database**: SurrealDB with RocksDB persistence at `/api/data/systematics.db`
 
 #### **API-Centric Architecture**
-- ✅ **REST API Server**: Axum-based HTTP server with comprehensive endpoints
-- ✅ **CLI as Client**: CLI now properly uses API endpoints (not direct DB access)
-- ✅ **SurrealDB Backend**: Graph database with RocksDB persistence
-- ✅ **Database Location**: Centralized at `/data/systematics.db`
-- ✅ **CORS Support**: Ready for frontend integration
+- ✅ **REST API Server**: Axum-based HTTP server with structure endpoints
+- ✅ **CLI Client**: Command-line interface using API endpoints
+- ✅ **Frontend Integration**: Web interface connected to API
+- ✅ **CORS Support**: Ready for browser-based clients
 
-#### **Code Quality Improvements**
-- ✅ **Deprecated Features Fixed**: Updated SurrealDB `File` → `RocksDb`
-- ✅ **Feature Warnings Resolved**: Fixed `serde_support` → `serde`
-- ✅ **Unused Variables**: Cleaned up all compiler warnings
+#### **Code Quality**
+- ✅ **Modern Dependencies**: Updated SurrealDB with RocksDB backend
 - ✅ **Error Handling**: Comprehensive `SystematicsError` system
-- ✅ **JSON Serialization**: Optional serde support with default implementations
+- ✅ **JSON Serialization**: Serde support with proper feature flags
+- ✅ **Compiler Warnings**: Clean builds with resolved deprecations
 
 ## 🏗️ Architecture Overview
 
-### **Three-Tier Architecture**
+### **Four-Component Architecture**
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   CLI Client    │───▶│   API Server    │───▶│   SurrealDB     │
-│                 │    │                 │    │                 │
-│ • Auto-start    │    │ • REST API      │    │ • Graph storage │
-│ • Interactive   │    │ • Port 3001     │    │ • RocksDB       │
-│ • Menu system   │    │ • Background    │    │ • Persistence   │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
+│   CLI Client    │───▶│                 │───▶│   SurrealDB     │
+│                 │    │   API Server    │    │                 │
+│ • Interactive   │    │                 │    │ • Graph storage │
+│ • Menu system   │    │ • REST API      │    │ • RocksDB       │
+│ • Auto-start    │    │ • Port 3001     │    │ • Persistence   │
+└─────────────────┘    │ • CORS enabled  │    └─────────────────┘
+                       │                 │
+┌─────────────────┐    │                 │
+│ Web Frontend    │───▶│                 │
+│                 │    └─────────────────┘
+│ • Yew framework │
+│ • Port 8081     │
+│ • Geometric UI  │
+└─────────────────┘
 ```
 
 ### **Component Responsibilities**
 
 #### **CLI (`/cli`)**
-- **Purpose**: User interface and interaction
+- **Purpose**: Command-line user interface and system management
 - **Architecture**: HTTP client consuming API endpoints
 - **Features**: Auto-start, interactive menu, structure creation
+- **Database Access**: None (uses API exclusively)
+
+#### **Frontend (`/frontend`)**
+- **Purpose**: Web-based visual interface for systematic structures, eventually system management.
+- **Architecture**: Yew WebAssembly application consuming API endpoints
+- **Features**: Geometric rendering, interactive overlays, structure visualization
 - **Database Access**: None (uses API exclusively)
 
 #### **API (`/api`)**
 - **Purpose**: Central business logic and data management
 - **Architecture**: Axum HTTP server with SurrealDB integration
-- **Features**: REST endpoints, validation, graph storage
+- **Features**: REST endpoints, validation, graph storage, CORS support
 - **Database**: Direct SurrealDB connection and management
 
-#### **Database (`/data`)**
+#### **Database (`/api/data`)**
 - **Purpose**: Persistent data storage
 - **Technology**: SurrealDB with RocksDB backend
-- **Location**: Project root for centralized management
+- **Location**: API-managed for centralized control
 - **Features**: Graph storage, relationships, full-text search
 
-### **Startup Flow**
-1. **User runs**: `cd cli && cargo run`
-2. **CLI checks**: API server health at `http://localhost:3001`
-3. **If not running**: CLI starts API server in background
-4. **CLI waits**: Up to 30 seconds for server to be ready
-5. **Connection established**: CLI connects and shows menu
-6. **API server runs**: Continues in background for subsequent CLI runs
+### **Development Startup Flow**
+1. **User runs**: `cargo dev`
+2. **Dev runner starts**: API server on port 3001
+3. **Dev runner starts**: Frontend server on port 8081
+4. **Both services**: Run coordinated in background
+5. **User accesses**: Frontend at http://localhost:8081 or CLI separately
 
 ## 📊 Implementation Status
 
 ### ✅ **Completed Components**
 
-#### **Systematic Structures (9/12 Complete)**
+#### **Systematic Structures (12/12 Complete)**
 - ✅ **Monad (1)**: Unity with custom attributes
 - ✅ **Dyad (2)**: Essence/Existence relationships
 - ✅ **Triad (3)**: Will/Function/Being dynamics
@@ -84,17 +93,27 @@ The system has reached a mature, production-ready state with all major component
 - ✅ **Hexad (6)**: Complete six-fold structures
 - ✅ **Heptad (7)**: Insight through Value frameworks
 - ✅ **Octad (8)**: Organisational Modes
+- ✅ **Ennead (9)**: Complete nine-fold structures
+- ✅ **Decad (10)**: Complete ten-fold structures
+- ✅ **Undecad (11)**: Complete eleven-fold structures
 - ✅ **Dodecad (12)**: Autocracy through Wholeness (66 connectives)
-- ❌ **Missing**: Enneagram (9), Decad (10), Hendecad (11)
 
 #### **Core Functionality**
-- ✅ **Structure Creation**: All 9 implemented structures
+- ✅ **Structure Creation**: All 12 implemented structures
 - ✅ **Data Persistence**: Automatic saving to graph database
 - ✅ **Search & Discovery**: Full-text search across all fields
 - ✅ **Relationship Analysis**: Graph-based connections
 - ✅ **JSON Export**: Complete database export capability
 - ✅ **Six Permutations**: Named pattern generation
 - ✅ **Bennett Schema Integration**: Authentic canonical terms
+
+#### **Frontend Prototype**
+- ✅ **Yew Framework**: WebAssembly-based web interface
+- ✅ **Geometric Rendering**: SVG-based structure visualization
+- ✅ **API Integration**: Connected to REST endpoints
+- ✅ **Interactive Overlays**: Node and edge rendering with labels
+- ✅ **Structure Support**: Triad, Tetrad, and Pentad implemented
+- ❌ **Remaining**: Geometric rendering for 9 additional structures
 
 #### **Developer Experience**
 - ✅ **Zero Configuration**: No manual setup required

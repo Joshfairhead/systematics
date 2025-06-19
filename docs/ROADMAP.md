@@ -27,23 +27,30 @@
 ## ⚡ Horizon 1: Current Development Tasks
 
 ### **Core System Completion**
-- **Missing Structures**: Enneagram (9), Decad (10), Hendecad (11)
 - **Bennett Research**: Fill canonical term knowledge gaps
   - **Complex Systems Terminology**: Research Bennett's complex systems framework and terminology
   - **QualSystems Slides vs Book Discrepancies**: QS slides have 'nature' field that book doesn't - investigate structural differences between Hodgson's materials
   - **Heptad vs Ennead Coherence Conflict**: Both currently use "Transformation" - Heptad should be "Generation/Generative Power" per Tony's slides
-  - **Source Attribution System**: Add source field to each system - now implemented with proper Hodgson QualSystems Course (H3uni.org) / Book / slides attributions
   - Hexad, Heptad, Octad connectives research
   - Dyad and Triad relationship frameworks
   - Dodecad verification with Bennett texts
 - **Terminology Refactor**: LibraryProvider → Source refactor
 
 ### **Production Readiness**
-- **Web Frontend Revival**: Complete Yew-based interface
-- **API Integration**: Connect frontend to REST endpoints
-- **Structure Visualization**: Graphical representation of relationships
 - **Structured Logging**: Replace println! with proper logging
 - **Authentication Foundation**: Basic auth for multi-tenant preparation
+- **Error Handling**: Comprehensive error management across all components
+- **Testing Framework**: Unit and integration tests for core functionality
+- **Documentation**: API documentation and user guides
+
+### **Frontend Enhancement Tasks**
+- **Remaining Structure Implementations**: Complete geometric rendering for all 12 systematic structures
+  - Pentad (5), Hexad (6), Heptad (7), Octad (8), Ennead (9), Decad (10), Undecad (11), Dodecad (12)
+- **Dynamic Schema Integration**: Replace hardcoded canonical terms with API /schema/{structure_type} endpoint
+- **Interactive Features**: Add hover effects, click interactions, and structure manipulation
+- **Responsive Design**: Optimize layout for different screen sizes and devices
+- **Performance Optimization**: Improve rendering performance for complex structures
+- **Visual Polish**: Enhanced styling, animations, and user experience improvements
 
 ### **Enhanced User Experience**
 - **CLI Improvements**: Better display formats for complex structures
@@ -91,6 +98,6 @@
 
 ## 📚 **Related Documentation**
 
-- **[TODO.md](TODO.md)**: Detailed implementation tasks and development priorities
-- **[CONTEXT.md](CONTEXT.md)**: Current system status, architecture, and recent achievements
-- **[README.md](README.md)**: User documentation and quick start guide 
+- **[TODO.md](docs/TODO.md)**: Detailed implementation tasks and development priorities
+- **[CONTEXT.md](docs/CONTEXT.md)**: Current system status, architecture, and recent achievements
+- **[README.md](../README.md)**: User documentation and quick start guide 

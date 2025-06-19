@@ -1,10 +1,8 @@
 # SysteMaster TODO List
 
-*For strategic context see [roadmap.md](roadmap.md) | For current system status see [CONTEXT.md](CONTEXT.md)*
+*For strategic context see [ROADMAP.md](ROADMAP.md) | For current system status see [CONTEXT.md](CONTEXT.md)*
 
-## 🎯 High Priority
-
-### Missing Systematic Structures
+## �� High Priority
 
 ### Terminology Refactor
 - [ ] Complete LibraryProvider → Source refactor (paused pending architectural clarification)
@@ -18,11 +16,12 @@
   - [ ] `library/src/bennett/dyad.rs:32` - Add proper Bennett framework relationships
   - [ ] `api/src/structures/tetrad.rs:32,415` - Missing proper Bennett framework relationships
 
-### Web Frontend Development
-- [ ] **Yew Frontend Revival**: Complete the web interface using existing foundation
-- [ ] **API Integration**: Connect frontend to REST API endpoints
-- [ ] **Structure Visualization**: Graphical representation of structures and relationships
-- [ ] **Interactive Creation**: Browser-based structure creation and editing
+### Frontend Enhancement
+- [ ] **Remaining Structure Implementations**: Complete geometric rendering for all 12 systematic structures
+  - [ ] Hexad (6), Heptad (7), Octad (8), Ennead (9), Decad (10), Undecad (11), Dodecad (12)
+- [ ] **Dynamic Schema Integration**: Replace hardcoded canonical terms with API /schema/{structure_type} endpoint
+- [ ] **Interactive Features**: Add hover effects, click interactions, and structure manipulation
+- [ ] **Responsive Design**: Optimize layout for different screen sizes and devices
 
 ## 🔧 Medium Priority
 
