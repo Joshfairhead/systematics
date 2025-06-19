@@ -105,7 +105,7 @@ The system has a functional architecture with core components operational and a 
 - ✅ **Relationship Analysis**: Graph-based connections
 - ✅ **JSON Export**: Complete database export capability
 - ✅ **Six Permutations**: Named pattern generation
-- ✅ **Bennett Schema Integration**: Authentic canonical terms
+- ✅ **Bennett Schema Integration**: Authentic term characters
 
 #### **Frontend Prototype**
 - ✅ **Yew Framework**: WebAssembly-based web interface
@@ -205,38 +205,6 @@ cargo run storage export      # Export to JSON
 cargo run storage search      # Search structures
 ```
 
-## 🎯 Architecture Principles
-
-### **Design Decisions**
-1. **API-First**: All data access goes through REST API
-2. **Zero Configuration**: System starts without manual setup
-3. **Background Processing**: API server runs silently
-4. **Graph Database**: SurrealDB for relationships and search
-5. **Type Safety**: Rust's type system for reliability
-6. **Bennett Authenticity**: Canonical terms and relationships
-
-### **Separation of Concerns**
-- **CLI**: User interaction and experience
-- **API**: Business logic and data validation
-- **Database**: Persistent storage and relationships
-- **Library**: Bennett's systematic knowledge
-
-## 🔄 Recent Achievements
-
-### **Auto-Start System (Latest)**
-- **Problem**: Users had to manually start API server
-- **Solution**: CLI automatically starts API server when needed
-- **Impact**: Single command startup, improved user experience
-
-### **Code Quality Improvements**
-- **Problem**: Deprecated SurrealDB features, compiler warnings
-- **Solution**: Updated to current APIs, fixed all warnings
-- **Impact**: Clean compilation, future-ready codebase
-
-### **Architecture Maturity**
-- **Problem**: CLI was accessing database directly
-- **Solution**: Proper API-centric architecture
-- **Impact**: Scalable, maintainable system ready for multiple clients
 
 ---
 

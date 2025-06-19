@@ -1,5 +1,53 @@
 ---
-description:
-globs:
+description: 
+globs: 
 alwaysApply: false
 ---
+# Systematic Structures Guide
+
+## Structure Hierarchy
+SysteMaster implements 12 systematic structures based on Bennett's Elementary Systematics:
+
+1. **Monad** ([library/src/bennett/monad.rs](mdc:library/src/bennett/monad.rs)) - Single unity
+2. **Dyad** ([library/src/bennett/dyad.rs](mdc:library/src/bennett/dyad.rs)) - Binary relationship  
+3. **Triad** ([library/src/bennett/triad.rs](mdc:library/src/bennett/triad.rs)) - Three-fold structure
+4. **Tetrad** ([library/src/bennett/tetrad.rs](mdc:library/src/bennett/tetrad.rs)) - Four-fold structure
+5. **Pentad** ([library/src/bennett/pentad.rs](mdc:library/src/bennett/pentad.rs)) - Five-fold structure
+6. **Hexad** ([library/src/bennett/hexad.rs](mdc:library/src/bennett/hexad.rs)) - Six-fold structure
+7. **Heptad** ([library/src/bennett/heptad.rs](mdc:library/src/bennett/heptad.rs)) - Seven-fold structure
+8. **Octad** ([library/src/bennett/octad.rs](mdc:library/src/bennett/octad.rs)) - Eight-fold structure
+9. **Ennead** ([library/src/bennett/ennead.rs](mdc:library/src/bennett/ennead.rs)) - Nine-fold structure
+10. **Decad** ([library/src/bennett/decad.rs](mdc:library/src/bennett/decad.rs)) - Ten-fold structure
+11. **Undecad** ([library/src/bennett/undecad.rs](mdc:library/src/bennett/undecad.rs)) - Eleven-fold structure
+12. **Dodecad** ([library/src/bennett/dodecad.rs](mdc:library/src/bennett/dodecad.rs)) - Twelve-fold structure
+
+## Implementation Patterns
+
+### Required Traits
+All systematic structures must implement:
+- `SystematicStructure` trait with standard methods
+- Serialization/deserialization support
+- Source attribution metadata
+
+### Term Characters
+- Each structure has specific term characters for its positions
+- **Critical**: Heptad uses "Generation" not "Transformation" (Ennead uses "Transformation")
+- Terms should be fetched from API `/schema/{structure_type}` endpoint
+- Avoid hardcoding terms in frontend components
+
+### Source Attribution
+All structures must include proper source attribution:
+- **Systems 1-5**: Module 2 + QualSystems Book + Bennett's Elementary Systematics
+- **Systems 6-8**: Module 3 + QualSystems Book  
+- **Systems 9-12**: Module 6
+- Reference H3uni.org modules for detailed sourcing
+
+## API Integration
+- Use `/structures/{type}` endpoints for CRUD operations
+- Schema information available at `/schema/{structure_type}`
+- Permutation logic available at `/permutations/{type}`
+
+## Development Notes
+- QualSystems slides vs book discrepancies need research
+- Complex systems terminology integration is ongoing
+- Always verify term character accuracy against source materials

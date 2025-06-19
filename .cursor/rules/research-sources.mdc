@@ -1,5 +1,91 @@
 ---
-description:
-globs:
+description: 
+globs: 
 alwaysApply: false
 ---
+# Research Sources and Attribution Guide
+
+## Primary Sources
+All systematic structures in SysteMaster are based on rigorous academic sources that must be properly attributed.
+
+## Source Attribution by System Level
+
+### Systems 1-5 (Monad through Pentad)
+**Primary Sources:**
+- QualSystems Course Module 2 
+- QualSystems Book
+- Bennett's Elementary Systematics
+
+**Implementation Notes:**
+- These foundational systems have the most complete documentation
+- QualSystems slides contain 'nature' field that the book doesn't include
+- Cross-reference all three sources for term characters
+
+### Systems 6-8 (Hexad through Octad) 
+**Primary Sources:**
+- QualSystems Course Module 3
+- QualSystems Book
+
+**Implementation Notes:**
+- Module 3 provides the core framework for these intermediate systems
+- Book provides additional theoretical context
+
+### Systems 9-12 (Ennead through Dodecad)
+**Primary Sources:**
+- QualSystems Course Module 6
+
+**Implementation Notes:**
+- These complex systems are primarily documented in Module 6
+- Requires careful research for complete term character mapping
+
+## Critical Corrections and Research Notes
+
+### Heptad Coherence Attribute
+- **Correct Term**: "Generation" 
+- **Incorrect Term**: "Transformation" (this belongs to Ennead)
+- **Source**: Tony's slides confirmation
+- **Status**: Corrected in current implementation
+
+### Ongoing Research Areas
+
+#### QualSystems Discrepancies
+- Slides vs book inconsistencies need investigation
+- 'Nature' field presence varies between sources
+- Requires systematic comparison and resolution
+
+#### Complex Systems Terminology  
+- Systems 9-12 need additional research
+- Integration with existing systematic framework
+- Validation against H3uni.org module references
+
+## Implementation Requirements
+
+### Source Attribution in Code
+All systematic structure implementations must include:
+```rust
+// Source: QualSystems Course Module X + [additional sources]
+// Reference: H3uni.org/module-x
+// Attribution: Bennett Elementary Systematics / QualSystems Book
+```
+
+### API Schema Attribution
+- `/schema/{structure_type}` endpoints must include source metadata
+- Canonical terms must reference their origin sources
+- Version tracking for source material updates
+
+### Research Validation Process
+1. Cross-reference multiple sources for each term character
+2. Document any discrepancies or ambiguities  
+3. Provide clear rationale for term selection
+4. Update attribution when sources are refined
+
+## External References
+- **H3uni.org**: Primary module reference system
+- **QualSystems**: Core theoretical framework
+- **Bennett Elementary Systematics**: Foundational systematic principles
+
+## Development Guidelines
+- Never modify term characters without source verification
+- Document research questions in code comments
+- Maintain audit trail for all source-based decisions
+- Regular review of source accuracy and completeness

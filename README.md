@@ -130,7 +130,7 @@ This project implements Bennett's systematic philosophy in modern software archi
 
 ## 📖 Background
 
-Based on J.G. Bennett's systematic philosophy, this project makes ontological frameworks accessible through modern software tools. Each systematic structure follows Bennett's canonical terms and relationships, providing authentic implementations of his ontological grammars.
+Based on J.G. Bennett's systematic philosophy, this project makes ontological frameworks accessible through modern software tools. Each systematic structure follows Bennett's term characters and relationships, providing authentic implementations of his ontological grammars.
 
 ## 🎉 Recently Completed
 
@@ -148,7 +148,7 @@ Based on J.G. Bennett's systematic philosophy, this project makes ontological fr
 - ✅ **Database Centralization**: Moved to `/data/systematics.db`
 - ✅ **All Major Structures**: 9/12 systematic structures implemented
 - ✅ **Six Permutations**: Named pattern generation system
-- ✅ **Bennett Schema Integration**: Authentic canonical terms
+- ✅ **Bennett Schema Integration**: Authentic term characters
 - ✅ **JSON Export/Import**: Complete database export capability
 - ✅ **Search & Discovery**: Full-text search across all fields
 - ✅ **Relationship Analysis**: Graph-based connection exploration

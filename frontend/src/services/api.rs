@@ -46,7 +46,7 @@ pub struct ConnectiveInfo {
 pub struct StructureSchema {
     pub structure_type: String,
     pub term_count: usize,
-    pub canonical_terms: Vec<String>,
+    pub term_characters: Vec<String>,
     pub coherence_attribute: String,
     pub term_designation: String,
     pub source: String,

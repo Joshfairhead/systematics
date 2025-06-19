@@ -117,7 +117,7 @@ Each CLI structure port must pass:
 ### Core Traits
 
 - **`SystematicStructure`**: Unified interface for all structures
-- **`Schema`**: Defines canonical terms and relationships  
+- **`Schema`**: Defines term characters and relationships  
 - **`StructureBuilder`**: Generic builder pattern interface
 
 ### Error Handling
@@ -138,7 +138,7 @@ match structure.validate() {
 
 ### Schema System
 
-Each structure type has a corresponding schema with Bennett's canonical terms:
+Each structure type has a corresponding schema with Bennett's term characters:
 
 ```rust
 let schema = monad.schema();

@@ -1,5 +1,94 @@
 ---
-description:
-globs:
+description: 
+globs: 
 alwaysApply: false
 ---
+# Frontend Development Guide
+
+## Technology Stack
+- **Framework**: Yew (Rust WebAssembly)
+- **Build Tool**: Trunk ([Trunk.toml](mdc:frontend/Trunk.toml))
+- **Styling**: CSS ([style.css](mdc:frontend/style.css))
+- **API Integration**: Custom API client ([frontend/src/services/api.rs](mdc:frontend/src/services/api.rs))
+
+## Component Architecture
+
+### Core Components
+- **SystemSelector** ([frontend/src/components/system_selector.rs](mdc:frontend/src/components/system_selector.rs))
+  - Handles structure type selection
+  - Manages user input for structure creation
+  
+- **SystemOverlay** ([frontend/src/components/system_overlay.rs](mdc:frontend/src/components/system_overlay.rs))
+  - Renders systematic structures visually
+  - **FULLY API-DRIVEN** - No more hardcoded term characters
+  - Uses `render_system_with_terms()` generic helper for all 12 structures
+  - Implements proper loading/error states when schema unavailable
+  
+- **GeometricRenderer** ([frontend/src/components/geometric_renderer.rs](mdc:frontend/src/components/geometric_renderer.rs))
+  - Canvas-based geometric visualization
+  - Handles structure positioning and rendering
+
+### Geometry System
+- Core geometry logic in [frontend/src/core/geometry.rs](mdc:frontend/src/core/geometry.rs)
+- Manages coordinate calculations and transformations
+- Used by rendering components for positioning
+
+## API Integration Architecture
+
+### Current Implementation ✅
+- **SystemOverlay** fetches term characters from `/schema/{structure_type}` endpoint
+- **No Hardcoded Fallbacks**: `get_term_character()` returns `Option<String>`
+- **Loading States**: Shows spinner while schema is being fetched
+- **Error Handling**: Displays helpful messages when schema unavailable
+- **Generic Rendering**: Single `render_system_with_terms()` handles all structures
+- **Custom Positioning**: `apply_label_positioning()` preserves all fine-tuned label offsets
+
+### API Client Usage
+- Fully integrated with SystemOverlay component
+- Handles schema fetching with proper error handling
+- Supports all systematic structures (monad through dodecad)
+- Uses proper async/await patterns with Yew
+
+## User Experience Features
+
+### State Management
+- **Loading State**: Displays "Loading structure schema..." with styled spinner
+- **Error State**: Shows connection error with retry guidance
+- **Incomplete State**: Indicates missing term characters with helpful message
+- **Success State**: Renders structure with API-provided term characters
+
+### Styling
+- Loading/error states use consistent design language
+- Color-coded borders (blue for loading, red for error, orange for incomplete)
+- Responsive design with proper mobile support
+- Smooth transitions and hover effects
+
+## Development Workflow
+- Use `trunk serve` for development server with hot reload
+- Build with `trunk build` for production optimization
+- WebAssembly output goes to `target/wasm-bindgen/`
+- Follow Yew component lifecycle patterns
+- Test with API server running for full functionality
+
+## Architecture Achievements ✅
+1. **Eliminated Hardcoded Terms**: All term characters now fetched dynamically from API
+2. **Unified Rendering**: Single generic helper handles all 12 systematic structures
+3. **Proper Error Handling**: Graceful degradation when API unavailable
+4. **Loading States**: Better UX with clear feedback during schema fetching
+5. **Preserved Custom Positioning**: All fine-tuned label offsets maintained through refactor
+6. **Maintainable Code**: Clean separation between API logic and positioning logic
+
+## Best Practices
+- Always use API client for data operations
+- Handle loading states and error conditions gracefully
+- Use proper Rust/Yew patterns for state management
+- Test both connected and disconnected API scenarios
+- Follow consistent styling patterns for all UI states
+- Maintain positioning logic in `apply_label_positioning()` for visual consistency
+
+## Technical Implementation Details
+- **Generic + Custom Hybrid**: API-driven terms with structure-specific positioning
+- **Positioning System**: Each structure type has dedicated positioning logic in match arms
+- **Special Cases**: Octad uses `render_point_with_positioning()` for anchor adjustments
+- **Symmetric Calculations**: Heptad uses cross-reference positioning for perfect symmetry
+- **Fallback Safety**: All positioning calculations include bounds checking

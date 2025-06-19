@@ -1,5 +1,70 @@
 ---
-description:
-globs:
+description: 
+globs: 
 alwaysApply: false
 ---
+# API Development Guide
+
+## Server Architecture
+- **Main Server**: [api/src/server.rs](mdc:api/src/server.rs)
+- **Binary Entry**: [api/src/bin/server.rs](mdc:api/src/bin/server.rs)
+- **Storage Layer**: [api/src/storage.rs](mdc:api/src/storage.rs)
+- **Error Handling**: [api/src/error.rs](mdc:api/src/error.rs)
+
+## Database Management
+- **Database**: Centralised SurrealDB at `/data/systematics.db` (centralized at project root)
+- **Path Configuration**: API uses `../data/systematics.db` (relative to API directory)
+- **Storage**: All database operations go through SurrealStorage
+- **Architecture**: API is the central hub - CLI and frontend properly use API-first approach
+
+## Core Endpoints
+
+### Structure Operations
+- `GET /structures/{type}` - List structures of specific type
+- `POST /structures/{type}` - Create new structure
+- `PUT /structures/{type}/{id}` - Update existing structure
+- `DELETE /structures/{type}/{id}` - Delete structure
+
+### Schema Information
+- `GET /schema/{structure_type}` - Get structure schema with term characters
+- **Usage**: Returns StructureSchema with term_characters array for dynamic rendering
+
+### Permutations
+- `GET /permutations/{type}` - Get valid permutations for structure type
+- Logic implemented in [api/src/permutations.rs](mdc:api/src/permutations.rs)
+
+### Structure Definitions
+All systematic structures available in [api/src/structures/](mdc:api/src/structures):
+- Each structure type has its own module (monad through dodecad)
+- Consistent trait implementations with source attribution
+- Source attribution metadata from H3uni.org modules included
+
+## Development Patterns
+
+### Error Handling
+- Use custom error types from [api/src/error.rs](mdc:api/src/error.rs)
+- Consistent error responses across endpoints
+- Proper HTTP status codes
+
+### Validation
+- Schema validation for all structure operations
+- Canonical term validation against source materials
+- Permutation validation for complex operations
+
+### Storage Operations
+- All database operations through SurrealStorage abstraction
+- Connection pooling and error recovery
+- Transaction support for complex operations
+
+## Current Architecture Status
+- ✅ **Database Centralization**: Complete - single database at project root
+- ✅ **API-First Design**: CLI properly uses API via HTTP requests
+- ✅ **Frontend Integration**: SystemOverlay fully API-driven with preserved positioning
+- ✅ **Schema Endpoint**: Active use by frontend for dynamic term characters
+- ✅ **Source Attribution**: All structures include H3uni.org module references
+
+## Testing
+- Examples available in [api/examples/](mdc:api/examples)
+- Use basic_usage.rs for API testing patterns
+- Integration tests should cover all major endpoints
+- Test schema endpoint responses for frontend integration

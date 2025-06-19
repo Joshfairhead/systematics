@@ -51,7 +51,7 @@ pub struct ConnectiveInfo {
 pub struct StructureSchema {
     pub structure_type: String,
     pub term_count: usize,
-    pub canonical_terms: Vec<String>,
+    pub term_characters: Vec<String>,
     pub coherence_attribute: String,
     pub term_designation: String,
     pub source: String,
@@ -264,7 +264,7 @@ async fn get_structure_schema(
             StructureSchema {
                 structure_type: "triad".to_string(),
                 term_count: system.term_count(),
-                canonical_terms: system.term_characters().iter().map(|s| s.to_string()).collect(),
+                term_characters: system.term_characters().iter().map(|s| s.to_string()).collect(),
                 coherence_attribute: system.coherence_attribute().to_string(),
                 term_designation: system.term_designation().to_string(),
                 source: system.source().to_string(),
@@ -277,7 +277,7 @@ async fn get_structure_schema(
             StructureSchema {
                 structure_type: "monad".to_string(),
                 term_count: system.term_count(),
-                canonical_terms: system.term_characters().iter().map(|s| s.to_string()).collect(),
+                term_characters: system.term_characters().iter().map(|s| s.to_string()).collect(),
                 coherence_attribute: system.coherence_attribute().to_string(),
                 term_designation: system.term_designation().to_string(),
                 source: system.source().to_string(),
@@ -290,7 +290,7 @@ async fn get_structure_schema(
             StructureSchema {
                 structure_type: "dyad".to_string(),
                 term_count: system.term_count(),
-                canonical_terms: system.term_characters().iter().map(|s| s.to_string()).collect(),
+                term_characters: system.term_characters().iter().map(|s| s.to_string()).collect(),
                 coherence_attribute: system.coherence_attribute().to_string(),
                 term_designation: system.term_designation().to_string(),
                 source: system.source().to_string(),
@@ -309,7 +309,7 @@ async fn get_structure_schema(
             StructureSchema {
                 structure_type: "tetrad".to_string(),
                 term_count: system.term_count(),
-                canonical_terms: system.term_characters().iter().map(|s| s.to_string()).collect(),
+                term_characters: system.term_characters().iter().map(|s| s.to_string()).collect(),
                 coherence_attribute: system.coherence_attribute().to_string(),
                 term_designation: system.term_designation().to_string(),
                 source: system.source().to_string(),
@@ -328,7 +328,7 @@ async fn get_structure_schema(
             StructureSchema {
                 structure_type: "pentad".to_string(),
                 term_count: system.term_count(),
-                canonical_terms: system.term_characters().iter().map(|s| s.to_string()).collect(),
+                term_characters: system.term_characters().iter().map(|s| s.to_string()).collect(),
                 coherence_attribute: system.coherence_attribute().to_string(),
                 term_designation: system.term_designation().to_string(),
                 source: system.source().to_string(),
@@ -341,7 +341,7 @@ async fn get_structure_schema(
             StructureSchema {
                 structure_type: "hexad".to_string(),
                 term_count: system.term_count(),
-                canonical_terms: system.term_characters().iter().map(|s| s.to_string()).collect(),
+                term_characters: system.term_characters().iter().map(|s| s.to_string()).collect(),
                 coherence_attribute: system.coherence_attribute().to_string(),
                 term_designation: system.term_designation().to_string(),
                 source: system.source().to_string(),
@@ -354,7 +354,7 @@ async fn get_structure_schema(
             StructureSchema {
                 structure_type: "heptad".to_string(),
                 term_count: system.term_count(),
-                canonical_terms: system.term_characters().iter().map(|s| s.to_string()).collect(),
+                term_characters: system.term_characters().iter().map(|s| s.to_string()).collect(),
                 coherence_attribute: system.coherence_attribute().to_string(),
                 term_designation: system.term_designation().to_string(),
                 source: system.source().to_string(),
@@ -367,7 +367,7 @@ async fn get_structure_schema(
             StructureSchema {
                 structure_type: "octad".to_string(),
                 term_count: system.term_count(),
-                canonical_terms: system.term_characters().iter().map(|s| s.to_string()).collect(),
+                term_characters: system.term_characters().iter().map(|s| s.to_string()).collect(),
                 coherence_attribute: system.coherence_attribute().to_string(),
                 term_designation: system.term_designation().to_string(),
                 source: system.source().to_string(),
@@ -380,7 +380,7 @@ async fn get_structure_schema(
             StructureSchema {
                 structure_type: "ennead".to_string(),
                 term_count: system.term_count(),
-                canonical_terms: system.term_characters().iter().map(|s| s.to_string()).collect(),
+                term_characters: system.term_characters().iter().map(|s| s.to_string()).collect(),
                 coherence_attribute: system.coherence_attribute().to_string(),
                 term_designation: system.term_designation().to_string(),
                 source: system.source().to_string(),
@@ -393,7 +393,7 @@ async fn get_structure_schema(
             StructureSchema {
                 structure_type: "decad".to_string(),
                 term_count: system.term_count(),
-                canonical_terms: system.term_characters().iter().map(|s| s.to_string()).collect(),
+                term_characters: system.term_characters().iter().map(|s| s.to_string()).collect(),
                 coherence_attribute: system.coherence_attribute().to_string(),
                 term_designation: system.term_designation().to_string(),
                 source: system.source().to_string(),
@@ -406,7 +406,7 @@ async fn get_structure_schema(
             StructureSchema {
                 structure_type: "undecad".to_string(),
                 term_count: system.term_count(),
-                canonical_terms: system.term_characters().iter().map(|s| s.to_string()).collect(),
+                term_characters: system.term_characters().iter().map(|s| s.to_string()).collect(),
                 coherence_attribute: system.coherence_attribute().to_string(),
                 term_designation: system.term_designation().to_string(),
                 source: system.source().to_string(),
@@ -419,7 +419,7 @@ async fn get_structure_schema(
             StructureSchema {
                 structure_type: "dodecad".to_string(),
                 term_count: system.term_count(),
-                canonical_terms: system.term_characters().iter().map(|s| s.to_string()).collect(),
+                term_characters: system.term_characters().iter().map(|s| s.to_string()).collect(),
                 coherence_attribute: system.coherence_attribute().to_string(),
                 term_designation: system.term_designation().to_string(),
                 source: system.source().to_string(),

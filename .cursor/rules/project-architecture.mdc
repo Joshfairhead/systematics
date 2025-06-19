@@ -1,5 +1,78 @@
 ---
-description:
-globs:
+description: 
+globs: 
 alwaysApply: false
 ---
+# SysteMaster Project Architecture
+
+## Overview
+SysteMaster is a Rust-based system for managing and visualizing systematic structures (monad through dodecad) based on Bennett's Elementary Systematics and QualSystems work.
+
+## Core Components
+
+### API Server ([api/src/server.rs](mdc:api/src/server.rs))
+- Central hub for all data operations
+- Manages systematic structures via SurrealDB
+- Provides REST endpoints for CRUD operations
+- Handles schema validation and permutation logic
+- **Critical**: All clients should go through the API, not directly access the database
+
+### CLI Tool ([cli/src/main.rs](mdc:cli/src/main.rs))
+- Command-line interface for managing structures
+- **API-first architecture** using ApiStorage + ApiClient
+- All persistence operations go through HTTP requests to API server
+- Clean separation between API client logic and CLI interface
+
+### Frontend ([frontend/src/lib.rs](mdc:frontend/src/lib.rs))
+- Yew-based web application for structure visualization
+- Key components:
+  - [SystemSelector](mdc:frontend/src/components/system_selector.rs) - Structure selection interface
+  - [SystemOverlay](mdc:frontend/src/components/system_overlay.rs) - Visual structure rendering
+  - [GeometricRenderer](mdc:frontend/src/components/geometric_renderer.rs) - Canvas-based visualization
+
+### Library ([library/src/lib.rs](mdc:library/src/lib.rs))
+- Shared systematic structure definitions
+- Bennett module contains all structure implementations
+- Used by both API and CLI components
+
+## Database Architecture
+- SurrealDB instance at `/data/systematics.db` (project root)
+- Managed exclusively by the API server
+- Direct database access by other components is deprecated
+
+## Key Patterns
+- All systematic structures follow consistent trait implementations
+- Source attribution is mandatory for all structures
+- Canonical terms should be fetched from API, not hardcoded
+- Use API client pattern for inter-component communication
+
+## Recent Achievements ✅
+
+### Architecture & Infrastructure
+- ✅ **Database Centralization**: Successfully moved from dual database setup to single centralized database at project root
+- ✅ **API-First Architecture**: CLI properly uses API client for all persistence operations, no direct database access
+- ✅ **Multi-Component Coordination**: Dev-runner for unified development environment
+- ✅ **Workspace Organization**: Clean multi-crate architecture with proper separation of concerns
+
+### Frontend Development Milestones
+- ✅ **Frontend Hardcoded Terms**: Completely resolved with API-driven architecture, proper loading/error states, and generic rendering system
+- ✅ **Custom Positioning Preservation**: All label positioning maintained through API refactor with structure-specific positioning logic
+- ✅ **Geometric Rendering System**: SVG-based visualization for all 12 systematic structures
+- ✅ **Interactive Components**: System overlay components with node and edge rendering
+- ✅ **Responsive Layout**: Proper hierarchical layouts with symmetry and visual optimization
+- ✅ **Edge-Anchored Positioning**: Advanced label positioning for complex terms
+- ✅ **API Integration**: HTTP client setup and endpoint connectivity
+
+### Data Quality & Research
+- ✅ **Source Attribution Implementation**: Complete H3uni.org module references across all systematic structures
+- ✅ **Terminology Corrections**: Fixed inconsistencies and capitalization
+- ✅ **Connectives Integration**: Relationship data properly exposed through API
+- ✅ **Schema Endpoints**: Dynamic schema delivery for frontend integration
+- ✅ **Bennett Structure Library**: All 12 systematic structures implemented in Rust
+
+### Development Experience
+- ✅ **Comprehensive Tooling**: CLI, API server, frontend, and library components
+- ✅ **Documentation Consolidation**: Living documentation through Cursor rules system
+- ✅ **Error Handling**: Graceful loading/error states throughout system
+- ✅ **Development Workflow**: Coordinated startup and build processes
+- ✅ **Terminology Alignment**: Complete refactor from "canonical terms" to "term characters" for academic authenticity

@@ -1,0 +1,159 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Code Patterns & Style Guide
+
+## Code Standards & Architecture Patterns
+
+### Method Naming Conventions
+- **User Instance Methods**: Clearly indicate they return user-provided data
+  - ❌ `fn first_term()` - Misleading (suggests term character)
+  - ✅ `fn get_user_instance_at(position: usize)` - Clear intent
+  - ✅ `/// Get user instance at position 0 (maps to canonical "Will")`
+
+### Documentation Standards
+Method comments must distinguish between:
+- **User data access**: What the user provided
+- **Canonical term mapping**: What it represents in Bennett's system  
+- **Positional coordinates**: Array indices and geometric positions
+
+```rust
+/// Get user instance at position 0 (maps to canonical "Will")
+/// Returns the user-provided term for the first position of the triad
+fn get_user_instance_at(&self, position: usize) -> Option<&str>
+```
+
+### Terminology Consistency
+- **User instances**: Terms provided by users (stored in database)
+- **Canonical terms**: Reference terms from Bennett's framework
+- **Term characters**: Library method name for term characters
+- **Positional mapping**: Clear indication of user→canonical mapping
+
+### API Structure Organization
+- Structure files in `api/src/structures/` should follow consistent patterns
+- Each structure implements the same trait interface
+- Source attribution metadata included in all structures
+- Canonical terms fetched from library, not hardcoded
+
+### Frontend Architecture Patterns
+- **No Hardcoded Terms**: Always fetch term characters from API
+- **API-First**: Use `/schema/{structure_type}` endpoint for dynamic terms
+- **Separation of Concerns**: Positioning logic separate from data fetching
+- **Error States**: Proper loading/error/incomplete state handling
+
+## Implementation Patterns
+
+### Structure Implementation Template
+```rust
+use crate::structures::SystematicStructure;
+use library::bennett::{StructureName, StructureError};
+
+impl SystematicStructure for StructureName {
+    fn term_characters(&self) -> Vec<String> {
+        // Fetch from library, never hardcode
+        self.get_term_characters()
+    }
+    
+    fn get_user_instance_at(&self, position: usize) -> Option<&str> {
+        // Clear method naming
+        self.instances.get(position)
+    }
+}
+```
+
+### Error Handling Patterns
+```rust
+// Use Result types consistently
+fn process_structure(data: &str) -> Result<Structure, StructureError> {
+    // Validate input
+    // Process with proper error context
+    // Return meaningful errors
+}
+```
+
+### Frontend Component Patterns
+```rust
+// API-driven components
+impl Component for SystemOverlay {
+    fn view(&self, ctx: &Context<Self>) -> Html {
+        if self.loading_schema {
+            return self.render_loading_state();
+        }
+        
+        if self.schema.is_none() {
+            return self.render_error_state();
+        }
+        
+        self.render_with_api_data()
+    }
+}
+```
+
+## Code Review Checklist
+
+### Backend (Rust)
+- [ ] Method names clearly indicate user vs canonical data
+- [ ] Comments distinguish between user instances and term characters
+- [ ] No hardcoded term characters anywhere
+- [ ] Proper error handling with meaningful messages
+- [ ] Consistent trait implementations across structures
+- [ ] Source attribution metadata present
+
+### Frontend (Yew)
+- [ ] No hardcoded term characters in components
+- [ ] API calls used for all term character references
+- [ ] Proper loading/error state handling
+- [ ] Positioning logic separated from data fetching
+- [ ] Responsive design considerations
+
+### API Design
+- [ ] RESTful endpoint design
+- [ ] Consistent response formats
+- [ ] Proper HTTP status codes
+- [ ] Schema endpoints for dynamic data
+- [ ] Input validation and sanitization
+
+## Testing Patterns
+
+### Unit Tests
+```rust
+#[cfg(test)]
+mod tests {
+    use super::*;
+    
+    #[test]
+    fn test_user_instance_mapping() {
+        // Test user data access
+        // Verify term character mapping
+        // Check edge cases
+    }
+}
+```
+
+### Integration Tests
+- Test API endpoints with real data
+- Verify frontend-backend integration
+- Test error conditions and recovery
+- Validate schema endpoint responses
+
+## Performance Guidelines
+- Use appropriate data structures for access patterns
+- Minimize API calls through caching
+- Optimize frontend rendering for complex structures
+- Consider memory usage in long-running processes
+
+## Security Considerations
+- Validate all user inputs
+- Sanitize data before storage
+- Use proper authentication patterns
+- Protect against injection attacks
+- Rate limit API endpoints
+
+## Maintenance Practices
+- Keep dependencies updated
+- Monitor for deprecated patterns
+- Refactor when patterns emerge
+- Document architectural decisions
+- Update rules files after major changes

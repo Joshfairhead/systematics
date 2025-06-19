@@ -379,6 +379,59 @@ body {
     pointer-events: none;
 }
 
+.system-overlay.loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(255, 255, 255, 0.9);
+    pointer-events: all;
+}
+
+.system-overlay.error {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(255, 255, 255, 0.9);
+    pointer-events: all;
+}
+
+.system-overlay.incomplete {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(255, 255, 255, 0.9);
+    pointer-events: all;
+}
+
+.loading-message {
+    text-align: center;
+    padding: 2rem;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-left: 4px solid #667eea;
+}
+
+.error-message {
+    text-align: center;
+    padding: 2rem;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-left: 4px solid #e74c3c;
+    color: #c0392b;
+}
+
+.incomplete-message {
+    text-align: center;
+    padding: 2rem;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-left: 4px solid #f39c12;
+    color: #d68910;
+}
+
 .point-container {
     position: absolute;
     pointer-events: all;

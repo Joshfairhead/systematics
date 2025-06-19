@@ -10,7 +10,7 @@ async fn main() -> Result<(), SystematicsError> {
         .unwrap_or(3001);
         
     let db_path = env::var("SYSTEMATICS_DB_PATH")
-        .unwrap_or_else(|_| "./data/systematics.db".to_string());
+        .unwrap_or_else(|_| "../data/systematics.db".to_string());
     
     println!("🚀 Starting SysteMaster API Server");
     println!("   Port: {}", port);

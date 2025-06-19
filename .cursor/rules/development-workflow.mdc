@@ -1,5 +1,208 @@
 ---
-description:
-globs:
+description: 
+globs: 
 alwaysApply: false
 ---
+# Development Workflow Guide
+
+## Project Structure
+SysteMaster follows a multi-crate Rust workspace architecture:
+
+- **Root Workspace**: [Cargo.toml](mdc:Cargo.toml) defines workspace members
+- **API**: [api/](mdc:api) - Backend server and storage
+- **CLI**: [cli/](mdc:cli) - Command-line interface
+- **Frontend**: [frontend/](mdc:frontend) - Yew web application
+- **Library**: [library/](mdc:library) - Shared systematic structures
+- **Dev Runner**: [dev-runner/](mdc:dev-runner) - Development utilities
+
+## Build and Run Commands
+
+### All Components
+```bash
+cargo dev  # Coordinated startup via dev-runner
+```
+
+### Individual Components
+```bash
+# API Server
+cd api && cargo run --bin server
+cd api && cargo watch -x "run --bin server"  # Watch mode
+
+# Frontend Development
+cd frontend && trunk serve     # Development server
+cd frontend && trunk build    # Production build
+
+# CLI Usage
+cd cli && cargo run -- [command]
+cd cli && cargo install --path .  # Install locally
+
+# Workspace Operations
+cargo build --workspace
+cargo test --workspace
+cargo check --workspace
+```
+
+## Development Priorities
+
+### 🔥 High Priority (Current Sprint)
+
+- [ ] **Method Documentation Cleanup**
+  - [ ] Fix misleading `first_term()` method names (suggest canonical vs return user data)
+  - [ ] Update all structure files with clear user vs canonical documentation
+  - [ ] Standardize positional mapping comments
+
+- [ ] **API Structure Organization**
+  - [ ] Reorganize `api/src/structures/` for better maintainability
+  - [ ] Fix tetrad indexing inconsistencies
+  - [ ] Reorder triad schema in `server.rs fn get_structure_schema`
+
+### 🚀 Medium Priority (Next Sprint)
+- [ ] **Enhanced Features**
+  - [ ] **GraphQL Integration**: Advanced query capabilities for relationships
+  - [ ] **Advanced Search**: Semantic relationship queries and pattern matching
+  - [ ] **Structure Comparison**: Compare different instances of same structure type
+  - [ ] **Batch Operations**: Create multiple structures from templates
+  - [ ] **Alternative Systems**: Landry/Gurdjieff perspective implementations
+
+- [ ] **Production Readiness**
+  - [ ] **Structured Logging**: Replace `println!`/`eprintln!` with proper logging
+  - [ ] **Request Validation**: Enhanced API input validation and sanitization
+  - [ ] **Authentication/Authorization**: Access control for API endpoints
+  - [ ] **Rate Limiting**: Protection against API abuse
+  - [ ] **Configuration Management**: Advanced environment variable handling
+  - [ ] **API Documentation**: OpenAPI/Swagger documentation generation
+
+- [ ] **Data Management**
+  - [ ] **Advanced Export/Import**: Multiple format support (YAML, XML, CSV)
+  - [ ] **Database Migrations**: Version management for schema changes
+  - [ ] **Backup/Restore**: Automated backup strategies
+  - [ ] **Data Validation**: Enhanced consistency checks
+
+- [ ] **Research**: Fill term character knowledge gaps
+  - [ ] **Complex Systems Terminology**: Research Bennett's complex systems framework
+  - [ ] **QualSystems Discrepancies**: QS slides have 'nature' field that book doesn't
+  - [ ] **Heptad Coherence**: Should be "Generation" not "Transformation" per Tony's slides
+  - [ ] **Missing Connectives**: Hexad, Heptad, Octad relationship research
+  - [ ] **Dodecad Verification**: Confirm "educated guesses" with Bennett texts
+  - [ ] **Dyad/Triad Relationships**: Add proper Bennett framework relationships
+
+### 🔧 Low Priority (Future Sprints)
+- [ ] **Expert Interview System**
+  - [ ] **Systematic Interview Framework**: Use schemas for structured prompts
+  - [ ] **PhD Project Formulation**: Guide doctoral students through domain exploration
+  - [ ] **Requirements Engineering**: Systematic elicitation of design requirements
+  - [ ] **Dynamic Prompting**: Generate context-aware follow-up questions
+  - [ ] **Multi-Level Analysis**: Apply different structures to same domain
+
+- [ ] **Advanced Architecture**
+  - [ ] **Holochain Integration**: Decentralized storage and sharing
+  - [ ] **Cross-tradition Translation**: Automatic mapping between frameworks
+  - [ ] **Semantic Pattern Discovery**: Machine learning for pattern recognition
+  - [ ] **Knowledge Graph Enhancement**: Multi-dimensional relationship modeling
+
+- [ ] **User Experience**
+  - [ ] **CLI Improvements**: Enhanced display formats for complex structures
+  - [ ] **Graceful Error Recovery**: Allow error correction instead of exit
+  - [ ] **Advanced Help System**: Context-sensitive help and tutorials
+
+
+## Strategic Roadmap (Three Horizons Framework)
+
+### 🌟 Horizon 3: Visionary Use Cases (2-5 years)
+- **Generative Intelligence**: Autopoietic holonic intelligence systems
+- **Educational Portal**: Consciousness liberation through systematic thinking
+- **Cosmic Clock**: Multi-scale coordinate system for spatio-temporal tracking
+- **Expert Interview Framework**: Systematic scaffolding for knowledge elicitation
+- **PhD Promptor**: AI guidance for doctoral systematic domain exploration
+- **Source Registry**: Global mapping of systematic frameworks across traditions
+- **Public Commons**: Shared systematic knowledge collaboration platform
+- **Semantic Search**: Cross-tradition equivalence finder
+- **Character Coaches**: AI personalities embodying different systematic approaches
+- **Agent Maker**: Tools for creating specialized systematic thinking agents
+- **Cross-Tradition Translation**: Bridge wisdom traditions through systematic equivalences
+
+### 🚀 Horizon 2: Strategic Projects (6-18 months)
+- **AD4M Integration**: Agent-centric distributed architecture for identity
+- **REA Integration**: Resource-Event-Agent accounting for systematic structures
+- **Pattern Recognition**: AI-assisted systematic thinking with cross-structure analysis
+- **Web Frontend Platform**: Browser-based systematic thinking with visualization
+- **Multi-User Accounts**: Provider system with capability delegation
+- **Alternative Systems**: Landry/Gurdjieff perspective implementations
+- **Holochain Integration**: Decentralized storage and sharing
+- **Semantic Research**: Holonic vector space, qualitative position hashing
+
+### ⚡ Horizon 1: Core System Completion (Current - 6 months)
+- Complete Bennett research for all 12 structures
+- Production-ready authentication and logging
+- Comprehensive testing framework
+- Enhanced user experience across all interfaces
+- Advanced data management capabilities
+- GraphQL integration for complex queries
+
+## Documentation Structure
+
+### Living Documentation (Cursor Rules)
+- **.cursor/rules/**: Gold files with current patterns and practices
+- **project-architecture.mdc**: System overview and accomplishments
+- **systematic-structures.mdc**: Domain knowledge and source attribution
+- **frontend-development.mdc**: Component patterns and implementation status
+- **api-development.mdc**: Server architecture and endpoints
+- **code-patterns.mdc**: Style guide and coding standards
+- **research-sources.mdc**: Source validation and attribution
+
+### Reference Documentation
+- **README.md**: User-facing documentation and quick start
+- **docs/CONTEXT.md**: Comprehensive technical background
+- **docs/RND_NOTES.md**: Research archive and investigation notes
+
+### Code Documentation
+- **API Documentation**: `cargo doc --open` for Rust docs
+- **Structure Definitions**: [library/src/bennett/](mdc:library/src/bennett)
+- **Examples**: [api/examples/](mdc:api/examples) for usage patterns
+
+## Git Workflow
+- **Main Branch**: Production-ready code
+- **Feature Branches**: Individual feature development
+- **Commit Messages**: Descriptive messages with context
+- **Pull Requests**: Code review before merge
+- **Milestones**: Tag major achievements for reference
+
+## Dependencies Management
+- **Rust Toolchain**: Latest stable Rust with wasm32 target
+- **Frontend**: Yew, wasm-bindgen, web-sys, Trunk
+- **Backend**: Axum, SurrealDB, tokio, serde
+- **CLI**: clap, serde, anyhow
+- **Development**: cargo-watch for auto-rebuilds
+
+## Development Environment Setup
+1. Install Rust toolchain with wasm32 target: `rustup target add wasm32-unknown-unknown`
+2. Install Trunk for frontend builds: `cargo install trunk`
+3. Clone repository and run workspace build: `cargo build --workspace`
+4. Start coordinated development: `cd dev-runner && cargo run`
+5. Use CLI tool for data operations: `cd cli && cargo run -- --help`
+
+## Testing Strategy
+- **Unit Tests**: Individual systematic structures and components
+- **Integration Tests**: API endpoints with real data
+- **Frontend Tests**: Component testing with Yew patterns
+- **CLI Tests**: Command testing and error conditions
+- **Performance Tests**: Load testing for production readiness
+
+## Completed Achievements ✅
+- ✅ **Database Centralization**: Single database at project root
+- ✅ **API-First Architecture**: CLI and frontend use API properly
+- ✅ **Frontend API Integration**: No more hardcoded term characters
+- ✅ **Custom Positioning System**: All label positioning preserved through refactor
+- ✅ **Source Attribution**: H3uni.org module references implemented
+- ✅ **Schema Endpoints**: Dynamic term characters from API
+- ✅ **Loading/Error States**: Proper UX for API unavailability
+- ✅ **Geometric Rendering**: All 12 structures with proper positioning
+- ✅ **Multi-Component Coordination**: Dev-runner for unified development
+
+## Code Style Guidelines
+- Follow Rust conventions and idioms
+- Use consistent error handling patterns
+- Maintain comprehensive documentation for public APIs
+- Include source attribution comments for systematic structures
+- Separate concerns between API logic and positioning logic
+- Use meaningful method names that distinguish user vs canonical data

@@ -66,7 +66,7 @@ impl SurrealStorage {
     /// Create a new SurrealStorage with default project data path
     pub async fn new_default() -> Result<Self, SystematicsError> {
         let default_path = std::env::var("SYSTEMATICS_DB_PATH")
-            .unwrap_or_else(|_| "./data/systematics.db".to_string());
+            .unwrap_or_else(|_| "../data/systematics.db".to_string());
         Self::new(&default_path).await
     }
 

@@ -66,11 +66,11 @@ pub enum StorageCommand {
     },
 }
 
-pub struct StorageCli {
+pub struct ApiStorage {
     api_client: ApiClient,
 }
 
-impl StorageCli {
+impl ApiStorage {
     pub async fn new() -> Result<Self, SystematicsError> {
         let api_url = std::env::var("SYSTEMATICS_API_URL")
             .unwrap_or_else(|_| "http://localhost:3001".to_string());

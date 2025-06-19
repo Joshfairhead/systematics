@@ -4,7 +4,7 @@ A command-line interface for creating and working with systematic structures bas
 
 ## Overview
 
-The SysteMaster CLI provides an interactive interface for creating systematic structures from Monad (1 term) through Dodecad (12 terms), plus a six permutations generator. Each structure uses authentic Bennett schemas with canonical terminology and meaningful relationship labels.
+The SysteMaster CLI provides an interactive interface for creating systematic structures from Monad (1 term) through Dodecad (12 terms), plus a six permutations generator. Each structure uses authentic Bennett schemas with term characterinology and meaningful relationship labels.
 
 ## Quick Start
 
@@ -71,7 +71,7 @@ Generate all six named permutation patterns from three input terms:
 
 ### Three-Layer Semantic System
 1. **Base Layer**: 1-based numeric positions (1, 2, 3...)
-2. **Schema Layer**: Bennett's canonical terms mapped to positions
+2. **Schema Layer**: Bennett's term characters mapped to positions
 3. **Content Layer**: User's specific instances filling the semantic positions
 
 ### Builder Pattern API
