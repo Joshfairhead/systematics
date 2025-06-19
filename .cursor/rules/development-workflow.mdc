@@ -55,6 +55,7 @@ cargo check --workspace
   - [ ] Reorganize `api/src/structures/` for better maintainability
   - [ ] Fix tetrad indexing inconsistencies
   - [ ] Reorder triad schema in `server.rs fn get_structure_schema`
+  - [ ] Pentad.rs has a non-linear index of terms mapping index to geometry!!
 
 ### 🚀 Medium Priority (Next Sprint)
 - [ ] **Enhanced Features**

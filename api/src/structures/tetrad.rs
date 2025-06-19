@@ -41,23 +41,23 @@ impl Tetrad {
         }
     }
     
-    /// Get the first term (Ground)
-    pub fn first_term(&self) -> &str {
+    /// Get user instance at position 0 (maps to term character "Ideal")
+    pub fn first_user_instance(&self) -> &str {
         &self.user_term_index[0]
     }
     
-    /// Get the second term (Ideal)
-    pub fn second_term(&self) -> &str {
+    /// Get user instance at position 1 (maps to term character "Directive") 
+    pub fn second_user_instance(&self) -> &str {
         &self.user_term_index[1]
     }
     
-    /// Get the third term (Instrumental)
-    pub fn third_term(&self) -> &str {
+    /// Get user instance at position 2 (maps to term character "Instrumental")
+    pub fn third_user_instance(&self) -> &str {
         &self.user_term_index[2]
     }
     
-    /// Get the fourth term (Directive)
-    pub fn fourth_term(&self) -> &str {
+    /// Get user instance at position 3 (maps to term character "Ground")
+    pub fn fourth_user_instance(&self) -> &str {
         &self.user_term_index[3]
     }
     
@@ -391,10 +391,10 @@ mod tests {
             .unwrap();
         
         assert_eq!(tetrad.name(), "Test Tetrad");
-        assert_eq!(tetrad.first_term(), "Foundation");
-        assert_eq!(tetrad.second_term(), "Vision");
-        assert_eq!(tetrad.third_term(), "Method");
-        assert_eq!(tetrad.fourth_term(), "Guide");
+        assert_eq!(tetrad.first_user_instance(), "Foundation");
+        assert_eq!(tetrad.second_user_instance(), "Vision");
+        assert_eq!(tetrad.third_user_instance(), "Method");
+        assert_eq!(tetrad.fourth_user_instance(), "Guide");
         assert_eq!(tetrad.terms_tuple(), ("Foundation", "Vision", "Method", "Guide"));
         assert!(tetrad.validate().is_ok());
     }
@@ -408,7 +408,7 @@ mod tests {
             .unwrap();
         
         let characters = tetrad.term_characters();
-        assert_eq!(characters, vec!["Ground", "Ideal", "Instrumental", "Directive"]);
+        assert_eq!(characters, vec!["Ideal", "Directive", "Instrumental", "Ground"]);
     }
 
     #[test]
@@ -489,17 +489,17 @@ mod tests {
             .unwrap();
         
         // Test term character to position mapping
-        assert_eq!(tetrad.term_character_to_position("Ground"), Some(0));
-        assert_eq!(tetrad.term_character_to_position("Ideal"), Some(1));
+        assert_eq!(tetrad.term_character_to_position("Ideal"), Some(0));
+        assert_eq!(tetrad.term_character_to_position("Directive"), Some(1));
         assert_eq!(tetrad.term_character_to_position("Instrumental"), Some(2));
-        assert_eq!(tetrad.term_character_to_position("Directive"), Some(3));
+        assert_eq!(tetrad.term_character_to_position("Ground"), Some(3));
         assert_eq!(tetrad.term_character_to_position("Invalid"), None);
         
         // Test position to term character mapping
-        assert_eq!(tetrad.term_character_from_position(0), Some("Ground"));
-        assert_eq!(tetrad.term_character_from_position(1), Some("Ideal"));
+        assert_eq!(tetrad.term_character_from_position(0), Some("Ideal"));
+        assert_eq!(tetrad.term_character_from_position(1), Some("Directive"));
         assert_eq!(tetrad.term_character_from_position(2), Some("Instrumental"));
-        assert_eq!(tetrad.term_character_from_position(3), Some("Directive"));
+        assert_eq!(tetrad.term_character_from_position(3), Some("Ground"));
         assert_eq!(tetrad.term_character_from_position(4), None);
         
         // Test position count
@@ -529,16 +529,16 @@ mod tests {
             .unwrap();
         
         // Test term character position aliases
-        assert_eq!(tetrad.position_to_term_character(0), Some("Ground"));
-        assert_eq!(tetrad.position_to_term_character(1), Some("Ideal"));
+        assert_eq!(tetrad.position_to_term_character(0), Some("Ideal"));
+        assert_eq!(tetrad.position_to_term_character(1), Some("Directive"));
         assert_eq!(tetrad.position_to_term_character(2), Some("Instrumental"));
-        assert_eq!(tetrad.position_to_term_character(3), Some("Directive"));
+        assert_eq!(tetrad.position_to_term_character(3), Some("Ground"));
         assert_eq!(tetrad.position_to_term_character(4), None);
         
-        assert_eq!(tetrad.position_from_term_character("Ground"), Some(0));
-        assert_eq!(tetrad.position_from_term_character("Ideal"), Some(1));
+        assert_eq!(tetrad.position_from_term_character("Ideal"), Some(0));
+        assert_eq!(tetrad.position_from_term_character("Directive"), Some(1));
         assert_eq!(tetrad.position_from_term_character("Instrumental"), Some(2));
-        assert_eq!(tetrad.position_from_term_character("Directive"), Some(3));
+        assert_eq!(tetrad.position_from_term_character("Ground"), Some(3));
         assert_eq!(tetrad.position_from_term_character("NonExistent"), None);
         
         // Test user term position aliases
@@ -556,7 +556,7 @@ mod tests {
         
         // Verify aliases return same results as original methods
         assert_eq!(tetrad.position_to_term_character(0), tetrad.term_character_from_position(0));
-        assert_eq!(tetrad.position_from_term_character("Ground"), tetrad.term_character_to_position("Ground"));
+        assert_eq!(tetrad.position_from_term_character("Ideal"), tetrad.term_character_to_position("Ideal"));
         assert_eq!(tetrad.position_to_user_term(0), tetrad.instance_from_position(0));
         assert_eq!(tetrad.position_from_user_term("MyGround"), tetrad.instance_to_position("MyGround"));
     }

@@ -108,7 +108,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Display the tetrad
     println!("✓ Created: {}", tetrad.name());
     println!("  Terms: {} → {} → {} → {}", 
-             tetrad.first_term(), tetrad.second_term(), tetrad.third_term(), tetrad.fourth_term());
+             tetrad.first_user_instance(), tetrad.second_user_instance(), tetrad.third_user_instance(), tetrad.fourth_user_instance());
     
 
     

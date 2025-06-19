@@ -35,28 +35,28 @@ impl Pentad {
         }
     }
     
-    /// Get the first term (Quintessence)
-    pub fn first_term(&self) -> &str {
+    /// Get user instance at position 0 (maps to term character "Quintessence")
+    pub fn first_user_instance(&self) -> &str {
         &self.user_term_index[0]
     }
     
-    /// Get the second term (Higher Potential)
-    pub fn second_term(&self) -> &str {
+    /// Get user instance at position 1 (maps to term character "Higher Potential")
+    pub fn second_user_instance(&self) -> &str {
         &self.user_term_index[1]
     }
     
-    /// Get the third term (Lower Potential)
-    pub fn third_term(&self) -> &str {
+    /// Get user instance at position 2 (maps to term character "Lower Potential")
+    pub fn third_user_instance(&self) -> &str {
         &self.user_term_index[2]
     }
     
-    /// Get the fourth term (Purpose)
-    pub fn fourth_term(&self) -> &str {
+    /// Get user instance at position 3 (maps to term character "Purpose")
+    pub fn fourth_user_instance(&self) -> &str {
         &self.user_term_index[3]
     }
     
-    /// Get the fifth term (Source)
-    pub fn fifth_term(&self) -> &str {
+    /// Get user instance at position 4 (maps to term character "Source")
+    pub fn fifth_user_instance(&self) -> &str {
         &self.user_term_index[4]
     }
     
@@ -372,11 +372,11 @@ mod tests {
             .unwrap();
         
         assert_eq!(pentad.name(), "Test Pentad");
-        assert_eq!(pentad.first_term(), "Quintessence");
-        assert_eq!(pentad.second_term(), "Higher Potential");
-        assert_eq!(pentad.third_term(), "Lower Potential");
-        assert_eq!(pentad.fourth_term(), "Purpose");
-        assert_eq!(pentad.fifth_term(), "Source");
+        assert_eq!(pentad.first_user_instance(), "Quintessence");
+        assert_eq!(pentad.second_user_instance(), "Higher Potential");
+        assert_eq!(pentad.third_user_instance(), "Lower Potential");
+        assert_eq!(pentad.fourth_user_instance(), "Purpose");
+        assert_eq!(pentad.fifth_user_instance(), "Source");
         assert!(pentad.validate().is_ok());
     }
 
