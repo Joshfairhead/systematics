@@ -47,9 +47,87 @@ impl Dodecad {
         }
     }
     
-    /// Get term by index (0-11)
+    /// Get user instance by index (0-11)
+    /// 
+    /// Returns the user-provided term for the given position index.
+    /// This is the user-provided data, not the canonical term character from the system.
+    /// 
+    /// # Arguments
+    /// * `index` - Position index (0-11 for dodecad)
+    /// 
+    /// # Returns
+    /// * `Some(&str)` - The user instance at the given position
+    /// * `None` - If the index is out of bounds
     pub fn get_term(&self, index: usize) -> Option<&str> {
         self.user_term_index.get(index).map(|s| s.as_str())
+    }
+    
+    /// Get the first user instance (maps to "Autocracy")
+    pub fn first_user_instance(&self) -> &str {
+        &self.user_term_index[0]
+    }
+    
+    /// Get the second user instance (maps to "Domination")
+    pub fn second_user_instance(&self) -> &str {
+        &self.user_term_index[1]
+    }
+    
+    /// Get the third user instance (maps to "Creativity")
+    pub fn third_user_instance(&self) -> &str {
+        &self.user_term_index[2]
+    }
+    
+    /// Get the fourth user instance (maps to "Pattern")
+    pub fn fourth_user_instance(&self) -> &str {
+        &self.user_term_index[3]
+    }
+    
+    /// Get the fifth user instance (maps to "Individuality")
+    pub fn fifth_user_instance(&self) -> &str {
+        &self.user_term_index[4]
+    }
+    
+    /// Get the sixth user instance (maps to "Structure")
+    pub fn sixth_user_instance(&self) -> &str {
+        &self.user_term_index[5]
+    }
+    
+    /// Get the seventh user instance (maps to "Repetition")
+    pub fn seventh_user_instance(&self) -> &str {
+        &self.user_term_index[6]
+    }
+    
+    /// Get the eighth user instance (maps to "Potentiality")
+    pub fn eighth_user_instance(&self) -> &str {
+        &self.user_term_index[7]
+    }
+    
+    /// Get the ninth user instance (maps to "Subsistence")
+    pub fn ninth_user_instance(&self) -> &str {
+        &self.user_term_index[8]
+    }
+    
+    /// Get the tenth user instance (maps to "Relatedness")
+    pub fn tenth_user_instance(&self) -> &str {
+        &self.user_term_index[9]
+    }
+    
+    /// Get the eleventh user instance (maps to "Polarity")
+    pub fn eleventh_user_instance(&self) -> &str {
+        &self.user_term_index[10]
+    }
+    
+    /// Get the twelfth user instance (maps to "Wholeness")
+    pub fn twelfth_user_instance(&self) -> &str {
+        &self.user_term_index[11]
+    }
+
+    /// Get all user instances as a tuple
+    pub fn instances_tuple(&self) -> (&str, &str, &str, &str, &str, &str, &str, &str, &str, &str, &str, &str) {
+        (&self.user_term_index[0], &self.user_term_index[1], &self.user_term_index[2], 
+         &self.user_term_index[3], &self.user_term_index[4], &self.user_term_index[5], 
+         &self.user_term_index[6], &self.user_term_index[7], &self.user_term_index[8], 
+         &self.user_term_index[9], &self.user_term_index[10], &self.user_term_index[11])
     }
     
     /// Add an attribute to the dodecad

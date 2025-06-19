@@ -57,6 +57,12 @@ cargo check --workspace
   - [ ] Reorder triad schema in `server.rs fn get_structure_schema`
   - [ ] Pentad.rs has a non-linear index of terms mapping index to geometry!!
 
+- [ ] Crammar in the structures files could be more consistent. Should read user_instance_index[0]
+   /// Get the first user instance (maps to "Insight")
+    pub fn first_user_instance(&self) -> &str {
+        &self.user_term_index[0]
+    }
+
 ### 🚀 Medium Priority (Next Sprint)
 - [ ] **Enhanced Features**
   - [ ] **GraphQL Integration**: Advanced query capabilities for relationships

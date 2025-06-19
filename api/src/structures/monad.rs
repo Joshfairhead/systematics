@@ -52,7 +52,10 @@ impl Monad {
     // Content Access Methods
     // -------------------------------------------------------------------------
     
-    /// Get the monad's term value
+    /// Get the user instance (the user-provided term for this monad)
+    /// 
+    /// Returns the user's term that maps to Bennett's term character for this position.
+    /// This is the user-provided data, not the canonical term character from the system.
     pub fn term(&self) -> &str {
         &self.user_term_index[0]
     }

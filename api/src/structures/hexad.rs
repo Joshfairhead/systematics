@@ -41,13 +41,53 @@ impl Hexad {
         }
     }
     
-    /// Get term by index (0-5)
+    /// Get user instance by index (0-5)
+    /// 
+    /// Returns the user-provided term for the given position index.
+    /// This is the user-provided data, not the canonical term character from the system.
+    /// 
+    /// # Arguments
+    /// * `index` - Position index (0-5 for hexad)
+    /// 
+    /// # Returns
+    /// * `Some(&str)` - The user instance at the given position
+    /// * `None` - If the index is out of bounds
     pub fn get_term(&self, index: usize) -> Option<&str> {
         self.user_term_index.get(index).map(|s| s.as_str())
     }
     
-    /// Get all terms as a tuple
-    pub fn terms_tuple(&self) -> (&str, &str, &str, &str, &str, &str) {
+    /// Get the first user instance (maps to "Resources")
+    pub fn first_user_instance(&self) -> &str {
+        &self.user_term_index[0]
+    }
+    
+    /// Get the second user instance (maps to "Values")
+    pub fn second_user_instance(&self) -> &str {
+        &self.user_term_index[1]
+    }
+    
+    /// Get the third user instance (maps to "Options")
+    pub fn third_user_instance(&self) -> &str {
+        &self.user_term_index[2]
+    }
+    
+    /// Get the fourth user instance (maps to "Criteria")
+    pub fn fourth_user_instance(&self) -> &str {
+        &self.user_term_index[3]
+    }
+    
+    /// Get the fifth user instance (maps to "Facts")
+    pub fn fifth_user_instance(&self) -> &str {
+        &self.user_term_index[4]
+    }
+    
+    /// Get the sixth user instance (maps to "Priorities")
+    pub fn sixth_user_instance(&self) -> &str {
+        &self.user_term_index[5]
+    }
+
+    /// Get all user instances as a tuple
+    pub fn instances_tuple(&self) -> (&str, &str, &str, &str, &str, &str) {
         (&self.user_term_index[0], &self.user_term_index[1], &self.user_term_index[2], 
          &self.user_term_index[3], &self.user_term_index[4], &self.user_term_index[5])
     }

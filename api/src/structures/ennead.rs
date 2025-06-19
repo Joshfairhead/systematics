@@ -47,9 +47,26 @@ impl Ennead {
         }
     }
     
-    /// Get term by index (0-8)
+    /// Get user instance by index (0-8)
+    /// 
+    /// Returns the user-provided term for the given position index.
+    /// This is the user-provided data, not the canonical term character from the system.
+    /// 
+    /// # Arguments
+    /// * `index` - Position index (0-8 for ennead)
+    /// 
+    /// # Returns
+    /// * `Some(&str)` - The user instance at the given position
+    /// * `None` - If the index is out of bounds
     pub fn get_term(&self, index: usize) -> Option<&str> {
         self.user_term_index.get(index).map(|s| s.as_str())
+    }
+    
+    /// Get all user instances as a tuple
+    pub fn instances_tuple(&self) -> (&str, &str, &str, &str, &str, &str, &str, &str, &str) {
+        (&self.user_term_index[0], &self.user_term_index[1], &self.user_term_index[2], 
+         &self.user_term_index[3], &self.user_term_index[4], &self.user_term_index[5], 
+         &self.user_term_index[6], &self.user_term_index[7], &self.user_term_index[8])
     }
     
     /// Add an attribute to the ennead
