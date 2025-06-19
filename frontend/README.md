@@ -135,3 +135,8 @@ The frontend will eventually provide:
 - Integration with external tools and data sources
 
 For immediate systematic structure work, use the CLI application while the frontend is under development. 
+
+
+
+## NOTES
+- System overlay is using bennetts terms rather than remaining agnostic and importing them... this needs fixing

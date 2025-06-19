@@ -364,20 +364,73 @@ impl SystemOverlay {
     }
 
     fn render_heptad(&self, structure: &Option<StoredStructure>) -> Html {
-        let terms: Vec<String> = (0..7)
-            .map(|i| self.get_canonical_term(i, &format!("Term {}", i + 1)))
-            .collect();
+        // API canonical order: [Insight, Research, Design, Synthesis, Application, Delivery, Value]
+        let insight = self.get_canonical_term(0, "Insight");           // Index 0 → Top
+        let research = self.get_canonical_term(1, "Research");         // Index 1 → Clockwise
+        let design = self.get_canonical_term(2, "Design");             // Index 2 → Clockwise
+        let synthesis = self.get_canonical_term(3, "Synthesis");       // Index 3 → Clockwise
+        let application = self.get_canonical_term(4, "Application");   // Index 4 → Clockwise
+        let delivery = self.get_canonical_term(5, "Delivery");         // Index 5 → Clockwise
+        let value = self.get_canonical_term(6, "Value");               // Index 6 → Clockwise
         
         let svg_size = 400.0;
-        let center = svg_size / 2.0;
-        let radius = svg_size * 0.18;
-        let points = self.regular_polygon_points(7, center, center, radius, -PI/2.0);
+        let points = self.get_system_layout("heptad", svg_size);
+        
+        // Push labels outward from nodes
+        let push_distance = 60.0;  // Outward positioning for all labels
+        
+        // Clean mapping: API index → geometry position with outward push
+        let insight_top = self.svg_to_css_percent(points[0].1 - push_distance + 15.0, svg_size); // Lowered by 15px total
+        let insight_left = self.svg_to_css_percent(points[0].0, svg_size);
+        
+        // Calculate center x position for symmetry
+        let center_x = svg_size / 2.0;
+        
+        // Calculate value's distance from center, apply reverse to research
+        let value_x = points[6].0 - push_distance;
+        let value_distance_from_center = center_x - value_x; // Distance left of center
+        let research_x = center_x + value_distance_from_center; // Mirror to right of center
+        
+        let research_top = self.svg_to_css_percent(points[1].1 - push_distance * 0.7, svg_size);
+        let research_left = self.svg_to_css_percent(research_x, svg_size);
+        
+        // Calculate design's distance from center, invert for delivery
+        let design_x = points[2].0 + push_distance;
+        let design_distance_from_center = design_x - center_x; // Distance right of center
+        let delivery_x = center_x - design_distance_from_center; // Mirror to left of center
+        
+        // Align design with delivery on y-axis
+        let design_top = self.svg_to_css_percent(points[5].1 + push_distance * 0.7 - 40.0, svg_size); // Raised by 40px (was 49px, lowered by 9px)
+        let design_left = self.svg_to_css_percent(design_x, svg_size);
+        
+        // Calculate synthesis's distance from center, invert for application
+        let synthesis_x = points[3].0 + push_distance * 0.7;
+        let synthesis_distance_from_center = synthesis_x - center_x; // Distance right of center
+        let application_x = center_x - synthesis_distance_from_center; // Mirror to left of center
+        
+        let synthesis_top = self.svg_to_css_percent(points[3].1 + push_distance * 0.7, svg_size);
+        let synthesis_left = self.svg_to_css_percent(synthesis_x, svg_size);
+        
+        // Align application with synthesis on y-axis
+        let application_top = self.svg_to_css_percent(points[3].1 + push_distance * 0.7, svg_size); // Same y as synthesis
+        let application_left = self.svg_to_css_percent(application_x, svg_size);
+        
+        let delivery_top = self.svg_to_css_percent(points[5].1 + push_distance * 0.7 - 40.0, svg_size); // Raised by 40px (was 49px, lowered by 9px)
+        let delivery_left = self.svg_to_css_percent(delivery_x, svg_size);
+        
+        // Align value with research on y-axis
+        let value_top = self.svg_to_css_percent(points[1].1 - push_distance * 0.7, svg_size); // Same y as research
+        let value_left = self.svg_to_css_percent(value_x, svg_size);
         
         html! {
             <div class="system-overlay">
-                {for points.iter().enumerate().map(|(i, (x, y))| {
-                    self.render_point(&terms[i], &self.svg_to_css_percent(*y, svg_size), &self.svg_to_css_percent(*x, svg_size))
-                })}
+                {self.render_point(&insight, &insight_top, &insight_left)}
+                {self.render_point(&research, &research_top, &research_left)}
+                {self.render_point(&design, &design_top, &design_left)}
+                {self.render_point(&synthesis, &synthesis_top, &synthesis_left)}
+                {self.render_point(&application, &application_top, &application_left)}
+                {self.render_point(&delivery, &delivery_top, &delivery_left)}
+                {self.render_point(&value, &value_top, &value_left)}
             </div>
         }
     }

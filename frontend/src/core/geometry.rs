@@ -180,6 +180,23 @@ impl GeometryCalculator {
                     })
                     .collect()
             }
+            7 => {
+                // Heptad: Regular heptagon positioned so geometry matches desired API mapping
+                // Position 0: top → API Term 0 (Insight)
+                // Positions 1-6: clockwise from top → API Terms 1-6
+                let radius = size * 0.35;  // Same size as hexad
+                let rotation = -PI / 2.0;  // Position 0 at top
+                
+                (0..7)
+                    .map(|i| {
+                        let angle = 2.0 * PI * i as f64 / 7.0 + rotation;
+                        Point {
+                            x: cx + radius * angle.cos(),
+                            y: cy + radius * angle.sin(),
+                        }
+                    })
+                    .collect()
+            }
             _ => {
                 let radius = Self::get_radius_for_system(node_count, size);
                 let rotation = Self::get_rotation_for_system(node_count);
