@@ -197,6 +197,23 @@ impl GeometryCalculator {
                     })
                     .collect()
             }
+            8 => {
+                // Octad: Regular octagon positioned so geometry matches desired API mapping
+                // Position 0: right → API Term 0 (Smallest Significant Holon)
+                // Position 2: bottom → API Term 2 (Supportive Platform)
+                let radius = size * 0.35;  // Same size as hexad and heptad
+                let rotation = 0.0;  // Position 0 at right (3 o'clock position)
+                
+                (0..8)
+                    .map(|i| {
+                        let angle = 2.0 * PI * i as f64 / 8.0 + rotation;
+                        Point {
+                            x: cx + radius * angle.cos(),
+                            y: cy + radius * angle.sin(),
+                        }
+                    })
+                    .collect()
+            }
             _ => {
                 let radius = Self::get_radius_for_system(node_count, size);
                 let rotation = Self::get_rotation_for_system(node_count);

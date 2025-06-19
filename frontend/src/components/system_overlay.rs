@@ -435,21 +435,96 @@ impl SystemOverlay {
         }
     }
 
+    fn render_octad_point(&self, term: &str, top: &str, left: &str) -> Html {
+        // Handle special positioning for certain terms
+        let (formatted_term, css_class, container_style) = match term {
+            "Smallest Significant Holon" => {
+                // Move anchor point 35px left, then anchor at left edge and extend right
+                let adjusted_left = format!("{}%", left.trim_end_matches('%').parse::<f64>().unwrap_or(0.0) - 8.75); // ~35px adjustment
+                (html! { {term} }, "point-label", format!("top: {}; left: {}; transform: translate(0%, -50%);", top, adjusted_left))
+            },
+            "Integrative Totality" => {
+                // Move anchor point 35px right, then anchor at right edge and extend left
+                let adjusted_left = format!("{}%", left.trim_end_matches('%').parse::<f64>().unwrap_or(0.0) + 8.75); // ~35px adjustment
+                (html! { {term} }, "point-label", format!("top: {}; left: {}; transform: translate(-100%, -50%);", top, adjusted_left))
+            },
+            _ => {
+                // Default center positioning
+                (html! { {term} }, "point-label", format!("top: {}; left: {}; transform: translate(-50%, -50%);", top, left))
+            }
+        };
+        
+        html! {
+            <div class="point-container" style={container_style}>
+                <div class={css_class}>{formatted_term}</div>
+                <input class="point-input" placeholder="Instance" />
+            </div>
+        }
+    }
+
     fn render_octad(&self, structure: &Option<StoredStructure>) -> Html {
-        let terms: Vec<String> = (0..8)
-            .map(|i| self.get_canonical_term(i, &format!("Element {}", i + 1)))
-            .collect();
+        // API canonical order: [Smallest Significant Holon, Critical Functions, Supportive Platform, Necessary Resourcing, Integrative Totality, Inherent Values, Intrinsic Nature, Organisational Modes]
+        let smallest_significant_holon = self.get_canonical_term(0, "Smallest Significant Holon");   // Index 0
+        let critical_functions = self.get_canonical_term(1, "Critical Functions");                   // Index 1
+        let supportive_platform = self.get_canonical_term(2, "Supportive Platform");                // Index 2
+        let necessary_resourcing = self.get_canonical_term(3, "Necessary Resourcing");              // Index 3
+        let integrative_totality = self.get_canonical_term(4, "Integrative Totality");              // Index 4
+        let inherent_values = self.get_canonical_term(5, "Inherent Values");                        // Index 5
+        let intrinsic_nature = self.get_canonical_term(6, "Intrinsic Nature");                      // Index 6
+        let organisational_modes = self.get_canonical_term(7, "Organisational Modes");             // Index 7
 
         let svg_size = 400.0;
-        let center = svg_size / 2.0;
-        let radius = svg_size * 0.18;
-        let points = self.regular_polygon_points(8, center, center, radius, PI/8.0);
+        let points = self.get_system_layout("octad", svg_size);
+        
+        // Push labels outward from nodes
+        let push_distance = 60.0;  // Outward positioning for all labels
+        let diagonal_push = 70.0;  // Extra push for diagonal positions
+        
+        // Clean mapping: API index → geometry position with outward push
+        // Compensating for geometry rotation: Position 0 is now at right, Position 6 at top
+        
+        // Position 0: right → Smallest Significant Holon
+        let ssh_top = self.svg_to_css_percent(points[0].1, svg_size);
+        let ssh_left = self.svg_to_css_percent(points[0].0 + push_distance, svg_size);
+        
+        // Position 1: bottom-right → Critical Functions  
+        let cf_top = self.svg_to_css_percent(points[1].1 + diagonal_push * 0.7, svg_size);
+        let cf_left = self.svg_to_css_percent(points[1].0 + diagonal_push * 0.7, svg_size);
+        
+        // Position 2: bottom → Supportive Platform
+        let sp_top = self.svg_to_css_percent(points[2].1 + push_distance, svg_size);
+        let sp_left = self.svg_to_css_percent(points[2].0, svg_size);
+        
+        // Position 3: bottom-left → Necessary Resourcing
+        let nr_top = self.svg_to_css_percent(points[3].1 + diagonal_push * 0.7, svg_size); // Back to 0.7 to match other diagonals
+        let nr_left = self.svg_to_css_percent(points[3].0 - diagonal_push * 0.7, svg_size); // Back to 0.7 to match other diagonals
+        
+        // Position 4: left → Integrative Totality
+        let it_top = self.svg_to_css_percent(points[4].1, svg_size);
+        let it_left = self.svg_to_css_percent(points[4].0 - push_distance, svg_size);
+        
+        // Position 5: top-left → Inherent Values
+        let iv_top = self.svg_to_css_percent(points[5].1 - diagonal_push * 0.7, svg_size);
+        let iv_left = self.svg_to_css_percent(points[5].0 - diagonal_push * 0.7, svg_size);
+        
+        // Position 6: top → Intrinsic Nature
+        let in_top = self.svg_to_css_percent(points[6].1 - push_distance, svg_size);
+        let in_left = self.svg_to_css_percent(points[6].0, svg_size);
+        
+        // Position 7: top-right → Organisational Modes
+        let om_top = self.svg_to_css_percent(points[7].1 - diagonal_push * 0.7, svg_size);
+        let om_left = self.svg_to_css_percent(points[7].0 + diagonal_push * 0.7, svg_size);
 
         html! {
             <div class="system-overlay">
-                {for points.iter().enumerate().map(|(i, (x, y))| {
-                    self.render_point(&terms[i], &self.svg_to_css_percent(*y, svg_size), &self.svg_to_css_percent(*x, svg_size))
-                })}
+                {self.render_octad_point(&smallest_significant_holon, &ssh_top, &ssh_left)}
+                {self.render_octad_point(&critical_functions, &cf_top, &cf_left)}
+                {self.render_octad_point(&supportive_platform, &sp_top, &sp_left)}
+                {self.render_octad_point(&necessary_resourcing, &nr_top, &nr_left)}
+                {self.render_octad_point(&integrative_totality, &it_top, &it_left)}
+                {self.render_octad_point(&inherent_values, &iv_top, &iv_left)}
+                {self.render_octad_point(&intrinsic_nature, &in_top, &in_left)}
+                {self.render_octad_point(&organisational_modes, &om_top, &om_left)}
             </div>
         }
     }
