@@ -8,6 +8,7 @@ use surrealdb::Surreal;
 use uuid::Uuid;
 
 use surrealdb::sql::{Datetime, Thing};
+use serde_json;
 
 #[derive(Debug, Clone)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -15,7 +16,7 @@ pub struct StoredStructure {
     pub id: Thing,
     pub name: String,
     pub structure_type: String,
-    pub terms: Vec<String>,
+    pub user_instance_index: Vec<String>,
     pub connectives: HashMap<String, String>,
     pub created_at: Datetime,
     pub updated_at: Datetime,
@@ -79,6 +80,28 @@ impl SurrealStorage {
             DEFINE INDEX idx_created ON structures COLUMNS created_at;
         ").await?;
 
+        // Migrate existing records from 'terms' to 'user_instance_index' field
+        // First, check if migration is needed
+        let check_sql = "SELECT * FROM structures LIMIT 1";
+        if let Ok(mut result) = db.query(check_sql).await {
+            if let Ok(structures) = result.take::<Vec<serde_json::Value>>(0) {
+                if !structures.is_empty() {
+                    // Check if first record has old 'terms' field
+                    if let Some(first_structure) = structures.first() {
+                        if first_structure.get("terms").is_some() && first_structure.get("user_instance_index").is_none() {
+                            eprintln!("🔄 Migrating database from 'terms' to 'user_instance_index'...");
+                            let migration_sql = "
+                                UPDATE structures SET user_instance_index = terms WHERE terms IS NOT NULL;
+                                UPDATE structures UNSET terms;
+                            ";
+                            db.query(migration_sql).await?;
+                            eprintln!("✅ Database migration completed");
+                        }
+                    }
+                }
+            }
+        }
+
         db.query("
             DEFINE TABLE nodes SCHEMAFULL;
             DEFINE FIELD id ON nodes TYPE string;
@@ -127,7 +150,7 @@ impl SurrealStorage {
             id: Thing::from(("structures", id_string.as_str())),
             name: name.to_string(),
             structure_type: structure.structure_type().to_string(),
-            terms: structure.user_instance_index().to_vec(),
+            user_instance_index: structure.user_instance_index().to_vec(),
             connectives,
             created_at: now.clone(),
             updated_at: now,
@@ -148,17 +171,17 @@ impl SurrealStorage {
         Ok(id_string)
     }
 
-    async fn create_nodes(&self, structure_id: &str, terms: &[String]) -> Result<Vec<GraphNode>, SystematicsError> {
+    async fn create_nodes(&self, structure_id: &str, user_instances: &[String]) -> Result<Vec<GraphNode>, SystematicsError> {
         let mut nodes = Vec::new();
         let now = Datetime::default();
 
-        for (position, term) in terms.iter().enumerate() {
+        for (position, user_instance) in user_instances.iter().enumerate() {
             let node_id = format!("{}_{}", structure_id, position);
             let node = GraphNode {
                 id: Thing::from(("nodes", node_id.as_str())),
                 structure_id: structure_id.to_string(),
                 position,
-                term: term.clone(),
+                term: user_instance.clone(),
                 created_at: now.clone(),
             };
 
@@ -219,7 +242,7 @@ impl SurrealStorage {
             SELECT * FROM structures 
             WHERE name CONTAINS $query 
             OR description CONTAINS $query 
-            OR array::some(terms, |$term| $term CONTAINS $query)
+            OR array::some(user_instance_index, |$user_instance| $user_instance CONTAINS $query)
             ORDER BY created_at DESC
         ";
         
@@ -231,13 +254,13 @@ impl SurrealStorage {
     }
 
     pub async fn get_related_structures(&self, id: &str) -> Result<Vec<StoredStructure>, SystematicsError> {
-        // Find structures that share terms with the given structure
+        // Find structures that share user instances with the given structure
         let sql = "
             SELECT DISTINCT s2.* FROM structures s1, structures s2
             WHERE s1.id = $id 
             AND s2.id != $id
-            AND array::intersect(s1.terms, s2.terms) != []
-            ORDER BY array::len(array::intersect(s1.terms, s2.terms)) DESC
+            AND array::intersect(s1.user_instance_index, s2.user_instance_index) != []
+            ORDER BY array::len(array::intersect(s1.user_instance_index, s2.user_instance_index)) DESC
         ";
         
         let id_string = id.to_string();
@@ -301,15 +324,15 @@ impl SurrealStorage {
         Ok(updated.is_some() && !updated.unwrap().is_empty())
     }
 
-    pub async fn get_term_usage(&self, term: &str) -> Result<Vec<StoredStructure>, SystematicsError> {
+    pub async fn get_user_instance_usage(&self, user_instance: &str) -> Result<Vec<StoredStructure>, SystematicsError> {
         let sql = "
             SELECT * FROM structures 
-            WHERE array::some(terms, |$t| $t = $term)
+            WHERE array::some(user_instance_index, |$ui| $ui = $user_instance)
             ORDER BY created_at DESC
         ";
         
-        let term_string = term.to_string();
-        let mut result = self.db.query(sql).bind(("term", term_string)).await?;
+        let user_instance_string = user_instance.to_string();
+        let mut result = self.db.query(sql).bind(("user_instance", user_instance_string)).await?;
         let structures: Vec<StoredStructure> = result.take(0)?;
         
         Ok(structures)
@@ -320,7 +343,7 @@ impl SurrealStorage {
         &self,
         name: &str,
         structure_type: &str,
-        terms: Vec<String>,
+        user_instance_index: Vec<String>,
         connectives: HashMap<String, String>,
         description: Option<String>,
     ) -> Result<String, SystematicsError> {
@@ -331,7 +354,7 @@ impl SurrealStorage {
             id: Thing::from(("structures", id_string.as_str())),
             name: name.to_string(),
             structure_type: structure_type.to_string(),
-            terms: terms.clone(),
+            user_instance_index: user_instance_index.clone(),
             connectives,
             created_at: now.clone(),
             updated_at: now,
@@ -346,7 +369,7 @@ impl SurrealStorage {
             .await?;
 
         // Store nodes and create graph representation
-        let nodes = self.create_nodes(&id_string, &terms).await?;
+        let nodes = self.create_nodes(&id_string, &user_instance_index).await?;
         let _edges = self.create_edges(&nodes).await?;
 
         Ok(id_string)

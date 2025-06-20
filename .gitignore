@@ -87,6 +87,21 @@ dist/
 tmp/
 temp/ 
 
-# Data directory (contains database files)
+# Database files (all formats)
+data/*.db
+data/*.sqlite
+data/*.sqlite3
 data/systematics.db/
-data/*.json 
+data/*.json
+data/*.sql
+
+# WASM build artifacts
+frontend/pkg/
+frontend/dist/
+
+# Trunk build outputs
+frontend/index.html.bak
+
+# Scripts temporary files
+scripts/*.log
+scripts/tmp/ 

@@ -10,7 +10,7 @@ pub struct StoredStructure {
     pub id: serde_json::Value, // Thing type from SurrealDB
     pub name: String,
     pub structure_type: String,
-    pub terms: Vec<String>,
+    pub user_instance_index: Vec<String>, // Matches backend field exactly
     pub connectives: HashMap<String, String>,
     pub created_at: String, // Simplified for frontend
     pub updated_at: String,
@@ -22,7 +22,7 @@ pub struct StoredStructure {
 pub struct CreateStructureRequest {
     pub name: String,
     pub structure_type: String,
-    pub terms: Vec<String>,
+    pub user_instance_index: Vec<String>, // Matches backend field exactly
     pub connectives: HashMap<String, String>,
     pub description: Option<String>,
 }
@@ -43,7 +43,7 @@ pub struct ConnectiveInfo {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct StructureSchema {
+pub struct SystemDefinition {
     pub structure_type: String,
     pub term_count: usize,
     pub term_characters: Vec<String>,
@@ -141,6 +141,18 @@ impl ApiClient {
         }
     }
 
+    pub async fn save_structure(&self, name: &str, structure_type: &str, user_instances: &[String]) -> Result<String, anyhow::Error> {
+        let request = CreateStructureRequest {
+            name: name.to_string(),
+            structure_type: structure_type.to_string(),
+            user_instance_index: user_instances.to_vec(), // Consistent terminology
+            connectives: std::collections::HashMap::new(), // Empty for now
+            description: Some(format!("User-created {} structure", structure_type)),
+        };
+        
+        self.create_structure(request).await
+    }
+
     pub async fn search_structures(&self, query: &str) -> Result<Vec<StoredStructure>, anyhow::Error> {
         let url = format!("{}/structures/search?q={}", self.base_url, query);
         let response = Request::get(&url).send().await?;
@@ -153,12 +165,12 @@ impl ApiClient {
         }
     }
 
-    pub async fn get_structure_schema(&self, structure_type: &str) -> Result<StructureSchema, anyhow::Error> {
+    pub async fn get_system_definition(&self, structure_type: &str) -> Result<SystemDefinition, anyhow::Error> {
         let url = format!("{}/schema/{}", self.base_url, structure_type);
         let response = Request::get(&url).send().await?;
         
         if response.ok() {
-            let api_response: ApiResponse<StructureSchema> = response.json().await?;
+            let api_response: ApiResponse<SystemDefinition> = response.json().await?;
             api_response.data.ok_or_else(|| anyhow::anyhow!("No data in response"))
         } else {
             Err(anyhow::anyhow!("Failed to get structure schema: {}", response.status()))

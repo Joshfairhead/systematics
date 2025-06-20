@@ -49,7 +49,7 @@ impl Undecad {
     
     /// Get user instance by index (0-10)
     /// 
-    /// Returns the user-provided term for the given position index.
+    /// Returns the user-provided instance for the given position index.
     /// This is the user-provided data, not the canonical term character from the system.
     /// 
     /// # Arguments
@@ -58,7 +58,7 @@ impl Undecad {
     /// # Returns
     /// * `Some(&str)` - The user instance at the given position
     /// * `None` - If the index is out of bounds
-    pub fn get_term(&self, index: usize) -> Option<&str> {
+    pub fn get_user_instance(&self, index: usize) -> Option<&str> {
         self.user_instance_index.get(index).map(|s| s.as_str())
     }
     

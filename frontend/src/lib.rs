@@ -10,22 +10,25 @@ mod core;       // Declare the core module (framework-agnostic)
 use components::system_selector::SystemSelector; // Import the SystemSelector
 use components::system_overlay::SystemOverlay;
 use components::geometric_renderer::GeometricRenderer;
-use services::api::{ApiClient, StoredStructure, StructureSchema, spawn_api_call};
+use services::api::{ApiClient, StoredStructure, SystemDefinition, spawn_api_call};
 
 pub struct App {
     // Replace hardcoded system selection with dynamic data
     structures: Vec<StoredStructure>,
     filtered_structures: Vec<StoredStructure>,
     selected_structure: Option<StoredStructure>,
-    current_schema: Option<StructureSchema>,
+    current_schema: Option<SystemDefinition>,
     loading: bool,
     error: Option<String>,
+    success_message: Option<String>,
     api_client: ApiClient,
     search_query: String,
     show_structure_browser: bool,
     // Creation state
     creation_mode: bool,
     structure_name: Option<String>,
+    user_instance_index: Vec<String>, // Track user input for each position
+    saving: bool,
 }
 
 pub enum Msg {
@@ -42,10 +45,14 @@ pub enum Msg {
     SearchStructures,
     SearchResultsLoaded(Result<Vec<StoredStructure>, anyhow::Error>),
     // Schema loading
-    SchemaLoaded(Result<StructureSchema, anyhow::Error>),
+    SchemaLoaded(Result<SystemDefinition, anyhow::Error>),
     // Creation functionality
     CreateStructure,
     CancelCreate,
+    SaveStructure,
+    StructureSaved(Result<String, anyhow::Error>),
+    UserInstanceChanged(usize, String),
+    ClearNotifications,
 }
 
 impl Component for App {
@@ -66,11 +73,14 @@ impl Component for App {
             current_schema: None,
             loading: true,
             error: None,
+            success_message: None,
             api_client: ApiClient::new(),
             search_query: String::new(),
             show_structure_browser: false,
             creation_mode: false,
             structure_name: None,
+            user_instance_index: vec![String::new(); 8], // Initialize user_instance_index with 8 empty strings
+            saving: false,
         };
         
         // Load structures on component creation
@@ -225,6 +235,15 @@ impl Component for App {
                         if !name.trim().is_empty() {
                             self.structure_name = Some(name.trim().to_string());
                             self.creation_mode = true;
+                            
+                            // Initialize user_instance_index with the right number of empty strings
+                            let term_count = if let Some(ref structure) = self.selected_structure {
+                                self.structure_type_to_number(&structure.structure_type) as usize
+                            } else {
+                                1 // Default to monad
+                            };
+                            self.user_instance_index = vec![String::new(); term_count];
+                            
                             return true;
                         }
                     }
@@ -234,6 +253,51 @@ impl Component for App {
             Msg::CancelCreate => {
                 self.creation_mode = false;
                 self.structure_name = None;
+                self.user_instance_index.clear();
+                true
+            }
+            Msg::SaveStructure => {
+                self.saving = true;
+                self.save_structure(ctx);
+                true
+            }
+            Msg::StructureSaved(result) => {
+                self.saving = false;
+                match result {
+                    Ok(structure_id) => {
+                        self.error = None;
+                        self.success_message = Some(format!("✅ Structure saved successfully!"));
+                        // Exit creation mode after successful save
+                        self.creation_mode = false;
+                        self.structure_name = None;
+                        self.user_instance_index.clear();
+                        // Reload structures to show the new one
+                        self.load_structures(ctx);
+                        // Auto-dismiss notification after 3 seconds
+                        let link = ctx.link().clone();
+                        gloo_timers::callback::Timeout::new(3000, move || {
+                            link.send_message(Msg::ClearNotifications);
+                        }).forget();
+                    }
+                    Err(e) => {
+                        self.success_message = None;
+                        self.error = Some(format!("Failed to save structure: {}", e));
+                        // Auto-dismiss error notification after 5 seconds
+                        let link = ctx.link().clone();
+                        gloo_timers::callback::Timeout::new(5000, move || {
+                            link.send_message(Msg::ClearNotifications);
+                        }).forget();
+                    }
+                }
+                true
+            }
+            Msg::UserInstanceChanged(index, instance) => {
+                self.user_instance_index[index] = instance;
+                true
+            }
+            Msg::ClearNotifications => {
+                self.success_message = None;
+                self.error = None;
                 true
             }
         }
@@ -268,11 +332,12 @@ impl Component for App {
                             size={400.0}
                             connectives={self.current_schema.as_ref().map(|s| s.connectives.clone())}
                         />
-                        {self.render_structure_overlay()}
+                        {self.render_structure_overlay(ctx)}
                     </div>
                 </div>
                 {self.render_structure_info()}
                 {self.render_structure_browser(ctx)}
+                {self.render_notifications()}
             </div>
         }
     }
@@ -312,25 +377,32 @@ impl App {
         html! {
             <div class="search-controls">
                 <div class="search-bar">
-                    {if !self.creation_mode {
-                        html! {
-                            <button class="create-button" onclick={create_callback}>
-                                {"Create"}
-                            </button>
-                        }
-                    } else {
-                        html! {
-                            <div class="creation-info">
-                                <span class="creation-label">{"Creating structure..."}</span>
-                                <button class="cancel-button" onclick={cancel_callback}>
-                                    {"Cancel"}
+                    <div class="action-buttons">
+                        <button class="load-button" onclick={ctx.link().callback(|_| Msg::ToggleStructureBrowser)}>
+                            {"Load"}
+                        </button>
+                        {if !self.creation_mode {
+                            html! {
+                                <button class="create-button" onclick={create_callback}>
+                                    {"Create"}
                                 </button>
-                            </div>
-                        }
-                    }}
+                            }
+                        } else {
+                            html! {
+                                <>
+                                    <button class="save-button" onclick={ctx.link().callback(|_| Msg::SaveStructure)} disabled={self.saving}>
+                                        {if self.saving { "Saving..." } else { "Save" }}
+                                    </button>
+                                    <button class="cancel-button" onclick={cancel_callback}>
+                                        {"Cancel"}
+                                    </button>
+                                </>
+                            }
+                        }}
+                    </div>
                     <input 
                         type="text" 
-                        placeholder="Search structures by name, type, or terms..." 
+                        placeholder="Search structures by name, type, or user instances..." 
                         value={self.search_query.clone()}
                         oninput={search_input}
                         class="search-input"
@@ -350,19 +422,38 @@ impl App {
                     {"Loading structures..."}
                 </div>
             }
-        } else if let Some(ref error) = self.error {
-            html! {
-                <div class="error">
-                    <p>{"⚠️ "}{error}</p>
-                    <p><small>{"Using fallback data"}</small></p>
-                </div>
-            }
         } else {
             html! {}
         }
     }
 
-    fn render_structure_overlay(&self) -> Html {
+    fn render_notifications(&self) -> Html {
+        html! {
+            <>
+                {if let Some(ref success) = self.success_message {
+                    html! {
+                        <div class="notification success">
+                            <p>{success}</p>
+                        </div>
+                    }
+                } else {
+                    html! {}
+                }}
+                {if let Some(ref error) = self.error {
+                    html! {
+                        <div class="notification error">
+                            <p>{"⚠️ "}{error}</p>
+                            <small>{"Using fallback data"}</small>
+                        </div>
+                    }
+                } else {
+                    html! {}
+                }}
+            </>
+        }
+    }
+
+    fn render_structure_overlay(&self, ctx: &Context<Self>) -> Html {
         if let Some(ref structure) = self.selected_structure {
             let system_num = self.structure_type_to_number(&structure.structure_type);
             html! {
@@ -371,6 +462,8 @@ impl App {
                     structure={structure.clone()} 
                     creation_mode={self.creation_mode}
                     structure_name={self.structure_name.clone()}
+                    user_instance_index={self.user_instance_index.clone()}
+                    on_instance_change={ctx.link().callback(|(index, instance)| Msg::UserInstanceChanged(index, instance))}
                 />
             }
         } else {
@@ -379,6 +472,8 @@ impl App {
                     system_num={1} 
                     creation_mode={self.creation_mode}
                     structure_name={self.structure_name.clone()}
+                    user_instance_index={self.user_instance_index.clone()}
+                    on_instance_change={ctx.link().callback(|(index, instance)| Msg::UserInstanceChanged(index, instance))}
                 />
             }
         }
@@ -395,7 +490,7 @@ impl App {
                     } else {
                         html! {}
                     }}
-                    <p><strong>{"Terms: "}</strong>{structure.terms.join(", ")}</p>
+                    <p><strong>{"User Instances: "}</strong>{structure.user_instance_index.join(", ")}</p>
                 </div>
             }
         } else {
@@ -439,9 +534,9 @@ impl App {
                                         <h4>{&structure.name}</h4>
                                         <span class="structure-type">{&structure.structure_type}</span>
                                     </div>
-                                    <div class="structure-item-terms">
-                                        {structure.terms.join(", ")}
-                                    </div>
+                                                        <div class="structure-item-terms">
+                        {structure.user_instance_index.join(", ")}
+                    </div>
                                     {if let Some(ref desc) = structure.description {
                                         html! { 
                                             <div class="structure-item-description">
@@ -479,7 +574,7 @@ impl App {
                 .filter(|structure| {
                     structure.name.to_lowercase().contains(&query) ||
                     structure.structure_type.to_lowercase().contains(&query) ||
-                    structure.terms.iter().any(|term| term.to_lowercase().contains(&query)) ||
+                    structure.user_instance_index.iter().any(|instance| instance.to_lowercase().contains(&query)) ||
                     structure.description.as_ref().map_or(false, |desc| desc.to_lowercase().contains(&query))
                 })
                 .cloned()
@@ -506,7 +601,7 @@ impl App {
     }
 
     fn create_placeholder_structure(&self, structure_type: &str, system_num: i32) -> StoredStructure {
-        let terms = match system_num {
+        let user_instance_index = match system_num {
             1 => vec!["Unity".to_string()],
             2 => vec!["Essence".to_string(), "Existence".to_string()],
             3 => vec!["Active".to_string(), "Passive".to_string(), "Reconciling".to_string()],
@@ -522,7 +617,7 @@ impl App {
             id: serde_json::Value::String(format!("placeholder-{}", structure_type)),
             name: format!("Default {}", structure_type.to_uppercase()),
             structure_type: structure_type.to_string(),
-            terms,
+            user_instance_index,
             connectives: HashMap::new(),
             created_at: "placeholder".to_string(),
             updated_at: "placeholder".to_string(),
@@ -567,7 +662,7 @@ impl App {
     }
 
     fn create_static_placeholder_structure(structure_type: &str, system_num: i32) -> StoredStructure {
-        let terms = match system_num {
+        let user_instance_index = match system_num {
             1 => vec!["Unity".to_string()],
             2 => vec!["Essence".to_string(), "Existence".to_string()],
             3 => vec!["Active".to_string(), "Passive".to_string(), "Reconciling".to_string()],
@@ -583,7 +678,7 @@ impl App {
             id: serde_json::Value::String(format!("placeholder-{}", structure_type)),
             name: format!("Default {}", structure_type.to_uppercase()),
             structure_type: structure_type.to_string(),
-            terms,
+            user_instance_index,
             connectives: HashMap::new(),
             created_at: "placeholder".to_string(),
             updated_at: "placeholder".to_string(),
@@ -599,7 +694,41 @@ impl App {
         
         spawn_api_call(
             async move {
-                api_client.get_structure_schema(&structure_type).await
+                api_client.get_system_definition(&structure_type).await
+            },
+            callback,
+        );
+    }
+
+    fn load_structures(&self, ctx: &Context<Self>) {
+        let api_client = self.api_client.clone();
+        let callback = ctx.link().callback(Msg::StructuresLoaded);
+        
+        spawn_api_call(
+            async move {
+                api_client.list_structures().await
+            },
+            callback,
+        );
+    }
+
+    fn save_structure(&self, ctx: &Context<Self>) {
+        let structure_type = if let Some(structure) = &self.selected_structure {
+            structure.structure_type.clone()
+        } else {
+            // Default to monad if no structure is selected
+            "monad".to_string()
+        };
+        
+        let structure_name = self.structure_name.clone().unwrap_or_else(|| "Unnamed Structure".to_string());
+        
+        let api_client = self.api_client.clone();
+        let user_instances = self.user_instance_index.clone();
+        let callback = ctx.link().callback(Msg::StructureSaved);
+        
+        spawn_api_call(
+            async move {
+                api_client.save_structure(&structure_name, &structure_type, &user_instances).await
             },
             callback,
         );

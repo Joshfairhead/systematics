@@ -1,5 +1,5 @@
-use yew::{html, Component, Context, Html, Properties};
-use crate::services::api::{StoredStructure, ApiClient, StructureSchema, spawn_api_call};
+use yew::{html, Component, Context, Html, Properties, TargetCast};
+use crate::services::api::{StoredStructure, ApiClient, SystemDefinition, spawn_api_call};
 use crate::core::geometry::GeometryCalculator;
 use std::f64::consts::PI;
 use web_sys;
@@ -13,14 +13,18 @@ pub struct Props {
     pub creation_mode: bool,
     #[prop_or_default]
     pub structure_name: Option<String>,
+    #[prop_or_default]
+    pub user_instance_index: Vec<String>,
+    #[prop_or_default]
+    pub on_instance_change: yew::Callback<(usize, String)>,
 }
 
 pub enum Msg {
-    SchemaLoaded(Result<StructureSchema, anyhow::Error>),
+    SchemaLoaded(Result<SystemDefinition, anyhow::Error>),
 }
 
 pub struct SystemOverlay {
-    schema: Option<StructureSchema>,
+    schema: Option<SystemDefinition>,
     api_client: ApiClient,
     loading_schema: bool,
 }
@@ -82,6 +86,11 @@ impl Component for SystemOverlay {
         
         // Check if structure changed
         if new_props.structure != old_props.structure {
+            should_update = true;
+        }
+        
+        // Check if user_instance_index changed
+        if new_props.user_instance_index != old_props.user_instance_index {
             should_update = true;
         }
         
@@ -178,7 +187,7 @@ impl SystemOverlay {
         
         spawn_api_call(
             async move {
-                api_client.get_structure_schema(structure_type).await
+                api_client.get_system_definition(structure_type).await
             },
             callback,
         );
@@ -195,36 +204,37 @@ impl SystemOverlay {
         let svg_size = 400.0;
         let points = self.get_system_layout(system_type, svg_size);
         
-        let terms: Result<Vec<String>, ()> = (0..expected_terms)
-            .map(|i| self.get_term_character(i).ok_or(()))
-            .collect();
-            
-        match terms {
-            Ok(term_characters) => {
-                self.render_structure_with_points(ctx, &term_characters, &points, svg_size, system_type)
+        // Determine what to display based on context
+        let display_values = if let Some(ref structure) = ctx.props().structure {
+            // If we have a loaded structure, use its user instances
+            if structure.user_instance_index.len() == expected_terms {
+                structure.user_instance_index.clone() // This contains user instances from the loaded structure
+            } else {
+                // Fallback to schema term characters if loaded structure has wrong number of user instances
+                (0..expected_terms)
+                    .map(|i| self.get_term_character(i).unwrap_or_else(|| format!("Term {}", i + 1)))
+                    .collect()
             }
-            Err(_) => {
-                html! {
-                    <div class="system-overlay incomplete">
-                        <div class="incomplete-message">
-                            <p>{format!("Incomplete schema for {} - missing term characters", system_type)}</p>
-                        </div>
-                    </div>
-                }
-            }
-        }
+        } else {
+            // No loaded structure, use schema term characters
+            (0..expected_terms)
+                .map(|i| self.get_term_character(i).unwrap_or_else(|| format!("Term {}", i + 1)))
+                .collect()
+        };
+        
+        self.render_structure_with_points(ctx, &display_values, &points, svg_size, system_type)
     }
     
-    fn render_structure_with_points(&self, ctx: &Context<Self>, terms: &[String], points: &[(f64, f64)], svg_size: f64, system_type: &str) -> Html {
+    fn render_structure_with_points(&self, ctx: &Context<Self>, display_values: &[String], points: &[(f64, f64)], svg_size: f64, system_type: &str) -> Html {
         let is_octad = system_type == "octad";
-        let point_elements: Vec<Html> = terms.iter()
+        let point_elements: Vec<Html> = display_values.iter()
             .zip(points.iter())
             .enumerate()
-            .map(|(i, (term, (x, y)))| {
+            .map(|(i, (display_value, (x, y)))| {
                 let (adjusted_x, adjusted_y) = self.apply_label_positioning(system_type, i, *x, *y, svg_size, points);
                 let top = self.svg_to_css_percent(adjusted_y, svg_size);
                 let left = self.svg_to_css_percent(adjusted_x, svg_size);
-                self.render_point_with_positioning(ctx, term, &top, &left, is_octad)
+                self.render_point_with_positioning(ctx, display_value, &top, &left, is_octad, i)
             })
             .collect();
             
@@ -376,46 +386,63 @@ impl SystemOverlay {
         format!("{}%", (coord / svg_size) * 100.0)
     }
 
-    fn render_point(&self, ctx: &Context<Self>, term: &str, top: &str, left: &str) -> Html {
-        self.render_point_with_positioning(ctx, term, top, left, false)
+    fn render_point(&self, ctx: &Context<Self>, term: &str, top: &str, left: &str, position_index: usize) -> Html {
+        self.render_point_with_positioning(ctx, term, top, left, false, position_index)
     }
     
-    fn render_point_with_positioning(&self, ctx: &Context<Self>, term: &str, top: &str, left: &str, is_octad: bool) -> Html {
+    fn render_point_with_positioning(&self, ctx: &Context<Self>, display_text: &str, top: &str, left: &str, is_octad: bool, position_index: usize) -> Html {
         let creation_mode = ctx.props().creation_mode;
-        
-
+        let user_instances = &ctx.props().user_instance_index;
+        let current_value = user_instances.get(position_index).cloned().unwrap_or_default();
+        let on_instance_change = ctx.props().on_instance_change.clone();
         
         if is_octad {
-            let (formatted_term, css_class, container_style) = match term {
+            let (formatted_display, css_class, container_style) = match display_text {
                 "Smallest Significant Holon" => {
                     let adjusted_left = format!("{}%", left.trim_end_matches('%').parse::<f64>().unwrap_or(0.0) - 8.75);
-                    (html! { {term} }, "point-label", format!("top: {}; left: {}; transform: translate(0%, -50%);", top, adjusted_left))
+                    (html! { {display_text} }, "point-label", format!("top: {}; left: {}; transform: translate(0%, -50%);", top, adjusted_left))
                 },
                 "Integrative Totality" => {
                     let adjusted_left = format!("{}%", left.trim_end_matches('%').parse::<f64>().unwrap_or(0.0) + 8.75);
-                    (html! { {term} }, "point-label", format!("top: {}; left: {}; transform: translate(-100%, -50%);", top, adjusted_left))
+                    (html! { {display_text} }, "point-label", format!("top: {}; left: {}; transform: translate(-100%, -50%);", top, adjusted_left))
                 },
                 _ => {
-                    (html! { {term} }, "point-label", format!("top: {}; left: {}; transform: translate(-50%, -50%);", top, left))
+                    (html! { {display_text} }, "point-label", format!("top: {}; left: {}; transform: translate(-50%, -50%);", top, left))
                 }
             };
             
-            html! {
-                <div class={format!("point-container {}", if creation_mode { "creation-mode" } else { "display-mode" })} style={container_style}>
-                    <div class={css_class}>{formatted_term}</div>
-                    {if creation_mode {
-                        html! { <input class="point-input" placeholder="Enter term..." /> }
-                    } else {
-                        html! {}
-                    }}
-                </div>
+            {
+                let input_callback = {
+                    let on_instance_change = on_instance_change.clone();
+                    move |e: yew::events::InputEvent| {
+                        let input: web_sys::HtmlInputElement = e.target_unchecked_into();
+                        on_instance_change.emit((position_index, input.value()));
+                    }
+                };
+                html! {
+                    <div class={format!("point-container {}", if creation_mode { "creation-mode" } else { "display-mode" })} style={container_style}>
+                        <div class={css_class}>{formatted_display}</div>
+                        {if creation_mode {
+                            html! { <input class="point-input" placeholder="Enter instance..." value={current_value.clone()} oninput={input_callback} /> }
+                        } else {
+                            html! {}
+                        }}
+                    </div>
+                }
             }
         } else {
+            let input_callback = {
+                let on_instance_change = on_instance_change.clone();
+                move |e: yew::events::InputEvent| {
+                    let input: web_sys::HtmlInputElement = e.target_unchecked_into();
+                    on_instance_change.emit((position_index, input.value()));
+                }
+            };
             html! {
                 <div class={format!("point-container {} {}", if creation_mode { "creation-mode" } else { "display-mode" }, if is_octad { "octad" } else { "" })} style={format!("top: {}; left: {}; transform: translate(-50%, -50%);", top, left)}>
-                    <div class="point-label">{term}</div>
+                    <div class="point-label">{display_text}</div>
                     {if creation_mode {
-                        html! { <input class="point-input" placeholder="Enter term..." /> }
+                        html! { <input class="point-input" placeholder="Enter instance..." value={current_value.clone()} oninput={input_callback} /> }
                     } else {
                         html! {}
                     }}

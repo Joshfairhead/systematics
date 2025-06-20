@@ -86,6 +86,8 @@ alwaysApply: false
 - Follow consistent styling patterns for all UI states
 - Maintain positioning logic in `apply_label_positioning()` for visual consistency
 
+**Critical**: Follow [Frontend Terminology Rules](mdc:.cursor/rules/frontend-terminology.mdc) for naming consistency with backend
+
 ## Technical Implementation Details
 - **Generic + Custom Hybrid**: API-driven terms with structure-specific positioning
 - **Positioning System**: Each structure type has dedicated positioning logic in match arms

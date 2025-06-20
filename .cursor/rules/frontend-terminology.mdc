@@ -1,0 +1,149 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Frontend Terminology Consistency Rules
+
+## CRITICAL: Terminology Alignment with Backend
+
+The frontend MUST use identical terminology to the backend to prevent technical debt and developer confusion. These rules are borrowed from the backend's established patterns.
+
+### Core Terminology Standards
+
+#### Field Names (MUST match backend exactly)
+- ✅ `user_instance_index` - Array of user-provided data (matches backend trait method)
+- ❌ `terms` - Ambiguous, could mean user data or schema data
+- ❌ `user_terms` - Inconsistent with backend naming
+- ❌ `instances` - Too generic without context
+
+#### Method Parameters 
+- ✅ `position_index` or `instance_position` - Clear positional mapping
+- ❌ `term_index` - Ambiguous about what type of term
+- ✅ `display_values` - What's currently shown to user
+- ✅ `user_instances` - User-provided data
+- ✅ `term_characters` - Schema/Bennett definitions
+
+#### Component State Variables
+- ✅ `user_instance_index: Vec<String>` - Matches backend field exactly
+- ✅ `loaded_structure: Option<StoredStructure>` - Clear intent
+- ✅ `creation_mode: bool` - Clear boolean state
+
+### API Integration Consistency
+
+#### StoredStructure Fields (MUST align with API)
+```rust
+// ✅ CORRECT - Matches backend API response
+pub struct StoredStructure {
+    pub id: String,
+    pub name: String, 
+    pub structure_type: String,
+    pub user_instance_index: Vec<String>, // MUST match backend field
+    pub created_at: String,
+}
+
+// ❌ INCORRECT - Inconsistent with backend
+pub struct StoredStructure {
+    pub terms: Vec<String>, // Wrong field name
+    pub instances: Vec<String>, // Generic without context
+}
+```
+
+#### Message Types
+```rust
+// ✅ CORRECT - Clear and consistent
+pub enum Msg {
+    SaveStructure { 
+        name: String, 
+        user_instance_index: Vec<String> 
+    },
+    LoadStructure(StoredStructure),
+    UpdateUserInstance { position: usize, value: String },
+}
+
+// ❌ INCORRECT - Ambiguous terminology  
+pub enum Msg {
+    SaveStructure { terms: Vec<String> },
+    UpdateTerm { term_index: usize, value: String },
+}
+```
+
+### Component Architecture Rules
+
+#### State Management
+- User input state MUST use `user_instance_index` field name
+- Position references MUST use `position` or `instance_position`
+- API responses MUST preserve exact field names from backend
+
+#### Rendering Logic
+- Distinguish between `user_instances` (user data) and `term_characters` (schema data)
+- Use `display_values` for what's currently shown (could be either)
+- Never hardcode term characters - always fetch from API schema
+
+#### Error Handling
+- Use consistent error message terminology
+- Reference "user instances" in user-facing messages
+- Reference "term characters" in developer/debug messages
+
+### Implementation Patterns
+
+#### Input Handling
+```rust
+// ✅ CORRECT
+fn handle_user_input(&mut self, position: usize, value: String) {
+    if let Some(user_instances) = &mut self.user_instance_index {
+        if position < user_instances.len() {
+            user_instances[position] = value;
+        }
+    }
+}
+
+// ❌ INCORRECT  
+fn handle_term_input(&mut self, term_index: usize, term: String) {
+    self.terms[term_index] = term; // Ambiguous field name
+}
+```
+
+#### Display Logic
+```rust
+// ✅ CORRECT - Clear separation of concerns
+fn get_display_value(&self, position: usize) -> String {
+    // Priority: loaded structure's user instances
+    if let Some(structure) = &self.loaded_structure {
+        if let Some(user_instance) = structure.user_instance_index.get(position) {
+            return user_instance.clone();
+        }
+    }
+    
+    // Fallback: schema term characters (creation mode)
+    if let Some(schema) = &self.schema {
+        if let Some(term_char) = schema.term_characters.get(position) {
+            return term_char.clone();
+        }
+    }
+    
+    "".to_string()
+}
+```
+
+### Migration Checklist
+
+When refactoring frontend code:
+
+- [ ] Replace all `terms` fields with `user_instance_index`
+- [ ] Replace `term_index` parameters with `position_index`
+- [ ] Update all API integration to use exact backend field names
+- [ ] Ensure component state uses consistent terminology
+- [ ] Update all comments to distinguish user data vs schema data
+- [ ] Test API integration after terminology changes
+- [ ] Update prop types and message enums
+
+### Enforcement
+
+These rules are `alwaysApply: true` because:
+1. Terminology consistency is critical for maintainability
+2. Frontend-backend alignment prevents integration bugs  
+3. Developer confusion leads to technical debt
+4. API changes require immediate frontend updates
+
+Any deviation from these patterns MUST be documented with clear justification and should be treated as technical debt requiring future resolution.

@@ -32,7 +32,7 @@ pub struct SearchQuery {
 pub struct CreateStructureRequest {
     pub name: String,
     pub structure_type: String,
-    pub terms: Vec<String>,
+    pub user_instance_index: Vec<String>,
     pub connectives: HashMap<String, String>,
     pub description: Option<String>,
 }
@@ -48,7 +48,7 @@ pub struct ConnectiveInfo {
 
 #[cfg(feature = "server")]
 #[derive(Serialize)]
-pub struct StructureSchema {
+pub struct SystemDefinition {
     pub structure_type: String,
     pub term_count: usize,
     pub term_characters: Vec<String>,
@@ -97,7 +97,7 @@ pub fn create_router(storage: SurrealStorage) -> Router {
         .route("/structures/:id", get(get_structure))
         .route("/structures/:id", delete(delete_structure))
         .route("/structures/:id/related", get(get_related_structures))
-        .route("/schema/:structure_type", get(get_structure_schema))
+        .route("/schema/:structure_type", get(get_system_definition))
         .route("/health", get(health_check))
         .layer(CorsLayer::permissive())
         .with_state(state)
@@ -167,7 +167,7 @@ async fn create_structure(
         ))));
     }
 
-    // Validate term count matches structure type
+    // Validate user instance count matches structure type
     let expected_term_count = match payload.structure_type.as_str() {
         "monad" => 1,
         "dyad" => 2,
@@ -184,20 +184,20 @@ async fn create_structure(
         _ => return Ok(Json(ApiResponse::error("Invalid structure type".to_string()))),
     };
 
-    if payload.terms.len() != expected_term_count {
+    if payload.user_instance_index.len() != expected_term_count {
         return Ok(Json(ApiResponse::error(format!(
-            "Structure type '{}' requires exactly {} terms, got {}",
+            "Structure type '{}' requires exactly {} user instances, got {}",
             payload.structure_type,
             expected_term_count,
-            payload.terms.len()
+            payload.user_instance_index.len()
         ))));
     }
 
-    // Validate terms are not empty
-    for (i, term) in payload.terms.iter().enumerate() {
-        if term.trim().is_empty() {
+    // Validate user instances are not empty
+    for (i, user_instance) in payload.user_instance_index.iter().enumerate() {
+        if user_instance.trim().is_empty() {
             return Ok(Json(ApiResponse::error(format!(
-                "Term at position {} cannot be empty",
+                "User instance at position {} cannot be empty",
                 i + 1
             ))));
         }
@@ -207,7 +207,7 @@ async fn create_structure(
     match state.storage.store_structure_direct(
         &payload.name,
         &payload.structure_type,
-        payload.terms,
+        payload.user_instance_index,
         payload.connectives,
         payload.description,
     ).await {
@@ -253,15 +253,15 @@ async fn test_simple_handler() -> Json<ApiResponse<String>> {
 }
 
 #[cfg(feature = "server")]
-async fn get_structure_schema(
+async fn get_system_definition(
     Path(structure_type): Path<String>,
-) -> Result<Json<ApiResponse<StructureSchema>>, StatusCode> {
+) -> Result<Json<ApiResponse<SystemDefinition>>, StatusCode> {
     use systematics_library::System;
     
     let schema = match structure_type.as_str() {
         "triad" => {
             let system = systematics_library::TriadicSystem;
-            StructureSchema {
+            SystemDefinition {
                 structure_type: "triad".to_string(),
                 term_count: system.term_count(),
                 term_characters: system.term_characters().iter().map(|s| s.to_string()).collect(),
@@ -274,7 +274,7 @@ async fn get_structure_schema(
         },
         "monad" => {
             let system = systematics_library::MonadicSystem;
-            StructureSchema {
+            SystemDefinition {
                 structure_type: "monad".to_string(),
                 term_count: system.term_count(),
                 term_characters: system.term_characters().iter().map(|s| s.to_string()).collect(),
@@ -287,7 +287,7 @@ async fn get_structure_schema(
         },
         "dyad" => {
             let system = systematics_library::DyadicSystem;
-            StructureSchema {
+            SystemDefinition {
                 structure_type: "dyad".to_string(),
                 term_count: system.term_count(),
                 term_characters: system.term_characters().iter().map(|s| s.to_string()).collect(),
@@ -306,7 +306,7 @@ async fn get_structure_schema(
                 relationship: c.relationship,
                 description: c.description,
             }).collect();
-            StructureSchema {
+            SystemDefinition {
                 structure_type: "tetrad".to_string(),
                 term_count: system.term_count(),
                 term_characters: system.term_characters().iter().map(|s| s.to_string()).collect(),
@@ -325,7 +325,7 @@ async fn get_structure_schema(
                 relationship: c.relationship,
                 description: c.description,
             }).collect();
-            StructureSchema {
+            SystemDefinition {
                 structure_type: "pentad".to_string(),
                 term_count: system.term_count(),
                 term_characters: system.term_characters().iter().map(|s| s.to_string()).collect(),
@@ -338,7 +338,7 @@ async fn get_structure_schema(
         },
         "hexad" => {
             let system = systematics_library::HexadicSystem;
-            StructureSchema {
+            SystemDefinition {
                 structure_type: "hexad".to_string(),
                 term_count: system.term_count(),
                 term_characters: system.term_characters().iter().map(|s| s.to_string()).collect(),
@@ -351,7 +351,7 @@ async fn get_structure_schema(
         },
         "heptad" => {
             let system = systematics_library::HeptadicSystem;
-            StructureSchema {
+            SystemDefinition {
                 structure_type: "heptad".to_string(),
                 term_count: system.term_count(),
                 term_characters: system.term_characters().iter().map(|s| s.to_string()).collect(),
@@ -364,7 +364,7 @@ async fn get_structure_schema(
         },
         "octad" => {
             let system = systematics_library::OctadicSystem;
-            StructureSchema {
+            SystemDefinition {
                 structure_type: "octad".to_string(),
                 term_count: system.term_count(),
                 term_characters: system.term_characters().iter().map(|s| s.to_string()).collect(),
@@ -377,7 +377,7 @@ async fn get_structure_schema(
         },
         "ennead" => {
             let system = systematics_library::EnneadicSystem;
-            StructureSchema {
+            SystemDefinition {
                 structure_type: "ennead".to_string(),
                 term_count: system.term_count(),
                 term_characters: system.term_characters().iter().map(|s| s.to_string()).collect(),
@@ -390,7 +390,7 @@ async fn get_structure_schema(
         },
         "decad" => {
             let system = systematics_library::DecadicSystem;
-            StructureSchema {
+            SystemDefinition {
                 structure_type: "decad".to_string(),
                 term_count: system.term_count(),
                 term_characters: system.term_characters().iter().map(|s| s.to_string()).collect(),
@@ -403,7 +403,7 @@ async fn get_structure_schema(
         },
         "undecad" => {
             let system = systematics_library::UndecadicSystem;
-            StructureSchema {
+            SystemDefinition {
                 structure_type: "undecad".to_string(),
                 term_count: system.term_count(),
                 term_characters: system.term_characters().iter().map(|s| s.to_string()).collect(),
@@ -416,7 +416,7 @@ async fn get_structure_schema(
         },
         "dodecad" => {
             let system = systematics_library::DodecadicSystem;
-            StructureSchema {
+            SystemDefinition {
                 structure_type: "dodecad".to_string(),
                 term_count: system.term_count(),
                 term_characters: system.term_characters().iter().map(|s| s.to_string()).collect(),

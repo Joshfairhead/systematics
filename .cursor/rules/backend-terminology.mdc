@@ -1,0 +1,266 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Backend Terminology Consistency Rules
+
+## CRITICAL: Established Terminology Standards
+
+The backend has established proven terminology patterns that MUST be maintained consistently. The frontend has been refactored to align with these patterns, making backend consistency even more critical.
+
+### IMPORTANT: Current vs Deprecated Terminology
+
+**CURRENT ESTABLISHED STANDARDS** (DO NOT CHANGE):
+- `term_characters` - Bennett's canonical term characters from schema (e.g., "Will", "Being", "Function")
+- `user_instance_index` - User-provided data that maps to term character positions
+- `first_order_connectives_type()` - Method returning connective type name
+- `connectives_traits()` - Method returning relationship data
+
+**DEPRECATED/INCORRECT** (DO NOT USE):
+- `canonical_terms` - Old field name, replaced by `term_characters`
+- `terms` - Ambiguous field name, unclear if user data or schema data
+- `connectives()` - Ambiguous method name, replaced by `connectives_traits()`
+
+### Core Terminology Standards
+
+#### SystematicStructure Trait Methods (ESTABLISHED PATTERNS)
+- ✅ `user_instance_index()` - Returns user-provided data array
+- ✅ `first_order_connectives_type()` - Returns connective type name  
+- ✅ `connectives_traits()` - Returns relationship data
+- ✅ `term_characters()` - Returns Bennett's canonical term characters
+- ❌ `terms()` - Ambiguous, deprecated
+- ❌ `connectives()` - Ambiguous, deprecated
+- ❌ `first_order_connectives_name()` - Inconsistent naming
+
+#### Field Naming Standards
+- ✅ `user_instance_index: [String; N]` - User-provided data field
+- ✅ `term_characters: Vec<String>` - Schema/Bennett definitions (ESTABLISHED)
+- ✅ `first_order_connectives_type: String` - Connective type identifier
+- ❌ `user_instances` - Inconsistent with method name
+- ❌ `terms` - Ambiguous about data source
+- ❌ `canonical_terms` - Deprecated terminology (replaced by term_characters)
+
+#### API Response Fields (MUST match frontend exactly)
+```rust
+// ✅ CORRECT - Matches frontend expectations
+pub struct StoredStructure {
+    pub id: Thing,
+    pub name: String,
+    pub structure_type: String,
+    pub user_instance_index: Vec<String>, // CRITICAL: Must match frontend
+    pub connectives: HashMap<String, String>,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
+    pub description: Option<String>,
+    pub metadata: HashMap<String, String>,
+}
+
+// ❌ INCORRECT - Would break frontend integration
+pub struct StoredStructure {
+    pub terms: Vec<String>, // Wrong field name
+    pub instances: Vec<String>, // Generic without context
+}
+```
+
+### Method Documentation Standards
+
+#### Clear User vs Schema Distinction
+```rust
+/// Get user instance at position 0 (maps to Bennett's "Will" term character)
+/// Returns the user-provided data for the first position of the triad
+fn get_user_instance_at(&self, position: usize) -> Option<&str> {
+    self.user_instance_index.get(position)
+}
+
+/// Get Bennett's term character for position 0
+/// Returns "Will" for triad's first position regardless of user data
+fn get_term_character(&self, position: usize) -> Option<&str> {
+    self.term_characters().get(position)
+}
+```
+
+#### Source Attribution Requirements
+```rust
+// ✅ CORRECT - Proper source attribution
+// Source: QualSystems Course Module 2 + Bennett's Elementary Systematics
+// Reference: H3uni.org/module-2
+// Term Characters: Active, Passive, Reconciling
+impl SystematicStructure for Triad {
+    fn term_characters(&self) -> Vec<String> {
+        vec!["Active".to_string(), "Passive".to_string(), "Reconciling".to_string()]
+    }
+}
+```
+
+### API Endpoint Consistency
+
+#### Schema Endpoints
+- ✅ `GET /schema/{structure_type}` returns `SchemaDefinition` with `term_characters` field (ESTABLISHED)
+- ✅ Field name `term_characters` (CURRENT STANDARD - not deprecated `canonical_terms`)
+- ✅ Consistent structure type naming (monad, dyad, triad, etc.)
+
+#### CRUD Endpoints
+```rust
+// ✅ CORRECT - Accepts user_instance_index field
+#[derive(Deserialize)]
+pub struct CreateStructureRequest {
+    pub name: String,
+    pub structure_type: String,
+    pub user_instance_index: Vec<String>, // Must match frontend exactly
+    pub connectives: HashMap<String, String>,
+    pub description: Option<String>,
+}
+
+// ✅ CORRECT - SchemaDefinition for Bennett's structure definitions
+#[derive(Serialize)]
+pub struct SchemaDefinition {
+    pub structure_type: String,
+    pub term_characters: Vec<String>, // Bennett's canonical terms
+    pub coherence_attribute: String,
+    // ... other Bennett definition fields
+}
+```
+
+### Database Schema Standards
+
+#### SurrealDB Field Names
+- ✅ `user_instance_index` field in structure records
+- ✅ `structure_type` for system identification
+- ✅ `term_characters` in schema responses (ESTABLISHED STANDARD)
+- ❌ Legacy `terms` or `instances` fields
+- ❌ Deprecated `canonical_terms` field
+
+### Error Message Terminology
+
+#### User-Facing Messages
+- ✅ "Invalid user instance at position X"
+- ✅ "Structure requires N user instances"
+- ❌ "Invalid term at position X" (ambiguous)
+- ❌ "Structure requires N terms" (unclear about user vs schema)
+
+#### Developer/Debug Messages
+- ✅ "Term character mismatch for structure type"
+- ✅ "Schema validation failed for term characters"
+- ✅ "User instance validation error"
+
+### Implementation Patterns
+
+#### Structure Creation
+```rust
+// ✅ CORRECT - Clear field usage
+pub fn create_structure(
+    name: String,
+    structure_type: String,
+    user_instance_index: Vec<String>, // User-provided data
+) -> Result<StoredStructure, SystematicsError> {
+    // Validate against term_characters from schema
+    let schema = get_structure_schema(&structure_type)?;
+    if user_instance_index.len() != schema.term_characters.len() {
+        return Err(SystematicsError::InvalidUserInstanceCount);
+    }
+    // ... rest of implementation
+}
+```
+
+#### Validation Logic
+```rust
+// ✅ CORRECT - Clear separation of concerns
+fn validate_structure(structure: &StoredStructure) -> Result<(), SystematicsError> {
+    // Validate user instances against schema
+    let schema = get_schema(&structure.structure_type)?;
+    
+    if structure.user_instance_index.len() != schema.term_characters.len() {
+        return Err(SystematicsError::UserInstanceCountMismatch {
+            expected: schema.term_characters.len(),
+            actual: structure.user_instance_index.len(),
+        });
+    }
+    
+    // Additional validation...
+    Ok(())
+}
+```
+
+### CLI Integration Standards
+
+#### Command Parameters
+- ✅ `--user-instances` flag for user-provided data
+- ✅ `--structure-type` for system specification
+- ❌ `--terms` flag (ambiguous)
+
+#### Display Output
+```rust
+// ✅ CORRECT - Clear labeling (ESTABLISHED PATTERN)
+println!("Structure: {}", structure.name);
+println!("Type: {}", structure.structure_type);
+println!("User Instances: {}", structure.user_instance_index.join(", "));
+println!("Term Characters: {}", schema.term_characters.join(", ")); // CURRENT STANDARD
+```
+
+### Migration and Compatibility
+
+#### Legacy Support
+- All legacy `terms()` method calls have been updated to `user_instance_index()`
+- Database migration completed from `terms` to `user_instance_index` fields
+- API maintains backward compatibility during transition periods
+
+#### Breaking Changes Protocol
+1. Update trait method signatures first
+2. Update all implementations simultaneously
+3. Update API endpoints and request/response types
+4. Update CLI integration
+5. Update frontend integration
+6. Verify end-to-end consistency
+
+### Testing Standards
+
+#### Unit Test Naming
+```rust
+#[test]
+fn test_user_instance_validation() { /* ... */ }
+
+#[test]
+fn test_term_character_retrieval() { /* ... */ }
+
+#[test] 
+fn test_user_instance_to_term_character_mapping() { /* ... */ }
+```
+
+#### Integration Test Patterns
+- Test user instance storage and retrieval
+- Test term character schema endpoints
+- Test frontend-backend field name consistency
+- Test CLI parameter handling
+
+### Enforcement Guidelines
+
+#### Code Review Checklist
+- [ ] Uses `user_instance_index` for user-provided data
+- [ ] Uses `term_characters` for schema/Bennett definitions
+- [ ] Clear documentation distinguishing user vs schema data
+- [ ] Proper source attribution for systematic structures
+- [ ] Consistent error message terminology
+- [ ] API field names match frontend expectations exactly
+
+#### Automated Checks
+- Lint rules to prevent usage of deprecated `terms()` methods
+- Database schema validation for required field names
+- API response validation against frontend types
+- Integration tests for terminology consistency
+
+### Critical Success Factors
+
+1. **Frontend Alignment**: Backend field names MUST match frontend exactly (and vice a versa)
+2. **Developer Clarity**: Clear distinction between user data and schema data
+3. **Source Accuracy**: Proper attribution to Bennett/QualSystems sources
+4. **Consistency**: Identical patterns across all systematic structures
+5. **Maintainability**: Future changes must preserve terminology standards
+
+### Notes
+
+- These patterns were established through comprehensive refactoring
+- Frontend has been updated to match these exact patterns
+- Any deviation breaks frontend-backend integration
+- Terminology consistency is critical for project maintainability
+- Source attribution ensures academic accuracy
