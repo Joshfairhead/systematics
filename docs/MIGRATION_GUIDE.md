@@ -1,11 +1,11 @@
 # SystematicStructure API Migration Guide
 
-**Version**: 2025.01 (Commits: `ca743d8`, `user_instance_index_fix`)  
-**Type**: Breaking Changes - Method Renames, Layout Standardization & Field Name Consistency
+**Version**: 2025.01 (Commits: `ca743d8`, `fe27c60`, `4a35467`)  
+**Type**: Breaking Changes - Method Renames, Layout Standardization, Field Name Consistency & Cross-Layer Method Alignment
 
 ## 🚨 Breaking Changes Overview
 
-This migration guide covers the comprehensive refactor of the `SystematicStructure` trait that introduces breaking changes to method names, API responses, and internal field naming consistency.
+This migration guide covers the comprehensive refactor of the `SystematicStructure` trait that introduces breaking changes to method names, API responses, internal field naming consistency, and cross-layer method alignment.
 
 ## 📋 Method Renames
 
@@ -28,6 +28,17 @@ All structure files now use consistent field naming following the monad pattern:
 | All Structures | `user_term_index` | `user_instance_index` | `user_instance_index: [String; N]` |
 
 **Affected Files**: `dyad.rs`, `triad.rs`, `tetrad.rs`, `pentad.rs`, `hexad.rs`, `heptad.rs`, `octad.rs`, `ennead.rs`, `decad.rs`, `undecad.rs`, `dodecad.rs`
+
+### **Cross-Layer Method Consistency**
+All layers now use identical method names for complete consistency:
+
+| **Layer** | **Method Names** | **Status** |
+|-----------|------------------|------------|
+| **Library** (systematics-library) | `first_order_connectives_type()`, `connectives_traits()` | ✅ Updated |
+| **API Structures** (systematics-api) | `first_order_connectives_type()`, `connectives_traits()` | ✅ Updated |
+| **API Server** (server.rs) | Calls consistent method names | ✅ Updated |
+| **CLI** (systematics-cli) | Uses consistent method names | ✅ Updated |
+| **Frontend** | Uses consistent API schema fields | ✅ Already correct |
 
 ## 🔧 Code Migration
 
@@ -303,6 +314,8 @@ These patterns are intentionally maintained:
 4. **Disambiguation**: Clear separation between trait methods and library system methods
 5. **Developer Experience**: Field names match method names, eliminating confusion
 6. **Code Reliability**: Comments and implementation are now properly aligned
+7. **Cross-Layer Consistency**: All layers (library, API, CLI, frontend) use identical method names
+8. **Maintainability**: No more confusion about which method name to use in different contexts
 
 ---
 
