@@ -486,7 +486,7 @@ impl ApiStorage {
         let id = self.api_client.create_structure(
             name,
             structure.structure_type(),
-            structure.terms().to_vec(),
+            structure.user_instance_index().to_vec(),
             connectives,
             description.map(|s| s.to_string()),
         ).await?;
