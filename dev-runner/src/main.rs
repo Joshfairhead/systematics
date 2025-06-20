@@ -21,21 +21,29 @@ fn main() {
     println!("📡 Starting API Server in background...");
     start_api_server();
 
-    println!("⏳ Waiting for API server to start...");
-    thread::sleep(Duration::from_secs(3));
+    println!("⏳ Waiting for API server to be ready...");
+    if !wait_for_api_server(30) {
+        println!("❌ API server failed to start within 30 seconds");
+        return;
+    }
+    println!("✅ API Server is ready!");
 
     println!("🌐 Starting Frontend Server in background...");
     start_frontend_server();
 
-    println!("⏳ Waiting for frontend server to start...");
-    thread::sleep(Duration::from_secs(3));
+    println!("⏳ Waiting for frontend server to be ready...");
+    if !wait_for_frontend_server(30) {
+        println!("❌ Frontend server failed to start within 30 seconds");
+        return;
+    }
+    println!("✅ Frontend Server is ready!");
 
     println!();
-    println!("✅ SysteMaster Development Environment Ready!");
+    println!("🎉 SysteMaster Development Environment Ready!");
     println!("=============================================");
     println!("🔗 Frontend:  http://localhost:8081");
     println!("🔗 API:       http://localhost:3001");
-    println!("📚 API Docs:  http://localhost:3001/health");
+    println!("📚 API Health: http://localhost:3001/health");
     println!();
     
     // Ask if user wants CLI
@@ -79,6 +87,56 @@ fn start_frontend_server() {
         .stderr(Stdio::null())
         .spawn()
         .expect("Failed to start frontend server");
+}
+
+fn wait_for_api_server(timeout_seconds: u64) -> bool {
+    for i in 0..timeout_seconds {
+        if i > 0 && i % 5 == 0 {
+            println!("   Still waiting for API server... ({}/{}s)", i, timeout_seconds);
+        }
+        
+        if check_api_health() {
+            return true;
+        }
+        
+        thread::sleep(Duration::from_secs(1));
+    }
+    false
+}
+
+fn wait_for_frontend_server(timeout_seconds: u64) -> bool {
+    for i in 0..timeout_seconds {
+        if i > 0 && i % 5 == 0 {
+            println!("   Still waiting for frontend server... ({}/{}s)", i, timeout_seconds);
+        }
+        
+        if check_frontend_health() {
+            return true;
+        }
+        
+        thread::sleep(Duration::from_secs(1));
+    }
+    false
+}
+
+fn check_api_health() -> bool {
+    match ureq::get("http://localhost:3001/health")
+        .timeout(std::time::Duration::from_secs(2))
+        .call()
+    {
+        Ok(response) => response.status() == 200,
+        Err(_) => false,
+    }
+}
+
+fn check_frontend_health() -> bool {
+    match ureq::get("http://localhost:8081")
+        .timeout(std::time::Duration::from_secs(2))
+        .call()
+    {
+        Ok(response) => response.status() == 200,
+        Err(_) => false,
+    }
 }
 
 fn start_cli() {

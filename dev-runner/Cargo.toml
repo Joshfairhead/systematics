@@ -3,6 +3,9 @@ name = "dev-runner"
 version.workspace = true
 edition.workspace = true
 
+[dependencies]
+ureq = "2.10"
+
 [[bin]]
 name = "dev"
 path = "src/main.rs" 
