@@ -387,4 +387,22 @@ pub fn create_monad(name: &str, term: &str) -> Result<JsValue, JsValue> {
 
 ## License
 
-Same as parent project. 
+Same as parent project.
+
+## Running the Server
+
+To start the API server, use:
+
+```bash
+cd api
+cargo run --bin server --features server
+```
+
+**Note**: The `--features server` flag is required to enable the server functionality.
+
+If you encounter a database lock error, check for existing server processes:
+```bash
+ps aux | grep server
+kill <process_id>
+rm -f ../data/systematics.db/LOCK
+``` 
