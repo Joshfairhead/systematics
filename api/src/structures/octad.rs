@@ -16,7 +16,7 @@ pub struct Octad {
     name: String,
     
     // User's terms for each index position (octad has 8 term indices)
-    user_term_index: [String; 8],
+    user_instance_index: [String; 8],
     
     // User-defined attributes
     attributes: Vec<String>,
@@ -36,7 +36,7 @@ impl Octad {
         Self {
             id: Uuid::new_v4().to_string(),
             name,
-            user_term_index: [
+            user_instance_index: [
                 String::new(), String::new(), String::new(), String::new(),
                 String::new(), String::new(), String::new(), String::new()
             ],
@@ -58,54 +58,54 @@ impl Octad {
     /// * `Some(&str)` - The user instance at the given position
     /// * `None` - If the index is out of bounds
     pub fn get_term(&self, index: usize) -> Option<&str> {
-        self.user_term_index.get(index).map(|s| s.as_str())
+        self.user_instance_index.get(index).map(|s| s.as_str())
     }
     
     /// Get the first user instance (maps to "Smallest Significant Holon")
     pub fn first_user_instance(&self) -> &str {
-        &self.user_term_index[0]
+        &self.user_instance_index[0]
     }
     
     /// Get the second user instance (maps to "Critical Functions")
     pub fn second_user_instance(&self) -> &str {
-        &self.user_term_index[1]
+        &self.user_instance_index[1]
     }
     
     /// Get the third user instance (maps to "Supportive Platform")
     pub fn third_user_instance(&self) -> &str {
-        &self.user_term_index[2]
+        &self.user_instance_index[2]
     }
     
     /// Get the fourth user instance (maps to "Necessary Resourcing")
     pub fn fourth_user_instance(&self) -> &str {
-        &self.user_term_index[3]
+        &self.user_instance_index[3]
     }
     
     /// Get the fifth user instance (maps to "Integrative Totality")
     pub fn fifth_user_instance(&self) -> &str {
-        &self.user_term_index[4]
+        &self.user_instance_index[4]
     }
     
     /// Get the sixth user instance (maps to "Inherent Values")
     pub fn sixth_user_instance(&self) -> &str {
-        &self.user_term_index[5]
+        &self.user_instance_index[5]
     }
     
     /// Get the seventh user instance (maps to "Intrinsic Nature")
     pub fn seventh_user_instance(&self) -> &str {
-        &self.user_term_index[6]
+        &self.user_instance_index[6]
     }
     
     /// Get the eighth user instance (maps to "Organisational Modes")
     pub fn eighth_user_instance(&self) -> &str {
-        &self.user_term_index[7]
+        &self.user_instance_index[7]
     }
 
     /// Get all user instances as a tuple
     pub fn instances_tuple(&self) -> (&str, &str, &str, &str, &str, &str, &str, &str) {
-        (&self.user_term_index[0], &self.user_term_index[1], &self.user_term_index[2], 
-         &self.user_term_index[3], &self.user_term_index[4], &self.user_term_index[5], 
-         &self.user_term_index[6], &self.user_term_index[7])
+        (&self.user_instance_index[0], &self.user_instance_index[1], &self.user_instance_index[2], 
+         &self.user_instance_index[3], &self.user_instance_index[4], &self.user_instance_index[5], 
+         &self.user_instance_index[6], &self.user_instance_index[7])
     }
     
     /// Add an attribute to the octad
@@ -164,13 +164,13 @@ impl Octad {
     /// Map a user instance to its positional coordinate
     /// Returns the 0-based index for the given user instance
     pub fn instance_to_position(&self, instance: &str) -> Option<usize> {
-        self.user_term_index.iter().position(|inst| inst == instance)
+        self.user_instance_index.iter().position(|inst| inst == instance)
     }
     
     /// Map a positional coordinate to its user instance
     /// Returns the user instance for the given 0-based position index
     pub fn instance_from_position(&self, position: usize) -> Option<&str> {
-        self.user_term_index.get(position).map(|s| s.as_str())
+        self.user_instance_index.get(position).map(|s| s.as_str())
     }
     
         /// Map a position to its term character (alias for term_character_from_position)
@@ -230,7 +230,7 @@ impl SystematicStructure for Octad {
     }
     
     fn user_instance_index(&self) -> &[String] {
-        &self.user_term_index
+        &self.user_instance_index
     }
     
     fn first_order_connectives_type(&self) -> &str {
@@ -254,7 +254,7 @@ impl SystematicStructure for Octad {
         }
         
         // Validate all eight terms are not empty
-        for (i, term) in self.user_term_index.iter().enumerate() {
+        for (i, term) in self.user_instance_index.iter().enumerate() {
             if term.trim().is_empty() {
                 return Err(SystematicsError::StructureValidation {
                     reason: format!("Term {} cannot be empty", i + 1),
@@ -263,7 +263,7 @@ impl SystematicStructure for Octad {
         }
         
         // Validate term lengths and characters
-        for (i, term) in self.user_term_index.iter().enumerate() {
+        for (i, term) in self.user_instance_index.iter().enumerate() {
             if term.len() > 100 {
                 return Err(SystematicsError::StructureValidation {
                     reason: format!("Term {} is too long (max 100 characters)", i + 1),
@@ -280,7 +280,7 @@ impl SystematicStructure for Octad {
         // Validate terms are all different
         for i in 0..8 {
             for j in (i + 1)..8 {
-                if self.user_term_index[i].trim().to_lowercase() == self.user_term_index[j].trim().to_lowercase() {
+                if self.user_instance_index[i].trim().to_lowercase() == self.user_instance_index[j].trim().to_lowercase() {
                     return Err(SystematicsError::StructureValidation {
                         reason: format!("Terms {} and {} should be different to represent distinct aspects", i + 1, j + 1),
                     });
@@ -296,14 +296,14 @@ impl SystematicStructure for Octad {
         println!("\n{}", header);
         println!("Name: {}", self.name());
         println!("{}:", self.term_designation());
-        println!("  - {}", self.user_term_index[0]);
-        println!("  - {}", self.user_term_index[1]);
-        println!("  - {}", self.user_term_index[2]);
-        println!("  - {}", self.user_term_index[3]);
-        println!("  - {}", self.user_term_index[4]);
-        println!("  - {}", self.user_term_index[5]);
-        println!("  - {}", self.user_term_index[6]);
-        println!("  - {}", self.user_term_index[7]);
+        println!("  - {}", self.user_instance_index[0]);
+        println!("  - {}", self.user_instance_index[1]);
+        println!("  - {}", self.user_instance_index[2]);
+        println!("  - {}", self.user_instance_index[3]);
+        println!("  - {}", self.user_instance_index[4]);
+        println!("  - {}", self.user_instance_index[5]);
+        println!("  - {}", self.user_instance_index[6]);
+        println!("  - {}", self.user_instance_index[7]);
         
         if !self.attributes.is_empty() {
             println!("Attributes: {}", self.attributes.join(", "));
@@ -313,8 +313,8 @@ impl SystematicStructure for Octad {
             println!("Connectives:");
             for ((from, to), relationship) in &self.connectives {
                 println!("  {} → {}: {}", 
-                    self.user_term_index[*from], 
-                    self.user_term_index[*to], 
+                    self.user_instance_index[*from], 
+                    self.user_instance_index[*to], 
                     relationship);
             }
         }
@@ -371,7 +371,7 @@ impl OctadBuilder {
         let octad = Octad {
             id: Uuid::new_v4().to_string(),
             name: self.name,
-            user_term_index: self.terms,
+            user_instance_index: self.terms,
             attributes: self.attributes,
             connectives: self.connectives.unwrap_or_else(HashMap::new),
             system: OctadicSystem,

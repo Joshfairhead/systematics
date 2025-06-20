@@ -16,7 +16,7 @@ pub struct Heptad {
     name: String,
     
     // User's terms for each index position (heptad has 7 term indices)
-    user_term_index: [String; 7],
+    user_instance_index: [String; 7],
     
     // User-defined attributes
     attributes: Vec<String>,
@@ -36,7 +36,7 @@ impl Heptad {
         Self {
             id: Uuid::new_v4().to_string(),
             name,
-            user_term_index: [
+            user_instance_index: [
                 String::new(), String::new(), String::new(), String::new(),
                 String::new(), String::new(), String::new()
             ],
@@ -58,49 +58,49 @@ impl Heptad {
     /// * `Some(&str)` - The user instance at the given position
     /// * `None` - If the index is out of bounds
     pub fn get_term(&self, index: usize) -> Option<&str> {
-        self.user_term_index.get(index).map(|s| s.as_str())
+        self.user_instance_index.get(index).map(|s| s.as_str())
     }
     
     /// Get the first user instance (maps to "Insight")
     pub fn first_user_instance(&self) -> &str {
-        &self.user_term_index[0]
+        &self.user_instance_index[0]
     }
     
     /// Get the second user instance (maps to "Research")
     pub fn second_user_instance(&self) -> &str {
-        &self.user_term_index[1]
+        &self.user_instance_index[1]
     }
     
     /// Get the third user instance (maps to "Design")
     pub fn third_user_instance(&self) -> &str {
-        &self.user_term_index[2]
+        &self.user_instance_index[2]
     }
     
     /// Get the fourth user instance (maps to "Synthesis")
     pub fn fourth_user_instance(&self) -> &str {
-        &self.user_term_index[3]
+        &self.user_instance_index[3]
     }
     
     /// Get the fifth user instance (maps to "Application")
     pub fn fifth_user_instance(&self) -> &str {
-        &self.user_term_index[4]
+        &self.user_instance_index[4]
     }
     
     /// Get the sixth user instance (maps to "Delivery")
     pub fn sixth_user_instance(&self) -> &str {
-        &self.user_term_index[5]
+        &self.user_instance_index[5]
     }
     
     /// Get the seventh user instance (maps to "Value")
     pub fn seventh_user_instance(&self) -> &str {
-        &self.user_term_index[6]
+        &self.user_instance_index[6]
     }
 
     /// Get all user instances as a tuple
     pub fn instances_tuple(&self) -> (&str, &str, &str, &str, &str, &str, &str) {
-        (&self.user_term_index[0], &self.user_term_index[1], &self.user_term_index[2], 
-         &self.user_term_index[3], &self.user_term_index[4], &self.user_term_index[5], 
-         &self.user_term_index[6])
+        (&self.user_instance_index[0], &self.user_instance_index[1], &self.user_instance_index[2], 
+         &self.user_instance_index[3], &self.user_instance_index[4], &self.user_instance_index[5], 
+         &self.user_instance_index[6])
     }
     
     /// Add an attribute to the heptad
@@ -159,13 +159,13 @@ impl Heptad {
     /// Map a user instance to its positional coordinate
     /// Returns the 0-based index for the given user instance
     pub fn instance_to_position(&self, instance: &str) -> Option<usize> {
-        self.user_term_index.iter().position(|inst| inst == instance)
+        self.user_instance_index.iter().position(|inst| inst == instance)
     }
     
     /// Map a positional coordinate to its user instance
     /// Returns the user instance for the given 0-based position index
     pub fn instance_from_position(&self, position: usize) -> Option<&str> {
-        self.user_term_index.get(position).map(|s| s.as_str())
+        self.user_instance_index.get(position).map(|s| s.as_str())
     }
     
         /// Map a position to its term character (alias for term_character_from_position)
@@ -225,7 +225,7 @@ impl SystematicStructure for Heptad {
     }
     
     fn user_instance_index(&self) -> &[String] {
-        &self.user_term_index
+        &self.user_instance_index
     }
     
     fn first_order_connectives_type(&self) -> &str {
@@ -250,7 +250,7 @@ impl SystematicStructure for Heptad {
         
         // Validate all seven terms are not empty
         let term_names = ["Insight", "Research", "Design", "Synthesis", "Application", "Delivery", "Value"];
-        for (i, term) in self.user_term_index.iter().enumerate() {
+        for (i, term) in self.user_instance_index.iter().enumerate() {
             if term.trim().is_empty() {
                 return Err(SystematicsError::StructureValidation {
                     reason: format!("Term {} ({}) cannot be empty", i + 1, term_names[i]),
@@ -259,7 +259,7 @@ impl SystematicStructure for Heptad {
         }
         
         // Validate term lengths and characters
-        for (i, term) in self.user_term_index.iter().enumerate() {
+        for (i, term) in self.user_instance_index.iter().enumerate() {
             if term.len() > 100 {
                 return Err(SystematicsError::StructureValidation {
                     reason: format!("Term {} is too long (max 100 characters)", i + 1),
@@ -276,7 +276,7 @@ impl SystematicStructure for Heptad {
         // Validate terms are all different
         for i in 0..7 {
             for j in (i + 1)..7 {
-                if self.user_term_index[i].trim().to_lowercase() == self.user_term_index[j].trim().to_lowercase() {
+                if self.user_instance_index[i].trim().to_lowercase() == self.user_instance_index[j].trim().to_lowercase() {
                     return Err(SystematicsError::StructureValidation {
                         reason: format!("Terms {} and {} should be different to represent distinct aspects", i + 1, j + 1),
                     });
@@ -292,13 +292,13 @@ impl SystematicStructure for Heptad {
         println!("\n{}", header);
         println!("Name: {}", self.name());
         println!("{}:", self.term_designation());
-        println!("  - {}", self.user_term_index[0]);
-        println!("  - {}", self.user_term_index[1]);
-        println!("  - {}", self.user_term_index[2]);
-        println!("  - {}", self.user_term_index[3]);
-        println!("  - {}", self.user_term_index[4]);
-        println!("  - {}", self.user_term_index[5]);
-        println!("  - {}", self.user_term_index[6]);
+        println!("  - {}", self.user_instance_index[0]);
+        println!("  - {}", self.user_instance_index[1]);
+        println!("  - {}", self.user_instance_index[2]);
+        println!("  - {}", self.user_instance_index[3]);
+        println!("  - {}", self.user_instance_index[4]);
+        println!("  - {}", self.user_instance_index[5]);
+        println!("  - {}", self.user_instance_index[6]);
         
         if !self.attributes.is_empty() {
             println!("Attributes: {}", self.attributes.join(", "));
@@ -308,8 +308,8 @@ impl SystematicStructure for Heptad {
             println!("Connectives:");
             for ((from, to), relationship) in &self.connectives {
                 println!("  {} → {}: {}", 
-                    self.user_term_index[*from], 
-                    self.user_term_index[*to], 
+                    self.user_instance_index[*from], 
+                    self.user_instance_index[*to], 
                     relationship);
             }
         }
@@ -366,7 +366,7 @@ impl HeptadBuilder {
         let heptad = Heptad {
             id: Uuid::new_v4().to_string(),
             name: self.name,
-            user_term_index: self.terms,
+            user_instance_index: self.terms,
             attributes: self.attributes,
             connectives: self.connectives.unwrap_or_else(HashMap::new),
             system: HeptadicSystem,

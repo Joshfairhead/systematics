@@ -14,7 +14,7 @@ pub struct Pentad {
     name: String,
     
     // User's terms for each index position (pentad has 5 term indices)
-    user_term_index: [String; 5],
+    user_instance_index: [String; 5],
     
     // Connective relationships
     connectives: HashMap<(usize, usize), String>,
@@ -29,7 +29,7 @@ impl Pentad {
         Self {
             id: Uuid::new_v4().to_string(),
             name,
-            user_term_index: terms,
+            user_instance_index: terms,
             connectives: HashMap::new(),
             system: PentadicSystem,
         }
@@ -37,32 +37,32 @@ impl Pentad {
     
     /// Get user instance at position 0 (maps to term character "Quintessence")
     pub fn first_user_instance(&self) -> &str {
-        &self.user_term_index[0]
+        &self.user_instance_index[0]
     }
     
     /// Get user instance at position 1 (maps to term character "Higher Potential")
     pub fn second_user_instance(&self) -> &str {
-        &self.user_term_index[1]
+        &self.user_instance_index[1]
     }
     
     /// Get user instance at position 2 (maps to term character "Lower Potential")
     pub fn third_user_instance(&self) -> &str {
-        &self.user_term_index[2]
+        &self.user_instance_index[2]
     }
     
     /// Get user instance at position 3 (maps to term character "Purpose")
     pub fn fourth_user_instance(&self) -> &str {
-        &self.user_term_index[3]
+        &self.user_instance_index[3]
     }
     
     /// Get user instance at position 4 (maps to term character "Source")
     pub fn fifth_user_instance(&self) -> &str {
-        &self.user_term_index[4]
+        &self.user_instance_index[4]
     }
     
     /// Get all terms as a tuple
     pub fn terms_tuple(&self) -> (&str, &str, &str, &str, &str) {
-        (&self.user_term_index[0], &self.user_term_index[1], &self.user_term_index[2], &self.user_term_index[3], &self.user_term_index[4])
+        (&self.user_instance_index[0], &self.user_instance_index[1], &self.user_instance_index[2], &self.user_instance_index[3], &self.user_instance_index[4])
     }
     
     /// Get connective relationship between two terms
@@ -104,13 +104,13 @@ impl Pentad {
     /// Map a user instance to its positional coordinate
     /// Returns the 0-based index for the given user instance
     pub fn instance_to_position(&self, instance: &str) -> Option<usize> {
-        self.user_term_index.iter().position(|inst| inst == instance)
+        self.user_instance_index.iter().position(|inst| inst == instance)
     }
     
     /// Map a positional coordinate to its user instance
     /// Returns the user instance for the given 0-based position index
     pub fn instance_from_position(&self, position: usize) -> Option<&str> {
-        self.user_term_index.get(position).map(|s| s.as_str())
+        self.user_instance_index.get(position).map(|s| s.as_str())
     }
     
         /// Map a position to its term character (alias for term_character_from_position)
@@ -170,7 +170,7 @@ impl SystematicStructure for Pentad {
     }
     
     fn user_instance_index(&self) -> &[String] {
-        &self.user_term_index
+        &self.user_instance_index
     }
     
     fn first_order_connectives_type(&self) -> &str {
@@ -195,7 +195,7 @@ impl SystematicStructure for Pentad {
         
         // Validate all five terms are not empty
         let term_names = ["Quintessence", "Higher Potential", "Lower Potential", "Purpose", "Source"];
-        for (i, term) in self.user_term_index.iter().enumerate() {
+        for (i, term) in self.user_instance_index.iter().enumerate() {
             if term.trim().is_empty() {
                 return Err(SystematicsError::StructureValidation {
                     reason: format!("{} term ({}) cannot be empty", 
@@ -214,7 +214,7 @@ impl SystematicStructure for Pentad {
         }
         
         // Validate term lengths
-        for (i, term) in self.user_term_index.iter().enumerate() {
+        for (i, term) in self.user_instance_index.iter().enumerate() {
             if term.len() > 100 {
                 return Err(SystematicsError::StructureValidation {
                     reason: format!("Term {} is too long (max 100 characters)", i + 1),
@@ -223,7 +223,7 @@ impl SystematicStructure for Pentad {
         }
         
         // Validate terms contain only allowed characters
-        for (i, term) in self.user_term_index.iter().enumerate() {
+        for (i, term) in self.user_instance_index.iter().enumerate() {
             if !term.chars().all(|c| c.is_alphanumeric() || c.is_whitespace() || ".,!?'-()".contains(c)) {
                 return Err(SystematicsError::StructureValidation {
                     reason: format!("Term {} contains invalid characters", i + 1),
@@ -234,7 +234,7 @@ impl SystematicStructure for Pentad {
         // Validate terms are all different (pentad should represent distinct aspects)
         for i in 0..5 {
             for j in (i + 1)..5 {
-                if self.user_term_index[i].trim().to_lowercase() == self.user_term_index[j].trim().to_lowercase() {
+                if self.user_instance_index[i].trim().to_lowercase() == self.user_instance_index[j].trim().to_lowercase() {
                     return Err(SystematicsError::StructureValidation {
                         reason: format!("Terms {} and {} should be different to represent distinct aspects", i + 1, j + 1),
                     });
@@ -250,11 +250,11 @@ impl SystematicStructure for Pentad {
         println!("\n{}", header);
         println!("Name: {}", self.name());
         println!("{}:", self.term_designation());
-        println!("  - {}", self.user_term_index[0]);
-        println!("  - {}", self.user_term_index[1]);
-        println!("  - {}", self.user_term_index[2]);
-        println!("  - {}", self.user_term_index[3]);
-        println!("  - {}", self.user_term_index[4]);
+        println!("  - {}", self.user_instance_index[0]);
+        println!("  - {}", self.user_instance_index[1]);
+        println!("  - {}", self.user_instance_index[2]);
+        println!("  - {}", self.user_instance_index[3]);
+        println!("  - {}", self.user_instance_index[4]);
         
         // Show connectives if they exist
         if !self.connectives.is_empty() {
@@ -267,8 +267,8 @@ impl SystematicStructure for Pentad {
                 let pair = if from < to { (*from, *to) } else { (*to, *from) };
                 if !shown_pairs.contains(&pair) {
                     shown_pairs.insert(pair);
-                    let left_term = &self.user_term_index[pair.0];
-                    let right_term = &self.user_term_index[pair.1];
+                    let left_term = &self.user_instance_index[pair.0];
+                    let right_term = &self.user_instance_index[pair.1];
                     display_items.push((left_term, relationship, right_term));
                 }
             }

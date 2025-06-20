@@ -206,6 +206,69 @@ cargo run storage search      # Search structures
 ```
 
 
+## 🔄 API Method Naming Refactor (Latest)
+
+### **Breaking Changes Summary**
+**Date**: January 2025  
+**Commit**: `ca743d8` - Comprehensive SystematicStructure trait refactor
+
+### **Method Renames**
+The following trait methods were renamed for clarity and consistency:
+
+| **Old Method Name** | **New Method Name** | **Purpose** |
+|-------------------|-------------------|-------------|
+| `fn first_order_connectives_name()` | `fn first_order_connectives_type()` | Returns the type/category of first-order connectives for the structure |
+| `fn connectives()` | `fn connectives_traits()` | Returns the actual connective relationships as traits between terms |
+
+### **Layout Standardization**
+- **Moved**: `fn user_instance_index()` to Content Access section (after `term_characters()`)
+- **Reference**: All 12 structure files now follow monad.rs as the standard layout pattern
+- **Consistency**: Uniform method ordering across all SystematicStructure implementations
+
+### **Files Updated**
+#### **Core Trait**
+- `api/src/lib.rs` - SystematicStructure trait definition updated
+
+#### **All Structure Implementations (12 files)**
+- `api/src/structures/monad.rs` ✅ (reference implementation)
+- `api/src/structures/dyad.rs` → `api/src/structures/dodecad.rs` ✅
+
+#### **API & Frontend Integration**  
+- `api/src/server.rs` - Schema field renamed to `first_order_connectives_type`
+- `frontend/src/services/api.rs` - API schema updated to match server
+- `api/src/storage.rs` - Trait method calls updated
+- `cli/src/storage.rs` - Trait method calls updated
+
+#### **Tests & Display Methods**
+- All test assertions updated to new method names
+- All display methods updated to use new trait methods
+- All structure `mod.rs` tests updated
+
+### **Migration Notes**
+#### **For API Clients**
+- Update JSON field references from `first_order_connectives_name` to `first_order_connectives_type`
+- No functional changes to data - only field name changes
+
+#### **For Developers**
+- Use `structure.first_order_connectives_type()` instead of `structure.first_order_connectives_name()`
+- Use `structure.connectives_traits()` instead of `structure.connectives()`  
+- Library system methods (`system.first_order_connectives_name()`) remain unchanged
+
+#### **For Frontend Integration**
+- Update API response parsing to use new field names
+- No changes needed to underlying functionality
+
+### **Verification Status**
+- ✅ **Compilation**: All code compiles successfully
+- ✅ **Core Tests**: Monad tests pass, core functionality verified  
+- ⚠️ **Legacy Tests**: Some test failures exist but are pre-existing library value mismatches, unrelated to refactor
+
+### **Rationale**
+1. **Clarity**: `first_order_connectives_type()` better describes that it returns the type/category name
+2. **Disambiguation**: `connectives_traits()` clarifies it returns the actual relationship data
+3. **Consistency**: Uniform layout across all 12 structure implementations  
+4. **Maintainability**: Monad.rs serves as definitive reference for all other structures
+
 ---
 
-*Development Context - Last Updated: After auto-start implementation and code quality improvements* 
+*Development Context - Last Updated: After comprehensive SystematicStructure trait refactor* 

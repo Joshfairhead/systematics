@@ -18,7 +18,7 @@ pub struct Triad {
     name: String,
     
     // User's instances for each positional coordinate (triad has 3 positions)
-    user_instances: [String; 3],
+    user_instance_index: [String; 3],
     
     // Connective relationships between instances (from_index, to_index) -> relationship
     connectives: HashMap<(usize, usize), String>,
@@ -35,7 +35,7 @@ impl Triad {
         Self {
             id: Uuid::new_v4().to_string(),
             name,
-            user_instances: [first_instance, second_instance, third_instance],
+            user_instance_index: [first_instance, second_instance, third_instance],
             connectives,
             system: TriadicSystem,
         }
@@ -47,22 +47,22 @@ impl Triad {
     
     /// Get the first user instance (maps to "Will")
     pub fn first_instance(&self) -> &str {
-        &self.user_instances[0]
+        &self.user_instance_index[0]
     }
     
     /// Get the second user instance (maps to "Being")
     pub fn second_instance(&self) -> &str {
-        &self.user_instances[1]
+        &self.user_instance_index[1]
     }
     
     /// Get the third user instance (maps to "Function")
     pub fn third_instance(&self) -> &str {
-        &self.user_instances[2]
+        &self.user_instance_index[2]
     }
     
     /// Get all user instances as a tuple
     pub fn instances_tuple(&self) -> (&str, &str, &str) {
-        (&self.user_instances[0], &self.user_instances[1], &self.user_instances[2])
+        (&self.user_instance_index[0], &self.user_instance_index[1], &self.user_instance_index[2])
     }
     
     /// Get the number of positional coordinates in this structure
@@ -87,13 +87,13 @@ impl Triad {
     /// Map a user instance to its positional coordinate
     /// Returns the 0-based index for the given user instance
     pub fn instance_to_position(&self, instance: &str) -> Option<usize> {
-        self.user_instances.iter().position(|inst| inst == instance)
+        self.user_instance_index.iter().position(|inst| inst == instance)
     }
     
     /// Map a positional coordinate to its user instance
     /// Returns the user instance for the given 0-based position index
     pub fn instance_from_position(&self, position: usize) -> Option<&str> {
-        self.user_instances.get(position).map(|s| s.as_str())
+        self.user_instance_index.get(position).map(|s| s.as_str())
     }
     
     /// Map a position to its term character (alias for term_character_from_position)
@@ -170,7 +170,7 @@ impl SystematicStructure for Triad {
     }
     
     fn user_instance_index(&self) -> &[String] {
-        &self.user_instances
+        &self.user_instance_index
     }
     
     fn first_order_connectives_type(&self) -> &str {
@@ -195,7 +195,7 @@ impl SystematicStructure for Triad {
         
         // Validate all three instances are not empty
         let canonical_names = ["Will", "Being", "Function"];
-        for (i, instance) in self.user_instances.iter().enumerate() {
+        for (i, instance) in self.user_instance_index.iter().enumerate() {
             if instance.trim().is_empty() {
                 return Err(SystematicsError::StructureValidation {
                     reason: format!("Instance {} ({}) cannot be empty", i + 1, canonical_names[i]),
@@ -204,7 +204,7 @@ impl SystematicStructure for Triad {
         }
         
         // Validate instance lengths
-        for (i, instance) in self.user_instances.iter().enumerate() {
+        for (i, instance) in self.user_instance_index.iter().enumerate() {
             if instance.len() > 100 {
                 return Err(SystematicsError::StructureValidation {
                     reason: format!("Instance {} is too long (max 100 characters)", i + 1),
@@ -213,7 +213,7 @@ impl SystematicStructure for Triad {
         }
         
         // Validate instances contain only allowed characters
-        for (i, instance) in self.user_instances.iter().enumerate() {
+        for (i, instance) in self.user_instance_index.iter().enumerate() {
             if !instance.chars().all(|c| c.is_alphanumeric() || c.is_whitespace() || ".,!?'-()".contains(c)) {
                 return Err(SystematicsError::StructureValidation {
                     reason: format!("Instance {} contains invalid characters", i + 1),
@@ -224,7 +224,7 @@ impl SystematicStructure for Triad {
         // Validate instances are all different
         for i in 0..3 {
             for j in (i + 1)..3 {
-                if self.user_instances[i].trim().to_lowercase() == self.user_instances[j].trim().to_lowercase() {
+                if self.user_instance_index[i].trim().to_lowercase() == self.user_instance_index[j].trim().to_lowercase() {
                     return Err(SystematicsError::StructureValidation {
                         reason: format!("Instances {} and {} should be different to represent distinct aspects", i + 1, j + 1),
                     });
@@ -255,8 +255,8 @@ impl SystematicStructure for Triad {
                 let pair = if from < to { (*from, *to) } else { (*to, *from) };
                 if !shown_pairs.contains(&pair) {
                     shown_pairs.insert(pair);
-                    let left_term = &self.user_instances[pair.0];
-                    let right_term = &self.user_instances[pair.1];
+                    let left_term = &self.user_instance_index[pair.0];
+                    let right_term = &self.user_instance_index[pair.1];
                     display_items.push((left_term, relationship, right_term));
                 }
             }
