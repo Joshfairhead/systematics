@@ -1,0 +1,310 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# SysteMaster Terminology: A Systematic Structure
+
+> **Guiding Principle**: These are systematic guidelines that serve the qualitative significance of number, not rigid rules. They evolve as our understanding deepens and implementation needs change.
+
+## Monad: Unity of Purpose
+**Core Principle**: All terminology serves systematic understanding of qualitative number
+
+SysteMaster exists to demonstrate and implement the systematic structures inherent in the qualitative significance of number. Every term, field name, and method should align with this systematic reality, creating coherent understanding rather than technical confusion. When systematic clarity conflicts with technical convenience, we generally favor systematic clarity—but with thoughtful consideration of practical constraints.
+
+## Dyad: Essential Distinctions
+
+### Term Characters ↔ User Instance Index
+**The fundamental distinction that guides naming decisions**
+
+- **Term Characters**: The qualitative systematic definitions of each position
+  - Field: `term_characters: Vec<String>` 
+  - Method: `term_characters()`
+  - API: `"term_characters": ["Active", "Passive", "Reconciling"]`
+  - Purpose: Systematic structure definitions reflecting qualitative number (immutable schema)
+  - *Guideline*: Always source from library systems, never hardcode
+
+- **User Instance Index**: User-provided data that populates systematic positions
+  - Field: `user_instance_index: Vec<String>`
+  - Method: `user_instance_index()`
+  - API: `"user_instance_index": ["Will", "Being", "Function"]`
+  - Purpose: What users contribute to fill the systematic structure (mutable data)
+  - *Guideline*: Field names should be consistent across all layers when practical
+
+## Triad: Architectural Layers
+**Our current systematic reality**
+
+### API (Active)
+**The structural will - defines and enforces systematic structure**
+
+```rust
+// SystematicStructure trait - enforces systematic structure
+pub trait SystematicStructure {
+    fn user_instance_index(&self) -> &[String];     // User data
+    fn term_characters(&self) -> Vec<String>;       // From library
+    fn first_order_connectives_type(&self) -> String;
+    fn connectives_traits(&self) -> HashMap<String, String>;
+}
+
+// Structural enforcement patterns
+#[derive(Deserialize)]
+pub struct CreateStructureRequest {
+    pub name: String,
+    pub structure_type: String,
+    pub user_instance_index: Vec<String>, // Enforces consistent naming
+    pub connectives: HashMap<String, String>,
+    pub description: Option<String>,
+}
+
+// SystemDefinition - enforces systematic structure metadata
+pub struct SystemDefinition {
+    pub term_characters: Vec<String>,     // Structural definitions
+    pub coherence_attribute: String,      // Structural organizing principle
+}
+```
+
+*Guideline*: API actively enforces systematic structure through its interface design. It defines how systematic reality must be accessed and manipulated.
+
+### Library (Passive)
+**Receives and holds systematic definitions of qualitative number**
+
+```rust
+// System trait - receives systematic definitions based on qualitative number
+pub trait System {
+    fn term_characters(&self) -> &'static [&'static str];
+    fn coherence_attribute(&self) -> &'static str;
+    fn first_order_connectives_type(&self) -> &'static str;
+    fn connectives_traits(&self) -> Vec<Connective>;
+}
+
+// Passive systematic structures (TetradicSystem, PentadicSystem, etc.)
+impl System for TriadicSystem {
+    fn term_characters(&self) -> &'static [&'static str] {
+        &["Active", "Passive", "Reconciling"]
+    }
+}
+```
+
+*Guideline*: Library passively holds the canonical definitions of systematic structures with proper source attribution to those who have articulated them well.
+
+### Frontend (Reconciling)
+**Harmonizes systematic structure with user interaction**
+
+```rust
+// Reconciling patterns - bridges systematic structure with user needs
+fn get_display_value(&self, position: usize) -> String {
+    // Priority: loaded structure's user instances
+    if let Some(structure) = &self.loaded_structure {
+        if let Some(user_instance) = structure.user_instance_index.get(position) {
+            return user_instance.clone();
+        }
+    }
+    
+    // Fallback: schema term characters (creation mode)
+    if let Some(schema) = &self.schema {
+        if let Some(term_char) = schema.term_characters.get(position) {
+            return term_char.clone();
+        }
+    }
+    
+    "".to_string()
+}
+
+// Message handling - reconciles user actions with systematic structure
+pub enum Msg {
+    SaveStructure { 
+        name: String, 
+        user_instance_index: Vec<String> 
+    },
+    LoadStructure(StoredStructure),
+    UpdateUserInstance { position: usize, value: String },
+}
+```
+
+*Guideline*: Frontend reconciles the systematic structure (from API) with user interaction needs, making the systematic accessible without compromising its integrity.
+
+## Tetrad: Activity Field of Terminology
+**The systematic structure of our naming principles**
+
+### Ideal: Systematic Naming Principles
+**Pure principles that should guide all terminology decisions**
+
+- **Systematic Clarity**: Names should reflect the qualitative systematic role of what they represent
+- **Essential Distinction**: Always distinguish between user data (`user_instance_index`) and systematic definitions (`term_characters`)
+- **Positional Meaning**: Names should indicate their position and function within systematic structures
+- **Source Grounding**: Terminology should connect to the systematic reality it represents
+
+### Directive: Concrete Naming Patterns
+**Specific patterns that implement systematic principles**
+
+- **Field Names**: 
+  - `user_instance_index: Vec<String>` - User-provided data filling systematic positions
+  - `term_characters: Vec<String>` - Systematic positional definitions
+  - `structure_type: String` - Identifies which systematic structure
+  - `coherence_attribute: String` - The organizing principle of the system
+
+- **Method Names**:
+  - `user_instance_index()` - Returns user data
+  - `term_characters()` - Returns systematic definitions
+  - `get_system_definition()` - Returns systematic metadata
+  - `first_order_connectives_type()` - Returns connective category
+
+- **Type Names**:
+  - `SystemDefinition` - Systematic structure metadata
+  - `StoredStructure` - User instance data with systematic context
+  - `SystematicStructure` - Trait bridging systematic and persistent
+
+### Instrumental: Application Tools
+**Methods and tools for implementing consistent terminology**
+
+- **Validation Methods**:
+  ```rust
+  fn validate_terminology_consistency() -> Result<(), TerminologyError> {
+      // Check field name consistency across layers
+      // Validate method name patterns
+      // Ensure systematic coherence
+  }
+  ```
+
+- **Documentation Patterns**:
+  ```rust
+  /// Get user instance at position N (maps to "TermCharacter" systematic position)
+  /// Returns user-provided data, not systematic definition
+  fn get_user_instance_at(&self, position: usize) -> Option<&str>
+  ```
+
+- **Error Message Templates**:
+  - User-facing: "Invalid user instance at position X"
+  - Developer: "Term character mismatch for structure type Y"
+  - Integration: "Field name inconsistency: expected Z"
+
+- **Migration Patterns**:
+  ```rust
+  // Systematic terminology evolution
+  // Old: ambiguous_term -> systematic_specific_term
+  // Always: document systematic reasoning
+  ```
+
+### Ground: Foundation Constraints
+**Underlying constraints that support systematic terminology**
+
+- **Cross-Layer Consistency**: Field names must work identically across Rust, JSON, and database
+- **Systematic Coherence**: Names must serve systematic understanding, not just technical convenience
+- **Practical Implementation**: Terminology must be implementable within technical constraints
+- **Educational Value**: Names should teach systematic principles to developers and users
+- **Source Attribution**: Connection to systematic origins must be maintained
+- **Evolution Capacity**: Terminology must be able to evolve systematically, not arbitrarily
+
+**Current Assessment**: We have elements of each tetrad component, but lack the systematic coherence that would constitute a true working prototype of systematic terminology.
+
+---
+
+## Aspirational Systematic Development
+**Where we're heading, but not yet systematically achieved**
+
+### Tetrad: Working Prototype (Not Yet Achieved)
+**Activity Field - What a working prototype would demonstrate**
+
+When we achieve a true tetrad level, we would have:
+- **Ideal**: Clear systematic principles governing all implementation
+- **Directive**: Concrete patterns that consistently manifest those principles  
+- **Instrumental**: Reliable tools and methods for systematic implementation
+- **Ground**: Solid foundation constraints that naturally support systematic structure
+
+*Current Reality*: We have elements of each, but not yet the systematic coherence that would constitute a true working prototype.
+
+### Pentad: Significance and Potential (Aspirational)
+**What systematic maturity would look like**
+
+A pentadic level would demonstrate:
+- **Purpose**: Clear understanding of why systematic terminology serves the work
+- **Higher Potential**: Seamless integration enabling more complex systematic work
+- **Quintessence**: Every element naturally reflecting its systematic role
+- **Lower Potential**: Practical constraints working with rather than against systematic principles
+- **Source**: Grounded connection to the systematic reality we're implementing
+
+*Current Reality*: We're working toward this understanding but haven't achieved systematic coherence at this level.
+
+### Hexad: Coalescence (Future Vision)
+**What systematic mastery might enable**
+
+A hexadic level would demonstrate true coalescence of:
+- **Resources**: All available systematic structures working together
+- **Values**: Principles seamlessly guiding all decisions
+- **Options**: Implementation choices naturally serving systematic understanding
+- **Criteria**: Clear standards for evaluating systematic coherence
+- **Facts**: Accurate assessment of systematic implementation state
+- **Priorities**: Natural ordering of concerns serving systematic development
+
+*Current Reality*: This remains a vision of what systematic software development could become.
+
+---
+
+## Practical Implementation Patterns
+**What we actually have working**
+
+### Documentation Standards
+```rust
+/// Get user instance at position 0 (maps to "Active" term character)
+/// Returns the user-provided data for the first position of the triad
+fn get_user_instance_at(&self, position: usize) -> Option<&str> {
+    self.user_instance_index.get(position)
+}
+
+/// Get term character for position 0
+/// Returns "Active" for triad's first position regardless of user data
+fn get_term_character(&self, position: usize) -> Option<&str> {
+    self.term_characters().get(position)
+}
+```
+
+### Error Message Guidelines
+- **User-facing**: "Invalid user instance at position X"
+- **Developer/debug**: "Term character mismatch for structure type"
+- **API integration**: "Field name mismatch: expected user_instance_index"
+
+### Validation Patterns
+```rust
+fn validate_structure(structure: &StoredStructure) -> Result<(), SystematicsError> {
+    let schema = get_schema(&structure.structure_type)?;
+    
+    if structure.user_instance_index.len() != schema.term_characters.len() {
+        return Err(SystematicsError::UserInstanceCountMismatch {
+            expected: schema.term_characters.len(),
+            actual: structure.user_instance_index.len(),
+        });
+    }
+    
+    Ok(())
+}
+```
+
+## Evolution Guidelines
+
+### Current Development Stage
+We are systematically at the **triad level**:
+- We have the essential distinction (dyad) between term characters and user instances
+- We have three architectural layers (triad) with clear systematic relationships
+- We are working toward tetrad (working prototype) but haven't achieved it yet
+
+### Next Systematic Steps
+To reach tetrad level (working prototype):
+1. **Achieve systematic coherence** in our current triad implementation
+2. **Demonstrate reliable patterns** across all three layers
+3. **Establish working tools** for systematic development
+4. **Ground the implementation** in solid systematic principles
+
+### Flexibility Principles
+- Acknowledge where we actually are systematically
+- Work toward the next level without forcing premature complexity
+- Let systematic understanding emerge from working implementation
+- Honor the systematic reality rather than imposing conceptual frameworks
+
+## Source Attribution
+This terminology system reflects our current systematic understanding:
+- **Monad through Triad**: What we're actually implementing systematically
+- **Tetrad+**: Aspirational systematic development based on qualitative number
+- **Implementation**: Honest assessment of our current systematic achievement
+- **Purpose**: Serving systematic understanding through truthful, working code
+
+*"Systematic development requires honest assessment of where we actually are, not where we wish we were. We work toward higher systematic levels by achieving coherence at our current level."* - Applied Systematic Understanding

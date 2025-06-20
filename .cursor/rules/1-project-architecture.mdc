@@ -1,0 +1,248 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Systematic Architecture
+
+
+> This file serves as the foundational articulation for all project rules and patterns, it is a meta-monad. Every other rule file should serve this systemic unity.
+
+## Monad: Unity of Purpose
+**Core Principle**: All terminology serves systematic understanding of qualitative number
+
+SysteMaster exists to demonstrate and implement the systematic structures inherent in the qualitative significance of number. Every term, field name, and method should align with this meta-pattern, creating coherent understanding rather than causing technical confusion. When systematic clarity conflicts with technical convenience, we generally favor systematic clarity—but with thoughtful consideration of practical constraints.
+
+## Dyad: Essential Distinctions
+
+### Term Characters ↔ User Instance Index
+**The fundamental distinction that guides naming decisions**
+
+- **Term Characters**: The qualitative systematic definitions of each position
+  - Field: `term_characters: Vec<String>` 
+  - Method: `term_characters()`
+  - API: `"term_characters": ["Active", "Passive", "Reconciling"]`
+  - Purpose: Systematic structure definitions reflecting qualitative number (immutable schema)
+  - *Guideline*: Always source from library systems, never hardcode
+
+- **User Instance Index**: User-provided data that populates systematic positions
+  - Field: `user_instance_index: Vec<String>`
+  - Method: `user_instance_index()`
+  - API: `"user_instance_index": ["Will", "Being", "Function"]`
+  - Purpose: What users contribute to fill the systematic structure (mutable data)
+  - *Guideline*: Field names should be consistent across all layers when practical
+
+## Triad: Architectural Layers
+**Our current systematic reality**
+
+### API (Active)
+**The purely structural definitions of frame**
+
+```rust
+// SystematicStructure trait - enforces systematic structure
+pub trait SystematicStructure {
+    fn user_instance_index(&self) -> &[String];     // User data
+    fn term_characters(&self) -> Vec<String>;       // From library
+    fn first_order_connectives_type(&self) -> String;
+    fn connectives_traits(&self) -> HashMap<String, String>;
+}
+
+// Structural enforcement patterns
+#[derive(Deserialize)]
+pub struct CreateStructureRequest {
+    pub name: String,
+    pub structure_type: String,
+    pub user_instance_index: Vec<String>, // Enforces consistent naming
+    pub connectives: HashMap<String, String>,
+    pub description: Option<String>,
+}
+
+// SystemDefinition - enforces systematic structure metadata
+pub struct SystemDefinition {
+    pub term_characters: Vec<String>,     // Structural definitions
+    pub coherence_attribute: String,      // Structural organizing principle
+}
+```
+
+*Guideline*: API actively enforces systematic structure through its interface design. It defines how systematic reality must be accessed and manipulated.
+
+### Library (Passive)
+**Receives and holds systematic definitions of qualitative number**
+
+```rust
+// System trait - receives systematic definitions based on qualitative number
+pub trait System {
+    fn term_characters(&self) -> &'static [&'static str];
+    fn coherence_attribute(&self) -> &'static str;
+    fn first_order_connectives_type(&self) -> &'static str;
+    fn connectives_traits(&self) -> Vec<Connective>;
+}
+
+// Passive systematic structures (TetradicSystem, PentadicSystem, etc.)
+impl System for TriadicSystem {
+    fn term_characters(&self) -> &'static [&'static str] {
+        &["Active", "Passive", "Reconciling"]
+    }
+}
+```
+
+*Guideline*: Library passively holds the canonical definitions of systematic structures with proper source attribution to those who have articulated them well.
+
+### Frontend (Reconciling)
+**Harmonizes systematic structure with user interaction**
+
+```rust
+// Reconciling patterns - bridges systematic structure with user needs
+fn get_display_value(&self, position: usize) -> String {
+    // Priority: loaded structure's user instances
+    if let Some(structure) = &self.loaded_structure {
+        if let Some(user_instance) = structure.user_instance_index.get(position) {
+            return user_instance.clone();
+        }
+    }
+    
+    // Fallback: schema term characters (creation mode)
+    if let Some(schema) = &self.schema {
+        if let Some(term_char) = schema.term_characters.get(position) {
+            return term_char.clone();
+        }
+    }
+    
+    "".to_string()
+}
+
+// Message handling - reconciles user actions with systematic structure
+pub enum Msg {
+    SaveStructure { 
+        name: String, 
+        user_instance_index: Vec<String> 
+    },
+    LoadStructure(StoredStructure),
+    UpdateUserInstance { position: usize, value: String },
+}
+```
+
+*Guideline*: Frontend reconciles the systematic structure (from API) with user interaction needs, making the systematic accessible without compromising its integrity.
+
+
+### Tetrad: Systematic Thinking Patterns
+**The autopoietic field of action for systematic work**
+
+#### Synthesis: Systematic Distillation  
+**Take any complexity and systematically distill it to essential unity**
+- Begin with current complexity level
+- Identify essential relationships at each level
+- Distill to fundamental distinctions
+- Arrive at essential unity
+- Validate coherence across all levels
+- Preserve systematic truth through distillation
+
+#### Adaptation: Systematic Application
+**Apply systematic patterns to any domain or problem**
+- Recognize systematic patterns in any context
+- Apply appropriate systematic tools
+- Adapt systematic principles to specific needs
+- Maintain systematic integrity across domains
+- Enable systematic thinking in practical work
+- Serve systematic understanding through application
+
+#### Coherence: Systematic Relationships
+**Maintain systematic relationships across all levels**
+- Ensure each level serves the whole
+- Validate that complexity emerges from unity
+- Check that unity contains the complexity
+- Maintain systematic consistency
+- Bridge between levels appropriately
+- Honor the systematic reality at each level
+
+#### Decomposition: Systematic Unfolding
+**Take any unity and systematically unfold it to appropriate complexity**
+- Start with essential unity (monad)
+- Identify fundamental distinctions (dyad)  
+- Articulate reconciling relationships (triad)
+- Map activity fields (tetrad)
+- Continue to appropriate systematic level
+- Maintain coherence at each level of development
+
+## Current Systematic Assessment
+
+**We are systematically at the triad level**:
+- ✅ **Monad**: Unity of purpose (demonstrate qualitative number through code)
+- ✅ **Dyad**: Essential distinctions (term characters ↔ user instances, systematic ↔ practical)
+- ✅ **Triad**: Three architectural layers with clear systematic relationships
+- 🔄 **Tetrad**: Working toward systematic thinking patterns (decomposition, synthesis, coherence, adaptation)
+
+
+## Project Components (Systematic Structure)
+
+### Library 
+**Receives and holds systematic definitions of qualitative number**
+- Pure systematic structure implementations
+- Bennett module contains canonical definitions
+- Source attribution to those who have articulated systematic principles well
+- Used by API and other components for systematic truth
+
+### API
+**The structural will - defines and enforces systematic structure**
+- Central hub enforcing systematic structure through interface design
+- Manages systematic structures via SurrealDB
+- Provides REST endpoints that maintain systematic coherence
+- Validates systematic integrity across all operations
+- All clients must work through API to maintain systematic coherence
+
+### Frontend 
+**Harmonizes systematic structure with user interaction**
+- Yew-based web application making systematic structures accessible
+- Bridges systematic reality with human interaction needs
+- Visual rendering of systematic structures
+- User interface that teaches systematic principles through interaction
+
+### CLI 
+**Tools for systematic work**
+- Command-line interface for systematic structure management
+- API-first architecture maintaining systematic coherence
+- Developer tools that serve systematic understanding
+- Practical utilities for working with systematic structures
+
+
+
+## Systematic Development Principles
+
+### Current Reality
+- Database centralized at `/data/systematics.db` (project root)
+- API-first architecture with systematic coherence
+- Source attribution maintains connection to systematic origins
+- Terminology serves systematic understanding
+
+### Systematic Evolution
+- Changes should serve systematic understanding
+- Implementation should maintain systematic coherence
+- Development should proceed systematically (monad → dyad → triad → tetrad)
+- Assessment should be honest about current systematic level
+
+### Practical Constraints
+- Code must compile and run reliably
+- Performance must serve practical use
+- User experience must make systematic structures accessible
+- Technical implementation must support systematic principles
+
+## Rules Folder Systematic Structure
+
+This monad file provides the systematic foundation. Other rule files should serve this unity:
+- **Terminology**: Apply systematic principles to naming and language
+- **Development**: Apply systematic principles to workflow and process  
+- **Structures**: Apply systematic principles to code organization
+- **Research**: Apply systematic principles to source work and attribution
+
+**Systematic Coherence**: Every rule should serve the systematic understanding that SysteMaster exists to demonstrate.
+
+## Source Attribution
+
+This systematic approach honors:
+- **The qualitative significance of number**: The fundamental systematic reality
+- **Bennett's Elementary Systematics**: Clear articulation of systematic principles
+- **QualSystems Course (H3uni.org)**: Practical systematic implementation guidance
+- **Hodgson's interpretations**: Bridge between systematic theory and practice
+- **Working code**: Demonstration that systematic principles can be practically implemented
+
+*"Systematic development requires that every element serve the systematic whole while maintaining its own systematic integrity. We work systematically: honestly assessing where we are, clearly seeing where we're going, and proceeding with systematic coherence."*
