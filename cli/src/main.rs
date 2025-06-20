@@ -551,7 +551,7 @@ async fn create_tetrad_interactive(api: &SystematicsApi, api_storage: Option<&Ap
     
     if add_connectives {
         // Show each canonical connective and ask if it should be replaced
-        let canonical_connectives = system.connectives();
+        let canonical_connectives = system.connectives_traits();
         println!("\nCanonical tetrad connectives (Enter to keep, or type replacement):");
         
         // Calculate column widths for alignment (same as display)
@@ -615,7 +615,7 @@ async fn create_pentad_interactive(api: &SystematicsApi, api_storage: Option<&Ap
     let term_characters = system.term_characters();
     let term_designation = system.term_designation();
     let system_name = system.name();
-    let connectives_name = system.first_order_connectives_name();
+    let connectives_name = system.first_order_connectives_type();
     
     let name = get_optional_input(&format!("Enter name (Press enter for {}): ", system_name), system_name)?;
     
@@ -642,7 +642,7 @@ async fn create_pentad_interactive(api: &SystematicsApi, api_storage: Option<&Ap
     
     if add_connectives {
         // Get canonical connectives from schema
-        let canonical_connectives = system.connectives();
+        let canonical_connectives = system.connectives_traits();
         
         println!("\nCanonical {} (Enter to keep, or type replacement):", connectives_name);
         

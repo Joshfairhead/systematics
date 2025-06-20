@@ -25,11 +25,11 @@ impl crate::System for TriadicSystem {
         &["Will", "Being", "Function"] 
     }
     
-    fn first_order_connectives_name(&self) -> &'static str {
+    fn first_order_connectives_type(&self) -> &'static str {
         "Acts"
     }
     
-    fn connectives(&self) -> Vec<Connective> {
+    fn connectives_traits(&self) -> Vec<Connective> {
         // TODO: Review these connective names for Bennett canonical accuracy
         vec![
             Connective { 

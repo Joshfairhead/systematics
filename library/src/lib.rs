@@ -46,9 +46,9 @@ pub trait System: Send + Sync {
     fn term_characters(&self) -> &'static [&'static str];
     
     /// The name for the 1st order connectives within this system
-    fn first_order_connectives_name(&self) -> &'static str;
+    fn first_order_connectives_type(&self) -> &'static str;
     
-    fn connectives(&self) -> Vec<Connective>;
+    fn connectives_traits(&self) -> Vec<Connective>;
     
     /// Validate that given terms fit this system
     fn validate_terms(&self, terms: &[String]) -> error::Result<()> {

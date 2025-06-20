@@ -32,12 +32,12 @@ impl crate::System for UndecadicSystem {
         &["Term 1", "Term 2", "Term 3", "Term 4", "Term 5", "Term 6", "Term 7", "Term 8", "Term 9", "Term 10", "Term 11"] 
     }
     
-    fn first_order_connectives_name(&self) -> &'static str {
+    fn first_order_connectives_type(&self) -> &'static str {
         // TODO: Research proper Bennett canonical connectives name for Undecad
         "Connectives"
     }
     
-    fn connectives(&self) -> Vec<Connective> {
+    fn connectives_traits(&self) -> Vec<Connective> {
         // TODO: Research proper Bennett canonical connective relationships for Undecad
         // Placeholder minimal connectives - need authentic systematic relationships
         vec![

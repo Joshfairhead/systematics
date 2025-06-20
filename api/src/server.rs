@@ -268,7 +268,7 @@ async fn get_structure_schema(
                 coherence_attribute: system.coherence_attribute().to_string(),
                 term_designation: system.term_designation().to_string(),
                 source: system.source().to_string(),
-                first_order_connectives_type: system.first_order_connectives_name().to_string(),
+                first_order_connectives_type: system.first_order_connectives_type().to_string(),
                 connectives: Vec::new(),
             }
         },
@@ -281,7 +281,7 @@ async fn get_structure_schema(
                 coherence_attribute: system.coherence_attribute().to_string(),
                 term_designation: system.term_designation().to_string(),
                 source: system.source().to_string(),
-                first_order_connectives_type: system.first_order_connectives_name().to_string(),
+                first_order_connectives_type: system.first_order_connectives_type().to_string(),
                 connectives: Vec::new(),
             }
         },
@@ -294,13 +294,13 @@ async fn get_structure_schema(
                 coherence_attribute: system.coherence_attribute().to_string(),
                 term_designation: system.term_designation().to_string(),
                 source: system.source().to_string(),
-                first_order_connectives_type: system.first_order_connectives_name().to_string(),
+                first_order_connectives_type: system.first_order_connectives_type().to_string(),
                 connectives: Vec::new(),
             }
         },
         "tetrad" => {
             let system = systematics_library::TetradicSystem;
-            let connectives = system.connectives().into_iter().map(|c| ConnectiveInfo {
+            let connectives = system.connectives_traits().into_iter().map(|c| ConnectiveInfo {
                 from_position: c.from_position,
                 to_position: c.to_position,
                 relationship: c.relationship,
@@ -313,13 +313,13 @@ async fn get_structure_schema(
                 coherence_attribute: system.coherence_attribute().to_string(),
                 term_designation: system.term_designation().to_string(),
                 source: system.source().to_string(),
-                first_order_connectives_type: system.first_order_connectives_name().to_string(),
+                first_order_connectives_type: system.first_order_connectives_type().to_string(),
                 connectives,
             }
         },
         "pentad" => {
             let system = systematics_library::PentadicSystem;
-            let connectives = system.connectives().into_iter().map(|c| ConnectiveInfo {
+            let connectives = system.connectives_traits().into_iter().map(|c| ConnectiveInfo {
                 from_position: c.from_position,
                 to_position: c.to_position,
                 relationship: c.relationship,
@@ -332,7 +332,7 @@ async fn get_structure_schema(
                 coherence_attribute: system.coherence_attribute().to_string(),
                 term_designation: system.term_designation().to_string(),
                 source: system.source().to_string(),
-                first_order_connectives_type: system.first_order_connectives_name().to_string(),
+                first_order_connectives_type: system.first_order_connectives_type().to_string(),
                 connectives,
             }
         },
@@ -345,7 +345,7 @@ async fn get_structure_schema(
                 coherence_attribute: system.coherence_attribute().to_string(),
                 term_designation: system.term_designation().to_string(),
                 source: system.source().to_string(),
-                first_order_connectives_type: system.first_order_connectives_name().to_string(),
+                first_order_connectives_type: system.first_order_connectives_type().to_string(),
                 connectives: Vec::new(),
             }
         },
@@ -358,7 +358,7 @@ async fn get_structure_schema(
                 coherence_attribute: system.coherence_attribute().to_string(),
                 term_designation: system.term_designation().to_string(),
                 source: system.source().to_string(),
-                first_order_connectives_type: system.first_order_connectives_name().to_string(),
+                first_order_connectives_type: system.first_order_connectives_type().to_string(),
                 connectives: Vec::new(),
             }
         },
@@ -371,7 +371,7 @@ async fn get_structure_schema(
                 coherence_attribute: system.coherence_attribute().to_string(),
                 term_designation: system.term_designation().to_string(),
                 source: system.source().to_string(),
-                first_order_connectives_type: system.first_order_connectives_name().to_string(),
+                first_order_connectives_type: system.first_order_connectives_type().to_string(),
                 connectives: Vec::new(),
             }
         },
@@ -384,7 +384,7 @@ async fn get_structure_schema(
                 coherence_attribute: system.coherence_attribute().to_string(),
                 term_designation: system.term_designation().to_string(),
                 source: system.source().to_string(),
-                first_order_connectives_type: system.first_order_connectives_name().to_string(),
+                first_order_connectives_type: system.first_order_connectives_type().to_string(),
                 connectives: Vec::new(),
             }
         },
@@ -397,7 +397,7 @@ async fn get_structure_schema(
                 coherence_attribute: system.coherence_attribute().to_string(),
                 term_designation: system.term_designation().to_string(),
                 source: system.source().to_string(),
-                first_order_connectives_type: system.first_order_connectives_name().to_string(),
+                first_order_connectives_type: system.first_order_connectives_type().to_string(),
                 connectives: Vec::new(),
             }
         },
@@ -410,7 +410,7 @@ async fn get_structure_schema(
                 coherence_attribute: system.coherence_attribute().to_string(),
                 term_designation: system.term_designation().to_string(),
                 source: system.source().to_string(),
-                first_order_connectives_type: system.first_order_connectives_name().to_string(),
+                first_order_connectives_type: system.first_order_connectives_type().to_string(),
                 connectives: Vec::new(),
             }
         },
@@ -423,7 +423,7 @@ async fn get_structure_schema(
                 coherence_attribute: system.coherence_attribute().to_string(),
                 term_designation: system.term_designation().to_string(),
                 source: system.source().to_string(),
-                first_order_connectives_type: system.first_order_connectives_name().to_string(),
+                first_order_connectives_type: system.first_order_connectives_type().to_string(),
                 connectives: Vec::new(),
             }
         },

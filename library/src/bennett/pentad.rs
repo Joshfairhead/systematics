@@ -25,11 +25,11 @@ impl crate::System for PentadicSystem {
         &["Purpose", "Higher Potential", "Quintessence", "Lower Potential", "Source"] 
     }
     
-    fn first_order_connectives_name(&self) -> &'static str {
+    fn first_order_connectives_type(&self) -> &'static str {
         "Mutualities"
     }
     
-    fn connectives(&self) -> Vec<Connective> {
+    fn connectives_traits(&self) -> Vec<Connective> {
         vec![
             // Index 0: Range of potential
             Connective { 

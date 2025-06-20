@@ -200,7 +200,7 @@ impl SystematicStructure for Dyad {
     }
     
     fn first_order_connectives_type(&self) -> &str {
-        self.system.first_order_connectives_name()
+        self.system.first_order_connectives_type()
     }
     
     fn connectives_traits(&self) -> &std::collections::HashMap<(usize, usize), String> {

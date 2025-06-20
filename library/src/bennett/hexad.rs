@@ -25,12 +25,12 @@ impl crate::System for HexadicSystem {
         &["Resources", "Values", "Options", "Criteria", "Facts", "Priorities"] 
     }
     
-    fn first_order_connectives_name(&self) -> &'static str {
+    fn first_order_connectives_type(&self) -> &'static str {
         // TODO: Research proper canonical name for Hexad connectives
         "Connectives"
     }
     
-    fn connectives(&self) -> Vec<Connective> {
+    fn connectives_traits(&self) -> Vec<Connective> {
         vec![
             Connective { from_position: 0, to_position: 1, relationship: "Resources <> Values".to_string(), description: None },
             Connective { from_position: 0, to_position: 2, relationship: "Resources <> Options".to_string(), description: None },

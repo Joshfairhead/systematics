@@ -25,11 +25,11 @@ impl crate::System for DyadicSystem {
         &["Essence", "Existence"] 
     }
     
-    fn first_order_connectives_name(&self) -> &'static str {
+    fn first_order_connectives_type(&self) -> &'static str {
         "Force"
     }
     
-    fn connectives(&self) -> Vec<Connective> {
+    fn connectives_traits(&self) -> Vec<Connective> {
         // TODO: Add proper Bennett framework connective relationships
         vec![]
         // vec![

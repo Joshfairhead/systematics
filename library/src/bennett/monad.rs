@@ -25,11 +25,11 @@ impl crate::System for MonadicSystem {
         &["Unity"] 
     }
     
-    fn first_order_connectives_name(&self) -> &'static str {
+    fn first_order_connectives_type(&self) -> &'static str {
         "Connectionless unity"
     }
     
-    fn connectives(&self) -> Vec<Connective> { 
+    fn connectives_traits(&self) -> Vec<Connective> { 
         vec![] 
     }
     

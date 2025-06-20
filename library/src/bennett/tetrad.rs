@@ -25,11 +25,11 @@ impl crate::System for TetradicSystem {
         &["Ideal", "Directive", "Instrumental", "Ground"] 
     }
     
-    fn first_order_connectives_name(&self) -> &'static str {
+    fn first_order_connectives_type(&self) -> &'static str {
         "Interplays"
     }
     
-    fn connectives(&self) -> Vec<Connective> {
+    fn connectives_traits(&self) -> Vec<Connective> {
         vec![
             Connective {
                 from_position: 0,

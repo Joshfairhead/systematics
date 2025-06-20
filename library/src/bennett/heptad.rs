@@ -25,12 +25,12 @@ impl crate::System for HeptadicSystem {
         &["Insight", "Research", "Design", "Synthesis", "Application", "Delivery", "Value"] 
     }
     
-    fn first_order_connectives_name(&self) -> &'static str {
+    fn first_order_connectives_type(&self) -> &'static str {
         // TODO: Research proper canonical name for Heptad connectives
         "Connectives"
     }
     
-    fn connectives(&self) -> Vec<Connective> {
+    fn connectives_traits(&self) -> Vec<Connective> {
         vec![
             Connective { from_position: 0, to_position: 1, relationship: "Insight <> Research".to_string(), description: None },
             Connective { from_position: 0, to_position: 2, relationship: "Insight <> Design".to_string(), description: None },

@@ -26,12 +26,12 @@ impl crate::System for DodecadicSystem {
         &["Autocracy", "Domination", "Creativity", "Pattern", "Individuality", "Structure", "Repetition", "Potentiality", "Subsistence", "Relatedness", "Polarity", "Wholeness"] 
     }
     
-    fn first_order_connectives_name(&self) -> &'static str {
+    fn first_order_connectives_type(&self) -> &'static str {
         // TODO: Research proper canonical name for Dodecad connectives
         "Connectives"
     }
     
-    fn connectives(&self) -> Vec<Connective> {
+    fn connectives_traits(&self) -> Vec<Connective> {
         vec![
             // Row 0: Autocracy with all others (11 connections)
             Connective { from_position: 0, to_position: 1, relationship: "Autocracy <> Domination".to_string(), description: None },

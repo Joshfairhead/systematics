@@ -25,12 +25,12 @@ impl crate::System for OctadicSystem {
         &["Smallest Significant Holon", "Critical Functions", "Supportive Platform", "Necessary Resourcing", "Integrative Totality", "Inherent Values", "Intrinsic Nature", "Organisational Modes"] 
     }
     
-    fn first_order_connectives_name(&self) -> &'static str {
+    fn first_order_connectives_type(&self) -> &'static str {
         // TODO: Research proper canonical name for Octad connectives
         "Connectives"
     }
     
-    fn connectives(&self) -> Vec<Connective> {
+    fn connectives_traits(&self) -> Vec<Connective> {
         vec![
             Connective { from_position: 0, to_position: 1, relationship: "Smallest Significant Holon <> Critical Functions".to_string(), description: None },
             Connective { from_position: 0, to_position: 2, relationship: "Smallest Significant Holon <> Supportive Platform".to_string(), description: None },
