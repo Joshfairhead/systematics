@@ -2,12 +2,17 @@ use yew::{html, Component, Context, Html, Properties};
 use crate::services::api::{StoredStructure, ApiClient, StructureSchema, spawn_api_call};
 use crate::core::geometry::GeometryCalculator;
 use std::f64::consts::PI;
+use web_sys;
 
 #[derive(Properties, PartialEq)]
 pub struct Props {
     pub system_num: i32,
     #[prop_or_default]
     pub structure: Option<StoredStructure>,
+    #[prop_or_default]
+    pub creation_mode: bool,
+    #[prop_or_default]
+    pub structure_name: Option<String>,
 }
 
 pub enum Msg {
@@ -56,17 +61,39 @@ impl Component for SystemOverlay {
     }
 
     fn changed(&mut self, ctx: &Context<Self>, old_props: &Self::Properties) -> bool {
-        if ctx.props().system_num != old_props.system_num {
-            self.load_schema_for_system(ctx, ctx.props().system_num);
-            true
-        } else {
-            false
+        let new_props = ctx.props();
+        let mut should_update = false;
+        
+        // Check if system_num changed
+        if new_props.system_num != old_props.system_num {
+            self.load_schema_for_system(ctx, new_props.system_num);
+            should_update = true;
         }
+        
+        // Check if creation_mode changed
+        if new_props.creation_mode != old_props.creation_mode {
+            should_update = true;
+        }
+        
+        // Check if structure_name changed
+        if new_props.structure_name != old_props.structure_name {
+            should_update = true;
+        }
+        
+        // Check if structure changed
+        if new_props.structure != old_props.structure {
+            should_update = true;
+        }
+        
+        should_update
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
         let system_num = ctx.props().system_num;
         let structure = &ctx.props().structure;
+        let creation_mode = ctx.props().creation_mode;
+        
+
         
         // Show loading state while schema is being fetched
         if self.loading_schema {
@@ -91,26 +118,39 @@ impl Component for SystemOverlay {
             };
         }
         
-        // Render the appropriate structure
-        match system_num {
-            1 => self.render_monad(structure),
-            2 => self.render_dyad(structure),
-            3 => self.render_triad(structure),
-            4 => self.render_tetrad(structure),
-            5 => self.render_pentad(structure),
-            6 => self.render_hexad(structure),
-            7 => self.render_heptad(structure),
-            8 => self.render_octad(structure),
-            9 => self.render_ennead(structure),
-            10 => self.render_decad(structure),
-            11 => self.render_undecad(structure),
-            12 => self.render_dodecad(structure),
-            _ => html! { <div class="system-overlay">{"Unsupported system"}</div> },
+        html! {
+            <>
+                {self.render_control_buttons(ctx)}
+                {self.render_structure_content(ctx, system_num, structure)}
+            </>
         }
     }
 }
 
 impl SystemOverlay {
+    fn render_control_buttons(&self, ctx: &Context<Self>) -> Html {
+        // Controls are now handled by the parent App component
+        html! {}
+    }
+    
+    fn render_structure_content(&self, ctx: &Context<Self>, system_num: i32, structure: &Option<StoredStructure>) -> Html {
+        match system_num {
+            1 => self.render_monad(ctx, structure),
+            2 => self.render_dyad(ctx, structure),
+            3 => self.render_triad(ctx, structure),
+            4 => self.render_tetrad(ctx, structure),
+            5 => self.render_pentad(ctx, structure),
+            6 => self.render_hexad(ctx, structure),
+            7 => self.render_heptad(ctx, structure),
+            8 => self.render_octad(ctx, structure),
+            9 => self.render_ennead(ctx, structure),
+            10 => self.render_decad(ctx, structure),
+            11 => self.render_undecad(ctx, structure),
+            12 => self.render_dodecad(ctx, structure),
+            _ => html! { <div class="system-overlay">{"Unsupported system"}</div> },
+        }
+    }
+
     fn load_schema_for_system(&mut self, ctx: &Context<Self>, system_num: i32) {
         if self.loading_schema {
             return;
@@ -151,22 +191,19 @@ impl SystemOverlay {
             .cloned()
     }
     
-    fn render_system_with_terms(&self, system_type: &str, expected_terms: usize) -> Html {
+    fn render_system_with_terms(&self, ctx: &Context<Self>, system_type: &str, expected_terms: usize) -> Html {
         let svg_size = 400.0;
         let points = self.get_system_layout(system_type, svg_size);
         
-        // Check if we have all required term characters
         let terms: Result<Vec<String>, ()> = (0..expected_terms)
             .map(|i| self.get_term_character(i).ok_or(()))
             .collect();
             
         match terms {
             Ok(term_characters) => {
-                // All terms available - render the structure
-                self.render_structure_with_points(&term_characters, &points, svg_size, system_type)
+                self.render_structure_with_points(ctx, &term_characters, &points, svg_size, system_type)
             }
             Err(_) => {
-                // Missing terms - show error
                 html! {
                     <div class="system-overlay incomplete">
                         <div class="incomplete-message">
@@ -178,7 +215,7 @@ impl SystemOverlay {
         }
     }
     
-    fn render_structure_with_points(&self, terms: &[String], points: &[(f64, f64)], svg_size: f64, system_type: &str) -> Html {
+    fn render_structure_with_points(&self, ctx: &Context<Self>, terms: &[String], points: &[(f64, f64)], svg_size: f64, system_type: &str) -> Html {
         let is_octad = system_type == "octad";
         let point_elements: Vec<Html> = terms.iter()
             .zip(points.iter())
@@ -187,7 +224,7 @@ impl SystemOverlay {
                 let (adjusted_x, adjusted_y) = self.apply_label_positioning(system_type, i, *x, *y, svg_size, points);
                 let top = self.svg_to_css_percent(adjusted_y, svg_size);
                 let left = self.svg_to_css_percent(adjusted_x, svg_size);
-                self.render_point_with_positioning(term, &top, &left, is_octad)
+                self.render_point_with_positioning(ctx, term, &top, &left, is_octad)
             })
             .collect();
             
@@ -201,37 +238,35 @@ impl SystemOverlay {
     fn apply_label_positioning(&self, system_type: &str, index: usize, x: f64, y: f64, svg_size: f64, points: &[(f64, f64)]) -> (f64, f64) {
         match system_type {
             "monad" => {
-                // Center position - no adjustment needed
                 (x, y)
             },
             "dyad" => {
-                // Centered on nodes for dyad
                 (x, y)
             },
             "triad" => {
                 match index {
-                    0 => (x, y - 45.0),      // Will (top-left) - pull closer to node
-                    1 => (x + 60.0, y),      // Being (right) - push further to the right
-                    2 => (x, y + 45.0),      // Function (bottom-left) - pull closer to node
+                    0 => (x, y - 45.0),
+                    1 => (x + 60.0, y),
+                    2 => (x, y + 45.0),
                     _ => (x, y),
                 }
             },
             "tetrad" => {
                 match index {
-                    0 => (x, y - 50.0),      // Ideal (top)
-                    1 => (x + 60.0, y),      // Directive (right) - push further right
-                    2 => (x - 65.0, y),      // Instrumental (left) - push further left
-                    3 => (x, y + 50.0),      // Ground (bottom)
+                    0 => (x, y - 50.0),
+                    1 => (x + 60.0, y),
+                    2 => (x - 65.0, y),
+                    3 => (x, y + 50.0),
                     _ => (x, y),
                 }
             },
             "pentad" => {
                 match index {
-                    0 => (x, y - 45.0),      // Purpose: above node
-                    1 => (x, y - 45.0),      // Higher Potential: above node
-                    2 => (x - 65.0, y),      // Quintessence: left of node
-                    3 => (x, y + 45.0),      // Lower Potential: below node
-                    4 => (x, y + 45.0),      // Source: below node
+                    0 => (x, y - 45.0),
+                    1 => (x, y - 45.0),
+                    2 => (x - 65.0, y),
+                    3 => (x, y + 45.0),
+                    4 => (x, y + 45.0),
                     _ => (x, y),
                 }
             },
@@ -239,77 +274,73 @@ impl SystemOverlay {
                 let push_distance = 45.0;
                 let diagonal_push = 60.0;
                 match index {
-                    0 => (x - diagonal_push * 0.7, y - diagonal_push * 0.7), // Resources (top-left)
-                    1 => (x, y - push_distance),                              // Values (top)
-                    2 => (x + diagonal_push * 0.7, y - diagonal_push * 0.7), // Options (top-right)
-                    3 => (x + diagonal_push * 0.7, y + diagonal_push * 0.7), // Criteria (bottom-right)
-                    4 => (x, y + push_distance),                              // Facts (bottom)
-                    5 => (x - diagonal_push * 0.7, y + diagonal_push * 0.7), // Priorities (bottom-left)
+                    0 => (x - diagonal_push * 0.7, y - diagonal_push * 0.7),
+                    1 => (x, y - push_distance),
+                    2 => (x + diagonal_push * 0.7, y - diagonal_push * 0.7),
+                    3 => (x + diagonal_push * 0.7, y + diagonal_push * 0.7),
+                    4 => (x, y + push_distance),
+                    5 => (x - diagonal_push * 0.7, y + diagonal_push * 0.7),
                     _ => (x, y),
                 }
             },
-                         "heptad" => {
-                 let push_distance = 60.0;
-                 let center_x = svg_size / 2.0;
-                 match index {
-                     0 => (x, y - push_distance + 15.0), // Insight (top) - lowered by 15px
-                     1 => {
-                         // Research - calculate symmetric position to Value (index 6)
-                         if points.len() > 6 {
-                             let value_x = points[6].0 - push_distance;
-                             let value_distance_from_center = center_x - value_x;
-                             let research_x = center_x + value_distance_from_center;
-                             (research_x, y - push_distance * 0.7)
-                         } else {
-                             (x + push_distance, y - push_distance * 0.7) // Fallback
-                         }
-                     },
-                     2 => (x + push_distance, y + push_distance * 0.7 - 40.0), // Design
-                     3 => (x + push_distance * 0.7, y + push_distance * 0.7),  // Synthesis
-                     4 => {
-                         // Application - mirror synthesis position (index 3)
-                         if points.len() > 3 {
-                             let synthesis_x = points[3].0 + push_distance * 0.7;
-                             let synthesis_distance_from_center = synthesis_x - center_x;
-                             let application_x = center_x - synthesis_distance_from_center;
-                             (application_x, points[3].1 + push_distance * 0.7)
-                         } else {
-                             (x - push_distance * 0.7, y + push_distance * 0.7) // Fallback
-                         }
-                     },
-                     5 => {
-                         // Delivery - mirror design position (index 2)
-                         if points.len() > 2 {
-                             let design_x = points[2].0 + push_distance;
-                             let design_distance_from_center = design_x - center_x;
-                             let delivery_x = center_x - design_distance_from_center;
-                             (delivery_x, points[2].1 + push_distance * 0.7 - 40.0)
-                         } else {
-                             (x - push_distance, y + push_distance * 0.7 - 40.0) // Fallback
-                         }
-                     },
-                     6 => (x - push_distance, y - push_distance * 0.7), // Value
-                     _ => (x, y),
-                 }
-             },
+            "heptad" => {
+                let push_distance = 60.0;
+                let center_x = svg_size / 2.0;
+                match index {
+                    0 => (x, y - push_distance + 15.0),
+                    1 => {
+                        if points.len() > 6 {
+                            let value_x = points[6].0 - push_distance;
+                            let value_distance_from_center = center_x - value_x;
+                            let research_x = center_x + value_distance_from_center;
+                            (research_x, y - push_distance * 0.7)
+                        } else {
+                            (x + push_distance, y - push_distance * 0.7)
+                        }
+                    },
+                    2 => (x + push_distance, y + push_distance * 0.7 - 40.0),
+                    3 => (x + push_distance * 0.7, y + push_distance * 0.7),
+                    4 => {
+                        if points.len() > 3 {
+                            let synthesis_x = points[3].0 + push_distance * 0.7;
+                            let synthesis_distance_from_center = synthesis_x - center_x;
+                            let application_x = center_x - synthesis_distance_from_center;
+                            (application_x, points[3].1 + push_distance * 0.7)
+                        } else {
+                            (x - push_distance * 0.7, y + push_distance * 0.7)
+                        }
+                    },
+                    5 => {
+                        if points.len() > 2 {
+                            let design_x = points[2].0 + push_distance;
+                            let design_distance_from_center = design_x - center_x;
+                            let delivery_x = center_x - design_distance_from_center;
+                            (delivery_x, points[2].1 + push_distance * 0.7 - 40.0)
+                        } else {
+                            (x - push_distance, y + push_distance * 0.7 - 40.0)
+                        }
+                    },
+                    6 => (x - push_distance, y - push_distance * 0.7),
+                    _ => (x, y),
+                }
+            },
             "octad" => {
                 let push_distance = 60.0;
                 let diagonal_push = 70.0;
                 match index {
-                    0 => (x + push_distance, y),                              // SSH (right)
-                    1 => (x + diagonal_push * 0.7, y + diagonal_push * 0.7), // CF (bottom-right)
-                    2 => (x, y + push_distance),                              // SP (bottom)
-                    3 => (x - diagonal_push * 0.7, y + diagonal_push * 0.7), // NR (bottom-left)
-                    4 => (x - push_distance, y),                              // IT (left)
-                    5 => (x - diagonal_push * 0.7, y - diagonal_push * 0.7), // IV (top-left)
-                    6 => (x, y - push_distance),                              // IN (top)
-                    7 => (x + diagonal_push * 0.7, y - diagonal_push * 0.7), // OM (top-right)
+                    0 => (x + push_distance, y),
+                    1 => (x + diagonal_push * 0.7, y + diagonal_push * 0.7),
+                    2 => (x, y + push_distance),
+                    3 => (x - diagonal_push * 0.7, y + diagonal_push * 0.7),
+                    4 => (x - push_distance, y),
+                    5 => (x - diagonal_push * 0.7, y - diagonal_push * 0.7),
+                    6 => (x, y - push_distance),
+                    7 => (x + diagonal_push * 0.7, y - diagonal_push * 0.7),
                     _ => (x, y),
                 }
             },
             _ => {
-                // For ennead, decad, undecad, dodecad - use simple outward push
-                let radius = svg_size * 0.05; // Small outward push
+                let radius = svg_size * 0.05;
                 let center_x = svg_size / 2.0;
                 let center_y = svg_size / 2.0;
                 let dx = x - center_x;
@@ -326,14 +357,12 @@ impl SystemOverlay {
         }
     }
 
-    // Use the framework-agnostic geometry calculator
     fn get_system_layout(&self, system_type: &str, svg_size: f64) -> Vec<(f64, f64)> {
         let center = svg_size / 2.0;
         let layout = GeometryCalculator::calculate_system_layout(system_type, center, center, svg_size);
         layout.nodes.into_iter().map(|point| (point.x, point.y)).collect()
     }
 
-    // Temporary method for backward compatibility - will be removed as we migrate all systems
     fn regular_polygon_points(&self, n: usize, cx: f64, cy: f64, radius: f64, rotation: f64) -> Vec<(f64, f64)> {
         (0..n).map(|i| {
             let angle = 2.0 * PI * i as f64 / n as f64 + rotation;
@@ -343,99 +372,103 @@ impl SystemOverlay {
         }).collect()
     }
 
-    // Convert SVG coordinates to CSS percentages
     fn svg_to_css_percent(&self, coord: f64, svg_size: f64) -> String {
         format!("{}%", (coord / svg_size) * 100.0)
     }
 
-    fn render_point(&self, term: &str, top: &str, left: &str) -> Html {
-        self.render_point_with_positioning(term, top, left, false)
+    fn render_point(&self, ctx: &Context<Self>, term: &str, top: &str, left: &str) -> Html {
+        self.render_point_with_positioning(ctx, term, top, left, false)
     }
     
-    fn render_point_with_positioning(&self, term: &str, top: &str, left: &str, is_octad: bool) -> Html {
-        if is_octad {
-            // Handle special positioning for certain octad terms
-        let (formatted_term, css_class, container_style) = match term {
-            "Smallest Significant Holon" => {
-                // Move anchor point 35px left, then anchor at left edge and extend right
-                let adjusted_left = format!("{}%", left.trim_end_matches('%').parse::<f64>().unwrap_or(0.0) - 8.75); // ~35px adjustment
-                (html! { {term} }, "point-label", format!("top: {}; left: {}; transform: translate(0%, -50%);", top, adjusted_left))
-            },
-            "Integrative Totality" => {
-                // Move anchor point 35px right, then anchor at right edge and extend left
-                let adjusted_left = format!("{}%", left.trim_end_matches('%').parse::<f64>().unwrap_or(0.0) + 8.75); // ~35px adjustment
-                (html! { {term} }, "point-label", format!("top: {}; left: {}; transform: translate(-100%, -50%);", top, adjusted_left))
-            },
-            _ => {
-                // Default center positioning
-                (html! { {term} }, "point-label", format!("top: {}; left: {}; transform: translate(-50%, -50%);", top, left))
-            }
-        };
+    fn render_point_with_positioning(&self, ctx: &Context<Self>, term: &str, top: &str, left: &str, is_octad: bool) -> Html {
+        let creation_mode = ctx.props().creation_mode;
         
-        html! {
-            <div class="point-container" style={container_style}>
-                <div class={css_class}>{formatted_term}</div>
-                <input class="point-input" placeholder="Instance" />
-            </div>
-        }
+
+        
+        if is_octad {
+            let (formatted_term, css_class, container_style) = match term {
+                "Smallest Significant Holon" => {
+                    let adjusted_left = format!("{}%", left.trim_end_matches('%').parse::<f64>().unwrap_or(0.0) - 8.75);
+                    (html! { {term} }, "point-label", format!("top: {}; left: {}; transform: translate(0%, -50%);", top, adjusted_left))
+                },
+                "Integrative Totality" => {
+                    let adjusted_left = format!("{}%", left.trim_end_matches('%').parse::<f64>().unwrap_or(0.0) + 8.75);
+                    (html! { {term} }, "point-label", format!("top: {}; left: {}; transform: translate(-100%, -50%);", top, adjusted_left))
+                },
+                _ => {
+                    (html! { {term} }, "point-label", format!("top: {}; left: {}; transform: translate(-50%, -50%);", top, left))
+                }
+            };
+            
+            html! {
+                <div class={format!("point-container {}", if creation_mode { "creation-mode" } else { "display-mode" })} style={container_style}>
+                    <div class={css_class}>{formatted_term}</div>
+                    {if creation_mode {
+                        html! { <input class="point-input" placeholder="Enter term..." /> }
+                    } else {
+                        html! {}
+                    }}
+                </div>
+            }
         } else {
-            // Standard rendering
-        html! {
-                <div class="point-container" style={format!("top: {}; left: {}; transform: translate(-50%, -50%);", top, left)}>
+            html! {
+                <div class={format!("point-container {} {}", if creation_mode { "creation-mode" } else { "display-mode" }, if is_octad { "octad" } else { "" })} style={format!("top: {}; left: {}; transform: translate(-50%, -50%);", top, left)}>
                     <div class="point-label">{term}</div>
-                    <input class="point-input" placeholder="Instance" />
-            </div>
+                    {if creation_mode {
+                        html! { <input class="point-input" placeholder="Enter term..." /> }
+                    } else {
+                        html! {}
+                    }}
+                </div>
             }
         }
     }
 
-    fn render_monad(&self, _structure: &Option<StoredStructure>) -> Html {
-        self.render_system_with_terms("monad", 1)
+    fn render_monad(&self, ctx: &Context<Self>, _structure: &Option<StoredStructure>) -> Html {
+        self.render_system_with_terms(ctx, "monad", 1)
     }
 
-    fn render_dyad(&self, _structure: &Option<StoredStructure>) -> Html {
-        self.render_system_with_terms("dyad", 2)
+    fn render_dyad(&self, ctx: &Context<Self>, _structure: &Option<StoredStructure>) -> Html {
+        self.render_system_with_terms(ctx, "dyad", 2)
     }
 
-    fn render_triad(&self, _structure: &Option<StoredStructure>) -> Html {
-        self.render_system_with_terms("triad", 3)
+    fn render_triad(&self, ctx: &Context<Self>, _structure: &Option<StoredStructure>) -> Html {
+        self.render_system_with_terms(ctx, "triad", 3)
     }
 
-    fn render_tetrad(&self, _structure: &Option<StoredStructure>) -> Html {
-        self.render_system_with_terms("tetrad", 4)
+    fn render_tetrad(&self, ctx: &Context<Self>, _structure: &Option<StoredStructure>) -> Html {
+        self.render_system_with_terms(ctx, "tetrad", 4)
     }
 
-    fn render_pentad(&self, _structure: &Option<StoredStructure>) -> Html {
-        self.render_system_with_terms("pentad", 5)
+    fn render_pentad(&self, ctx: &Context<Self>, _structure: &Option<StoredStructure>) -> Html {
+        self.render_system_with_terms(ctx, "pentad", 5)
     }
 
-    fn render_hexad(&self, _structure: &Option<StoredStructure>) -> Html {
-        self.render_system_with_terms("hexad", 6)
+    fn render_hexad(&self, ctx: &Context<Self>, _structure: &Option<StoredStructure>) -> Html {
+        self.render_system_with_terms(ctx, "hexad", 6)
     }
 
-    fn render_heptad(&self, _structure: &Option<StoredStructure>) -> Html {
-        self.render_system_with_terms("heptad", 7)
+    fn render_heptad(&self, ctx: &Context<Self>, _structure: &Option<StoredStructure>) -> Html {
+        self.render_system_with_terms(ctx, "heptad", 7)
     }
 
-    fn render_octad(&self, _structure: &Option<StoredStructure>) -> Html {
-        self.render_system_with_terms("octad", 8)
+    fn render_octad(&self, ctx: &Context<Self>, _structure: &Option<StoredStructure>) -> Html {
+        self.render_system_with_terms(ctx, "octad", 8)
     }
 
-    fn render_ennead(&self, _structure: &Option<StoredStructure>) -> Html {
-        self.render_system_with_terms("ennead", 9)
+    fn render_ennead(&self, ctx: &Context<Self>, _structure: &Option<StoredStructure>) -> Html {
+        self.render_system_with_terms(ctx, "ennead", 9)
     }
 
-    fn render_decad(&self, _structure: &Option<StoredStructure>) -> Html {
-        self.render_system_with_terms("decad", 10)
+    fn render_decad(&self, ctx: &Context<Self>, _structure: &Option<StoredStructure>) -> Html {
+        self.render_system_with_terms(ctx, "decad", 10)
     }
 
-    fn render_undecad(&self, _structure: &Option<StoredStructure>) -> Html {
-        self.render_system_with_terms("undecad", 11)
+    fn render_undecad(&self, ctx: &Context<Self>, _structure: &Option<StoredStructure>) -> Html {
+        self.render_system_with_terms(ctx, "undecad", 11)
     }
 
-    fn render_dodecad(&self, _structure: &Option<StoredStructure>) -> Html {
-        self.render_system_with_terms("dodecad", 12)
+    fn render_dodecad(&self, ctx: &Context<Self>, _structure: &Option<StoredStructure>) -> Html {
+        self.render_system_with_terms(ctx, "dodecad", 12)
     }
-
-
 } 

@@ -1,7 +1,7 @@
 use yew::{html, Component, Context, Html, TargetCast};
 use wasm_bindgen::prelude::*;
 use std::collections::HashMap;
-use web_sys::{HtmlInputElement, InputEvent};
+use web_sys::{HtmlInputElement, InputEvent, window};
 
 mod components; // Declare the components module
 mod services;   // Declare the services module
@@ -23,6 +23,9 @@ pub struct App {
     api_client: ApiClient,
     search_query: String,
     show_structure_browser: bool,
+    // Creation state
+    creation_mode: bool,
+    structure_name: Option<String>,
 }
 
 pub enum Msg {
@@ -40,6 +43,9 @@ pub enum Msg {
     SearchResultsLoaded(Result<Vec<StoredStructure>, anyhow::Error>),
     // Schema loading
     SchemaLoaded(Result<StructureSchema, anyhow::Error>),
+    // Creation functionality
+    CreateStructure,
+    CancelCreate,
 }
 
 impl Component for App {
@@ -63,6 +69,8 @@ impl Component for App {
             api_client: ApiClient::new(),
             search_query: String::new(),
             show_structure_browser: false,
+            creation_mode: false,
+            structure_name: None,
         };
         
         // Load structures on component creation
@@ -211,6 +219,23 @@ impl Component for App {
                 }
                 true
             }
+            Msg::CreateStructure => {
+                if let Some(window) = window() {
+                    if let Ok(Some(name)) = window.prompt_with_message("Enter a name for your structure:") {
+                        if !name.trim().is_empty() {
+                            self.structure_name = Some(name.trim().to_string());
+                            self.creation_mode = true;
+                            return true;
+                        }
+                    }
+                }
+                false
+            }
+            Msg::CancelCreate => {
+                self.creation_mode = false;
+                self.structure_name = None;
+                true
+            }
         }
     }
 
@@ -281,10 +306,28 @@ impl App {
         });
         
         let search_submit = ctx.link().callback(|_| Msg::SearchStructures);
+        let create_callback = ctx.link().callback(|_| Msg::CreateStructure);
+        let cancel_callback = ctx.link().callback(|_| Msg::CancelCreate);
         
         html! {
             <div class="search-controls">
                 <div class="search-bar">
+                    {if !self.creation_mode {
+                        html! {
+                            <button class="create-button" onclick={create_callback}>
+                                {"Create"}
+                            </button>
+                        }
+                    } else {
+                        html! {
+                            <div class="creation-info">
+                                <span class="creation-label">{"Creating structure..."}</span>
+                                <button class="cancel-button" onclick={cancel_callback}>
+                                    {"Cancel"}
+                                </button>
+                            </div>
+                        }
+                    }}
                     <input 
                         type="text" 
                         placeholder="Search structures by name, type, or terms..." 
@@ -323,11 +366,20 @@ impl App {
         if let Some(ref structure) = self.selected_structure {
             let system_num = self.structure_type_to_number(&structure.structure_type);
             html! {
-                <SystemOverlay system_num={system_num} structure={structure.clone()} />
+                <SystemOverlay 
+                    system_num={system_num} 
+                    structure={structure.clone()} 
+                    creation_mode={self.creation_mode}
+                    structure_name={self.structure_name.clone()}
+                />
             }
         } else {
             html! {
-                <SystemOverlay system_num={1} />
+                <SystemOverlay 
+                    system_num={1} 
+                    creation_mode={self.creation_mode}
+                    structure_name={self.structure_name.clone()}
+                />
             }
         }
     }
