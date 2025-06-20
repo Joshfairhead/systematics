@@ -476,7 +476,7 @@ impl ApiStorage {
         description: Option<&str>,
     ) -> Result<String, SystematicsError> {
         // Convert connectives from (usize, usize) keys to string keys for API
-        let connectives: HashMap<String, String> = structure.connectives()
+        let connectives: HashMap<String, String> = structure.connectives_traits()
             .iter()
             .map(|((from, to), relationship)| {
                 (format!("{}:{}", from, to), relationship.clone())

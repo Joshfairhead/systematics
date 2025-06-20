@@ -154,10 +154,6 @@ impl SystematicStructure for Tetrad {
         "tetrad"
     }
     
-    fn terms(&self) -> &[String] {
-        &self.user_term_index
-    }
-    
     fn coherence_attribute(&self) -> &str {
         self.system.coherence_attribute()
     }
@@ -174,15 +170,15 @@ impl SystematicStructure for Tetrad {
         self.system.term_characters().iter().map(|s| s.to_string()).collect()
     }
     
-    fn user_terms(&self) -> &[String] {
+    fn user_instance_index(&self) -> &[String] {
         &self.user_term_index
     }
     
-    fn first_order_connectives_name(&self) -> &str {
+    fn first_order_connectives_type(&self) -> &str {
         self.system.first_order_connectives_name()
     }
     
-    fn connectives(&self) -> &std::collections::HashMap<(usize, usize), String> {
+    fn connectives_traits(&self) -> &std::collections::HashMap<(usize, usize), String> {
         &self.connectives
     }
     
@@ -267,7 +263,7 @@ impl SystematicStructure for Tetrad {
         
         // Show connectives if they exist
         if !self.connectives.is_empty() {
-            println!("{}:", self.first_order_connectives_name());
+            println!("{}:", self.first_order_connectives_type());
             let mut shown_pairs = std::collections::HashSet::new();
             let mut display_items = Vec::new();
             
@@ -458,7 +454,7 @@ mod tests {
             .build()
             .unwrap();
         
-        let user_terms = tetrad.user_terms();
+        let user_terms = tetrad.user_instance_index();
         assert_eq!(user_terms.len(), 4);
         assert_eq!(user_terms[0], "One");
         assert_eq!(user_terms[1], "Two");

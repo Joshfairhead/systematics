@@ -116,7 +116,7 @@ impl SurrealStorage {
         let now = Datetime::default();
         
         // Convert connectives from (usize, usize) keys to string keys for storage
-        let connectives: HashMap<String, String> = structure.connectives()
+        let connectives: HashMap<String, String> = structure.connectives_traits()
             .iter()
             .map(|((from, to), relationship)| {
                 (format!("{}:{}", from, to), relationship.clone())
@@ -127,7 +127,7 @@ impl SurrealStorage {
             id: Thing::from(("structures", id_string.as_str())),
             name: name.to_string(),
             structure_type: structure.structure_type().to_string(),
-            terms: structure.terms().to_vec(),
+            terms: structure.user_instance_index().to_vec(),
             connectives,
             created_at: now.clone(),
             updated_at: now,
@@ -142,7 +142,7 @@ impl SurrealStorage {
             .await?;
 
         // Store nodes and create graph representation
-        let nodes = self.create_nodes(&id_string, structure.terms()).await?;
+        let nodes = self.create_nodes(&id_string, structure.user_instance_index()).await?;
         let _edges = self.create_edges(&nodes).await?;
 
         Ok(id_string)

@@ -175,10 +175,6 @@ impl SystematicStructure for Dyad {
         "dyad"
     }
     
-    fn terms(&self) -> &[String] {
-        &self.user_instances
-    }
-    
     fn coherence_attribute(&self) -> &str {
         self.system.coherence_attribute()
     }
@@ -199,15 +195,15 @@ impl SystematicStructure for Dyad {
         self.system.term_characters().iter().map(|s| s.to_string()).collect()
     }
     
-    fn user_terms(&self) -> &[String] {
+    fn user_instance_index(&self) -> &[String] {
         &self.user_instances
     }
     
-    fn first_order_connectives_name(&self) -> &str {
+    fn first_order_connectives_type(&self) -> &str {
         self.system.first_order_connectives_name()
     }
     
-    fn connectives(&self) -> &std::collections::HashMap<(usize, usize), String> {
+    fn connectives_traits(&self) -> &std::collections::HashMap<(usize, usize), String> {
         &self.connectives
     }
     
@@ -526,9 +522,9 @@ mod tests {
         assert_eq!(Dyad::TERM_COUNT, 2);
         assert!(!dyad.id().is_empty());
         assert_eq!(dyad.name(), "Test");
-        assert_eq!(dyad.user_terms().len(), 2);
-        assert_eq!(dyad.user_terms()[0], "Essence");
-        assert_eq!(dyad.user_terms()[1], "Existence");
+        assert_eq!(dyad.user_instance_index().len(), 2);
+        assert_eq!(dyad.user_instance_index()[0], "Essence");
+        assert_eq!(dyad.user_instance_index()[1], "Existence");
         assert_eq!(dyad.term_characters(), vec!["Essence", "Existence"]);
         assert!(dyad.validate().is_ok());
     }

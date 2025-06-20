@@ -235,10 +235,6 @@ impl SystematicStructure for Dodecad {
         "dodecad"
     }
     
-    fn terms(&self) -> &[String] {
-        &self.user_term_index
-    }
-    
     fn coherence_attribute(&self) -> &str {
         self.system.coherence_attribute()
     }
@@ -255,15 +251,15 @@ impl SystematicStructure for Dodecad {
         self.system.term_characters().iter().map(|s| s.to_string()).collect()
     }
     
-    fn user_terms(&self) -> &[String] {
+    fn user_instance_index(&self) -> &[String] {
         &self.user_term_index
     }
     
-    fn first_order_connectives_name(&self) -> &str {
+    fn first_order_connectives_type(&self) -> &str {
         self.system.first_order_connectives_name()
     }
     
-    fn connectives(&self) -> &std::collections::HashMap<(usize, usize), String> {
+    fn connectives_traits(&self) -> &std::collections::HashMap<(usize, usize), String> {
         &self.connectives
     }
     
@@ -484,7 +480,7 @@ mod tests {
         assert_eq!(Dodecad::TERM_COUNT, 12);
         assert!(!dodecad.id().is_empty());
         assert_eq!(dodecad.name(), "Test");
-        assert_eq!(dodecad.user_terms().len(), 12);
+        assert_eq!(dodecad.user_instance_index().len(), 12);
         assert!(dodecad.validate().is_ok());
     }
 } 

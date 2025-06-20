@@ -208,10 +208,6 @@ impl SystematicStructure for Heptad {
         "heptad"
     }
     
-    fn terms(&self) -> &[String] {
-        &self.user_term_index
-    }
-    
     fn coherence_attribute(&self) -> &str {
         self.system.coherence_attribute()
     }
@@ -228,15 +224,15 @@ impl SystematicStructure for Heptad {
         self.system.term_characters().iter().map(|s| s.to_string()).collect()
     }
     
-    fn user_terms(&self) -> &[String] {
+    fn user_instance_index(&self) -> &[String] {
         &self.user_term_index
     }
     
-    fn first_order_connectives_name(&self) -> &str {
+    fn first_order_connectives_type(&self) -> &str {
         self.system.first_order_connectives_name()
     }
     
-    fn connectives(&self) -> &std::collections::HashMap<(usize, usize), String> {
+    fn connectives_traits(&self) -> &std::collections::HashMap<(usize, usize), String> {
         &self.connectives
     }
     
@@ -429,7 +425,7 @@ mod tests {
         assert_eq!(Heptad::TERM_COUNT, 7);
         assert!(!heptad.id().is_empty());
         assert_eq!(heptad.name(), "Test");
-        assert_eq!(heptad.user_terms().len(), 7);
+        assert_eq!(heptad.user_instance_index().len(), 7);
         assert!(heptad.validate().is_ok());
     }
 } 

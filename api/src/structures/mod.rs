@@ -41,7 +41,7 @@ mod tests {
         
         assert_eq!(monad.coherence_attribute(), "Universality");
         assert_eq!(monad.term_designation(), "Totality");
-        assert_eq!(monad.first_order_connectives_name(), "Connectionless unity");
+        assert_eq!(monad.first_order_connectives_type(), "Connectionless unity");
 
         // Test Dyad
         let dyad = DyadBuilder::new()
@@ -52,7 +52,7 @@ mod tests {
             
         assert_eq!(dyad.coherence_attribute(), "Complimentarity");
         assert_eq!(dyad.term_designation(), "Poles");
-        assert_eq!(dyad.first_order_connectives_name(), "Force");
+        assert_eq!(dyad.first_order_connectives_type(), "Force");
 
         // Test Triad
         let triad = TriadBuilder::new()
@@ -63,7 +63,7 @@ mod tests {
             
         assert_eq!(triad.coherence_attribute(), "Dynamism");
         assert_eq!(triad.term_designation(), "Impulses");
-        assert_eq!(triad.first_order_connectives_name(), "Acts");
+        assert_eq!(triad.first_order_connectives_type(), "Acts");
 
         // Test Tetrad
         let tetrad = TetradBuilder::new()
@@ -74,7 +74,7 @@ mod tests {
             
         assert_eq!(tetrad.coherence_attribute(), "Activity Field");
         assert_eq!(tetrad.term_designation(), "Sources");
-        assert_eq!(tetrad.first_order_connectives_name(), "Interplays");
+        assert_eq!(tetrad.first_order_connectives_type(), "Interplays");
 
         // Test Pentad
         let pentad = PentadBuilder::new()
@@ -85,7 +85,7 @@ mod tests {
             
         assert_eq!(pentad.coherence_attribute(), "Significance and Potential");
         assert_eq!(pentad.term_designation(), "Limits");
-        assert_eq!(pentad.first_order_connectives_name(), "Mutualities");
+        assert_eq!(pentad.first_order_connectives_type(), "Mutualities");
 
         // Test Hexad
         let hexad = HexadBuilder::new()
@@ -96,7 +96,7 @@ mod tests {
             
         assert_eq!(hexad.coherence_attribute(), "Coalescence");
         assert_eq!(hexad.term_designation(), "Laws");
-        assert_eq!(hexad.first_order_connectives_name(), "Connectives");
+        assert_eq!(hexad.first_order_connectives_type(), "Connectives");
 
         // Test Heptad
         let heptad = HeptadBuilder::new()
@@ -107,7 +107,7 @@ mod tests {
             
         assert_eq!(heptad.coherence_attribute(), "Transformation");
         assert_eq!(heptad.term_designation(), "States");
-        assert_eq!(heptad.first_order_connectives_name(), "Connectives");
+        assert_eq!(heptad.first_order_connectives_type(), "Connectives");
 
         // Test Octad
         let octad = OctadBuilder::new()
@@ -118,7 +118,7 @@ mod tests {
             
         assert_eq!(octad.coherence_attribute(), "Self-Sufficiency");
         assert_eq!(octad.term_designation(), "Elements");
-        assert_eq!(octad.first_order_connectives_name(), "Connectives");
+        assert_eq!(octad.first_order_connectives_type(), "Connectives");
 
         // Test Ennead
         let ennead = EnneadBuilder::new()
@@ -129,7 +129,7 @@ mod tests {
             
         assert_eq!(ennead.coherence_attribute(), "Transformation");
         assert_eq!(ennead.term_designation(), "Elements");
-        assert_eq!(ennead.first_order_connectives_name(), "Connectives");
+        assert_eq!(ennead.first_order_connectives_type(), "Connectives");
 
         // Test Decad
         let decad = DecadBuilder::new()
@@ -144,7 +144,7 @@ mod tests {
             
         assert_eq!(decad.coherence_attribute(), "Intrinsic Harmony");
         assert_eq!(decad.term_designation(), "Elements");
-        assert_eq!(decad.first_order_connectives_name(), "Connectives");
+        assert_eq!(decad.first_order_connectives_type(), "Connectives");
 
         // Test Undecad
         let undecad = UndecadBuilder::new()
@@ -159,7 +159,7 @@ mod tests {
             
         assert_eq!(undecad.coherence_attribute(), "Articulate Symmetry");
         assert_eq!(undecad.term_designation(), "Elements");
-        assert_eq!(undecad.first_order_connectives_name(), "Connectives");
+        assert_eq!(undecad.first_order_connectives_type(), "Connectives");
 
         // Test Dodecad
         let dodecad = DodecadBuilder::new()
@@ -174,55 +174,55 @@ mod tests {
             
         assert_eq!(dodecad.coherence_attribute(), "Harmony");
         assert_eq!(dodecad.term_designation(), "Tones");
-        assert_eq!(dodecad.first_order_connectives_name(), "Connectives");
+        assert_eq!(dodecad.first_order_connectives_type(), "Connectives");
         
         // Verify new methods return non-empty strings for all tested structures
         assert!(!monad.coherence_attribute().is_empty());
         assert!(!monad.term_designation().is_empty());
-        assert!(!monad.first_order_connectives_name().is_empty());
+        assert!(!monad.first_order_connectives_type().is_empty());
         
         assert!(!dyad.coherence_attribute().is_empty());
         assert!(!dyad.term_designation().is_empty());
-        assert!(!dyad.first_order_connectives_name().is_empty());
+        assert!(!dyad.first_order_connectives_type().is_empty());
         
         assert!(!triad.coherence_attribute().is_empty());
         assert!(!triad.term_designation().is_empty());
-        assert!(!triad.first_order_connectives_name().is_empty());
+        assert!(!triad.first_order_connectives_type().is_empty());
         
         assert!(!tetrad.coherence_attribute().is_empty());
         assert!(!tetrad.term_designation().is_empty());
-        assert!(!tetrad.first_order_connectives_name().is_empty());
+        assert!(!tetrad.first_order_connectives_type().is_empty());
         
         assert!(!pentad.coherence_attribute().is_empty());
         assert!(!pentad.term_designation().is_empty());
-        assert!(!pentad.first_order_connectives_name().is_empty());
+        assert!(!pentad.first_order_connectives_type().is_empty());
         
         assert!(!hexad.coherence_attribute().is_empty());
         assert!(!hexad.term_designation().is_empty());
-        assert!(!hexad.first_order_connectives_name().is_empty());
+        assert!(!hexad.first_order_connectives_type().is_empty());
         
         assert!(!heptad.coherence_attribute().is_empty());
         assert!(!heptad.term_designation().is_empty());
-        assert!(!heptad.first_order_connectives_name().is_empty());
+        assert!(!heptad.first_order_connectives_type().is_empty());
         
         assert!(!octad.coherence_attribute().is_empty());
         assert!(!octad.term_designation().is_empty());
-        assert!(!octad.first_order_connectives_name().is_empty());
+        assert!(!octad.first_order_connectives_type().is_empty());
         
         assert!(!ennead.coherence_attribute().is_empty());
         assert!(!ennead.term_designation().is_empty());
-        assert!(!ennead.first_order_connectives_name().is_empty());
+        assert!(!ennead.first_order_connectives_type().is_empty());
         
         assert!(!decad.coherence_attribute().is_empty());
         assert!(!decad.term_designation().is_empty());
-        assert!(!decad.first_order_connectives_name().is_empty());
+        assert!(!decad.first_order_connectives_type().is_empty());
         
         assert!(!undecad.coherence_attribute().is_empty());
         assert!(!undecad.term_designation().is_empty());
-        assert!(!undecad.first_order_connectives_name().is_empty());
+        assert!(!undecad.first_order_connectives_type().is_empty());
         
         assert!(!dodecad.coherence_attribute().is_empty());
         assert!(!dodecad.term_designation().is_empty());
-        assert!(!dodecad.first_order_connectives_name().is_empty());
+        assert!(!dodecad.first_order_connectives_type().is_empty());
     }
 } 

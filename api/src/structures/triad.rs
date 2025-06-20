@@ -153,10 +153,6 @@ impl SystematicStructure for Triad {
         "triad"
     }
     
-    fn terms(&self) -> &[String] {
-        &self.user_instances
-    }
-    
     fn coherence_attribute(&self) -> &str {
         self.system.coherence_attribute()
     }
@@ -173,15 +169,15 @@ impl SystematicStructure for Triad {
         self.system.term_characters().iter().map(|s| s.to_string()).collect()
     }
     
-    fn user_terms(&self) -> &[String] {
+    fn user_instance_index(&self) -> &[String] {
         &self.user_instances
     }
     
-    fn first_order_connectives_name(&self) -> &str {
+    fn first_order_connectives_type(&self) -> &str {
         self.system.first_order_connectives_name()
     }
     
-    fn connectives(&self) -> &std::collections::HashMap<(usize, usize), String> {
+    fn connectives_traits(&self) -> &std::collections::HashMap<(usize, usize), String> {
         &self.connectives
     }
     
@@ -522,10 +518,10 @@ mod tests {
         assert_eq!(Triad::TERM_COUNT, 3);
         assert!(!triad.id().is_empty());
         assert_eq!(triad.name(), "Test");
-        assert_eq!(triad.user_terms().len(), 3);
-        assert_eq!(triad.user_terms()[0], "A");
-        assert_eq!(triad.user_terms()[1], "B");
-        assert_eq!(triad.user_terms()[2], "C");
+        assert_eq!(triad.user_instance_index().len(), 3);
+        assert_eq!(triad.user_instance_index()[0], "A");
+        assert_eq!(triad.user_instance_index()[1], "B");
+        assert_eq!(triad.user_instance_index()[2], "C");
         assert_eq!(triad.term_characters(), vec!["Will", "Being", "Function"]);
         assert!(triad.validate().is_ok());
     }

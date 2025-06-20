@@ -175,10 +175,6 @@ impl SystematicStructure for Undecad {
         "undecad"
     }
     
-    fn terms(&self) -> &[String] {
-        &self.user_term_index
-    }
-    
     fn coherence_attribute(&self) -> &str {
         self.system.coherence_attribute()
     }
@@ -195,15 +191,15 @@ impl SystematicStructure for Undecad {
         self.system.term_characters().iter().map(|s| s.to_string()).collect()
     }
     
-    fn user_terms(&self) -> &[String] {
+    fn user_instance_index(&self) -> &[String] {
         &self.user_term_index
     }
     
-    fn first_order_connectives_name(&self) -> &str {
+    fn first_order_connectives_type(&self) -> &str {
         self.system.first_order_connectives_name()
     }
     
-    fn connectives(&self) -> &std::collections::HashMap<(usize, usize), String> {
+    fn connectives_traits(&self) -> &std::collections::HashMap<(usize, usize), String> {
         &self.connectives
     }
     
@@ -271,7 +267,7 @@ impl SystematicStructure for Undecad {
         }
         
         if !self.connectives.is_empty() {
-            println!("\n--- {} ---", self.first_order_connectives_name());
+            println!("\n--- {} ---", self.first_order_connectives_type());
             for ((from, to), relationship) in &self.connectives {
                 println!("{} → {}: {}", from + 1, to + 1, relationship);
             }
@@ -348,7 +344,7 @@ mod tests {
         assert_eq!(undecad.position_count(), 11);
         assert_eq!(undecad.coherence_attribute(), "Transcendence");
         assert_eq!(undecad.term_designation(), "Transitions");
-        assert_eq!(undecad.first_order_connectives_name(), "Phases");
+        assert_eq!(undecad.first_order_connectives_type(), "Phases");
     }
 
     #[test]
@@ -366,6 +362,6 @@ mod tests {
         assert_eq!(Undecad::TERM_COUNT, 11);
         
         // Test SystematicStructure trait methods
-        assert_eq!(undecad.terms().len(), 11);
+        assert_eq!(undecad.user_instance_index().len(), 11);
     }
 } 

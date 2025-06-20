@@ -18,8 +18,8 @@ pub struct Monad {
     id: String,
     name: String,
     
-    // User's terms for each index position (monad has 1 term index)
-    user_term_index: [String; 1],
+    // User's instances for each position (monad has 1 position)
+    user_instance_index: [String; 1],
     
     // User-defined attributes
     attributes: Vec<String>,
@@ -41,7 +41,7 @@ impl Monad {
         Self {
             id: Uuid::new_v4().to_string(),
             name,
-            user_term_index: [String::new()],
+            user_instance_index: [String::new()],
             attributes: Vec::new(),
             connectives: HashMap::new(),
             system: MonadicSystem,
@@ -52,12 +52,12 @@ impl Monad {
     // Content Access Methods
     // -------------------------------------------------------------------------
     
-    /// Get the user instance (the user-provided term for this monad)
+    /// Get the first user instance (the user-provided term for this monad)
     /// 
     /// Returns the user's term that maps to Bennett's term character for this position.
     /// This is the user-provided data, not the canonical term character from the system.
-    pub fn term(&self) -> &str {
-        &self.user_term_index[0]
+    pub fn first_user_instance(&self) -> &str {
+        &self.user_instance_index[0]
     }
     
     /// Get all attributes
@@ -113,10 +113,6 @@ impl SystematicStructure for Monad {
         "monad"
     }
     
-    fn terms(&self) -> &[String] {
-        &self.user_term_index
-    }
-    
     fn coherence_attribute(&self) -> &str {
         self.system.coherence_attribute()
     }
@@ -137,15 +133,15 @@ impl SystematicStructure for Monad {
         self.system.term_characters().iter().map(|s| s.to_string()).collect()
     }
     
-    fn user_terms(&self) -> &[String] {
-        &self.user_term_index
+    fn user_instance_index(&self) -> &[String] {
+        &self.user_instance_index
     }
     
-    fn first_order_connectives_name(&self) -> &str {
+    fn first_order_connectives_type(&self) -> &str {
         self.system.first_order_connectives_name()
     }
     
-    fn connectives(&self) -> &std::collections::HashMap<(usize, usize), String> {
+    fn connectives_traits(&self) -> &std::collections::HashMap<(usize, usize), String> {
         &self.connectives
     }
     
@@ -170,21 +166,21 @@ impl SystematicStructure for Monad {
         }
         
         // Validate term is not empty
-        if self.user_term_index[0].trim().is_empty() {
+        if self.user_instance_index[0].trim().is_empty() {
             return Err(SystematicsError::StructureValidation {
                 reason: "Monad term cannot be empty".to_string(),
             });
         }
         
         // Validate term length
-        if self.user_term_index[0].len() > 100 {
+        if self.user_instance_index[0].len() > 100 {
             return Err(SystematicsError::StructureValidation {
                 reason: "Monad term is too long (max 100 characters)".to_string(),
             });
         }
         
         // Validate term contains only allowed characters
-        if !self.user_term_index[0].chars().all(|c| c.is_alphanumeric() || c.is_whitespace() || ".,!?'-()".contains(c)) {
+        if !self.user_instance_index[0].chars().all(|c| c.is_alphanumeric() || c.is_whitespace() || ".,!?'-()".contains(c)) {
             return Err(SystematicsError::StructureValidation {
                 reason: "Monad term contains invalid characters".to_string(),
             });
@@ -202,11 +198,11 @@ impl SystematicStructure for Monad {
         println!("\n{}", header);
         
         // Special monad logic: if name and term are the same, only show name
-        if self.name == self.term() {
+        if self.name == self.first_user_instance() {
             println!("Name: {}", self.name);
         } else {
             println!("Name: {}", self.name);
-            println!("{}: {}", self.term_designation(), self.term());
+            println!("{}: {}", self.term_designation(), self.first_user_instance());
         }
         
         if !self.attributes.is_empty() {
@@ -283,7 +279,7 @@ impl MonadBuilder {
         })?;
         
         let mut monad = Monad::new(name);
-        monad.user_term_index[0] = term;
+                    monad.user_instance_index[0] = term;
         monad.attributes = self.attributes;
             
         monad.validate()?;
@@ -316,7 +312,7 @@ mod tests {
             .unwrap();
             
         assert_eq!(monad.name(), "Test Monad");
-        assert_eq!(monad.term(), "Unity");
+        assert_eq!(monad.first_user_instance(), "Unity");
         assert_eq!(monad.attributes().len(), 2);
         assert!(monad.validate().is_ok());
     }
@@ -374,8 +370,8 @@ mod tests {
         assert_eq!(Monad::TERM_COUNT, 1);
         assert!(!monad.id().is_empty());
         assert_eq!(monad.name(), "Test");
-        assert_eq!(monad.user_terms().len(), 1);
-        assert_eq!(monad.user_terms()[0], "Absolute");
+        assert_eq!(monad.user_instance_index().len(), 1);
+        assert_eq!(monad.user_instance_index()[0], "Absolute");
         assert_eq!(monad.term_characters(), vec!["Unity"]);
         assert!(monad.validate().is_ok());
     }

@@ -182,10 +182,6 @@ impl SystematicStructure for Hexad {
         "hexad"
     }
     
-    fn terms(&self) -> &[String] {
-        &self.user_term_index
-    }
-    
     fn coherence_attribute(&self) -> &str {
         self.system.coherence_attribute()
     }
@@ -202,15 +198,15 @@ impl SystematicStructure for Hexad {
         self.system.term_characters().iter().map(|s| s.to_string()).collect()
     }
     
-    fn user_terms(&self) -> &[String] {
+    fn user_instance_index(&self) -> &[String] {
         &self.user_term_index
     }
     
-    fn first_order_connectives_name(&self) -> &str {
+    fn first_order_connectives_type(&self) -> &str {
         self.system.first_order_connectives_name()
     }
     
-    fn connectives(&self) -> &std::collections::HashMap<(usize, usize), String> {
+    fn connectives_traits(&self) -> &std::collections::HashMap<(usize, usize), String> {
         &self.connectives
     }
     
@@ -282,7 +278,7 @@ impl SystematicStructure for Hexad {
         
         // Note: Connectives not displayed in CLI for systems beyond pentad due to complexity
         if !self.connectives.is_empty() {
-            println!("{}: {} relationships defined", self.first_order_connectives_name(), self.connectives.len());
+            println!("{}: {} relationships defined", self.first_order_connectives_type(), self.connectives.len());
         }
         
         println!();
@@ -396,7 +392,7 @@ mod tests {
         assert_eq!(Hexad::TERM_COUNT, 6);
         assert!(!hexad.id().is_empty());
         assert_eq!(hexad.name(), "Test");
-        assert_eq!(hexad.user_terms().len(), 6);
+        assert_eq!(hexad.user_instance_index().len(), 6);
         assert!(hexad.validate().is_ok());
     }
 } 

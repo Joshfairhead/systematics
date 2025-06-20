@@ -174,10 +174,6 @@ impl SystematicStructure for Ennead {
         "ennead"
     }
     
-    fn terms(&self) -> &[String] {
-        &self.user_term_index
-    }
-    
     fn coherence_attribute(&self) -> &str {
         self.system.coherence_attribute()
     }
@@ -194,15 +190,15 @@ impl SystematicStructure for Ennead {
         self.system.term_characters().iter().map(|s| s.to_string()).collect()
     }
     
-    fn user_terms(&self) -> &[String] {
+    fn user_instance_index(&self) -> &[String] {
         &self.user_term_index
     }
     
-    fn first_order_connectives_name(&self) -> &str {
+    fn first_order_connectives_type(&self) -> &str {
         self.system.first_order_connectives_name()
     }
     
-    fn connectives(&self) -> &std::collections::HashMap<(usize, usize), String> {
+    fn connectives_traits(&self) -> &std::collections::HashMap<(usize, usize), String> {
         &self.connectives
     }
     
@@ -270,7 +266,7 @@ impl SystematicStructure for Ennead {
         }
         
         if !self.connectives.is_empty() {
-            println!("\n--- {} ---", self.first_order_connectives_name());
+            println!("\n--- {} ---", self.first_order_connectives_type());
             for ((from, to), relationship) in &self.connectives {
                 println!("{} → {}: {}", from + 1, to + 1, relationship);
             }
@@ -347,7 +343,7 @@ mod tests {
         assert_eq!(ennead.position_count(), 9);
         assert_eq!(ennead.coherence_attribute(), "Transformation");
         assert_eq!(ennead.term_designation(), "Types");
-        assert_eq!(ennead.first_order_connectives_name(), "Arrows");
+        assert_eq!(ennead.first_order_connectives_type(), "Arrows");
     }
 
     #[test]
@@ -365,6 +361,6 @@ mod tests {
         assert_eq!(Ennead::TERM_COUNT, 9);
         
         // Test SystematicStructure trait methods
-        assert_eq!(ennead.terms().len(), 9);
+        assert_eq!(ennead.user_instance_index().len(), 9);
     }
 } 

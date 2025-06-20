@@ -50,7 +50,7 @@ pub struct StructureSchema {
     pub coherence_attribute: String,
     pub term_designation: String,
     pub source: String,
-    pub first_order_connectives_name: String,
+    pub first_order_connectives_type: String,
     pub connectives: Vec<ConnectiveInfo>,
 }
 

@@ -74,9 +74,6 @@ pub trait SystematicStructure {
     /// Get the structure type name (e.g., "monad", "dyad", "triad")
     fn structure_type(&self) -> &str;
     
-    /// Get current user-provided term values as a slice (for storage)
-    fn terms(&self) -> &[String];
-    
     /// Get the coherence attribute for this structure type
     /// This defines what maintains internal consistency within the structure
     fn coherence_attribute(&self) -> &str;
@@ -88,6 +85,8 @@ pub trait SystematicStructure {
     /// Get the source material where this system definition comes from
     fn source(&self) -> &str;
     
+
+    
     // -------------------------------------------------------------------------
     // Content Access
     // -------------------------------------------------------------------------
@@ -95,16 +94,16 @@ pub trait SystematicStructure {
     /// Get canonical term labels from the system file
     /// For a monad: `["Unity"]`, for a dyad: `["Essence", "Existence"]`.
     fn term_characters(&self) -> Vec<String>;
+
+    /// Get current user-provided term values for each position (for storage)
+    fn user_instance_index(&self) -> &[String];
     
-    /// Get current user-provided term values for each position
-    fn user_terms(&self) -> &[String];
+    /// Get the type for the first order connectives of this structure type
+    fn first_order_connectives_type(&self) -> &str;
     
-    /// Get the name for the first order connectives of this structure type
-    fn first_order_connectives_name(&self) -> &str;
-    
-    /// Get connective relationships between terms
+    /// Get connective relationship traits between terms
     /// Returns a map of (from_index, to_index) -> relationship_name
-    fn connectives(&self) -> &std::collections::HashMap<(usize, usize), String>;
+    fn connectives_traits(&self) -> &std::collections::HashMap<(usize, usize), String>;
     
     /// Get semantic coordinates/positions for this structure
     /// Returns the coordinate indices (0, 1, 2, etc.) that map to term positions.

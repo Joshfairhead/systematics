@@ -153,10 +153,6 @@ impl SystematicStructure for Pentad {
         "pentad"
     }
     
-    fn terms(&self) -> &[String] {
-        &self.user_term_index
-    }
-    
     fn coherence_attribute(&self) -> &str {
         self.system.coherence_attribute()
     }
@@ -173,15 +169,15 @@ impl SystematicStructure for Pentad {
         self.system.term_characters().iter().map(|s| s.to_string()).collect()
     }
     
-    fn user_terms(&self) -> &[String] {
+    fn user_instance_index(&self) -> &[String] {
         &self.user_term_index
     }
     
-    fn first_order_connectives_name(&self) -> &str {
+    fn first_order_connectives_type(&self) -> &str {
         self.system.first_order_connectives_name()
     }
     
-    fn connectives(&self) -> &std::collections::HashMap<(usize, usize), String> {
+    fn connectives_traits(&self) -> &std::collections::HashMap<(usize, usize), String> {
         &self.connectives
     }
     
@@ -262,7 +258,7 @@ impl SystematicStructure for Pentad {
         
         // Show connectives if they exist
         if !self.connectives.is_empty() {
-            println!("{}:", self.first_order_connectives_name());
+            println!("{}:", self.first_order_connectives_type());
             let mut shown_pairs = std::collections::HashSet::new();
             let mut display_items = Vec::new();
             
@@ -407,7 +403,7 @@ mod tests {
         
         pentad.set_connective(0, 1, "test relationship".to_string());
         assert_eq!(pentad.get_connective(0, 1), Some(&"test relationship".to_string()));
-        assert_eq!(pentad.connectives().len(), 1);
+        assert_eq!(pentad.connectives_traits().len(), 1);
     }
 
     #[test]
@@ -449,7 +445,7 @@ mod tests {
             .build()
             .unwrap();
         
-        let terms = pentad.user_terms();
+        let terms = pentad.user_instance_index();
         assert_eq!(terms.len(), 5);
         assert_eq!(terms[0], "First");
         assert_eq!(terms[1], "Second");
@@ -473,7 +469,7 @@ mod tests {
         assert_eq!(Pentad::TERM_COUNT, 5);
         assert!(!pentad.id().is_empty());
         assert_eq!(pentad.name(), "Test");
-        assert_eq!(pentad.user_terms().len(), 5);
+        assert_eq!(pentad.user_instance_index().len(), 5);
         assert!(pentad.validate().is_ok());
     }
 } 
