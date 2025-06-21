@@ -146,7 +146,7 @@ impl ApiClient {
             let api_response: ApiResponse<Vec<UserExpression>> = response.json().await?;
             api_response.data.ok_or_else(|| anyhow::anyhow!("No data in response"))
         } else {
-            Err(anyhow::anyhow!("Failed to list user instances: {}", response.status()))
+            Err(anyhow::anyhow!("Failed to list user user_expressions: {}", response.status()))
         }
     }
 
@@ -175,7 +175,7 @@ impl ApiClient {
             }
         } else {
             let error_text = response.text().await.unwrap_or_else(|_| "Unknown error".to_string());
-            Err(anyhow::anyhow!("Failed to create user instance: {}", error_text))
+            Err(anyhow::anyhow!("Failed to create user expression: {}", error_text))
         }
     }
 
@@ -230,7 +230,7 @@ impl ApiClient {
             let api_response: ApiResponse<Vec<UserExpression>> = response.json().await?;
             api_response.data.ok_or_else(|| anyhow::anyhow!("No data in response"))
         } else {
-            Err(anyhow::anyhow!("Failed to search user instances: {}", response.status()))
+            Err(anyhow::anyhow!("Failed to search user user_expressions: {}", response.status()))
         }
     }
 

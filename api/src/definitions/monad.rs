@@ -52,11 +52,11 @@ impl Monad {
     // Content Access Methods
     // -------------------------------------------------------------------------
     
-    /// Get the first user instance (the user-provided term for this monad)
+    /// Get the first user expression (the user-provided term for this monad)
     /// 
     /// Returns the user's term that maps to Bennett's term character for this position.
     /// This is the user-provided data, not the canonical term character from the system.
-    pub fn first_user_instance(&self) -> &str {
+    pub fn first_user_expression(&self) -> &str {
         &self.user_expressions[0]
     }
     
@@ -198,11 +198,11 @@ impl SystematicStructure for Monad {
         println!("\n{}", header);
         
         // Special monad logic: if name and term are the same, only show name
-        if self.name == self.first_user_instance() {
+        if self.name == self.first_user_expression() {
             println!("Name: {}", self.name);
         } else {
             println!("Name: {}", self.name);
-            println!("{}: {}", self.term_designation(), self.first_user_instance());
+            println!("{}: {}", self.term_designation(), self.first_user_expression());
         }
         
         if !self.attributes.is_empty() {
@@ -312,7 +312,7 @@ mod tests {
             .unwrap();
             
         assert_eq!(monad.name(), "Test Monad");
-        assert_eq!(monad.first_user_instance(), "Unity");
+        assert_eq!(monad.first_user_expression(), "Unity");
         assert_eq!(monad.attributes().len(), 2);
         assert!(monad.validate().is_ok());
     }

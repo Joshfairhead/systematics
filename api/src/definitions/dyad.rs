@@ -40,7 +40,7 @@ pub struct Dyad {
 // =============================================================================
 
 impl Dyad {
-    /// Create a new dyad with the given name and user instances
+    /// Create a new dyad with the given name and user expressions
     pub fn new(name: String, first_instance: String, second_instance: String) -> Self {
         let connectives = HashMap::new();
         // TODO: Add proper Bennett framework connective relationships

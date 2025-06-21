@@ -35,28 +35,28 @@ impl Pentad {
         }
     }
     
-    /// Get user instance at position 0 (maps to term character "Quintessence")
-    pub fn first_user_instance(&self) -> &str {
+    /// Get user expression at position 0 (maps to term character "Quintessence")
+    pub fn first_user_expression(&self) -> &str {
         &self.user_expressions[0]
     }
     
-    /// Get user instance at position 1 (maps to term character "Higher Potential")
-    pub fn second_user_instance(&self) -> &str {
+    /// Get user expression at position 1 (maps to term character "Higher Potential")
+    pub fn second_user_expression(&self) -> &str {
         &self.user_expressions[1]
     }
     
-    /// Get user instance at position 2 (maps to term character "Lower Potential")
-    pub fn third_user_instance(&self) -> &str {
+    /// Get user expression at position 2 (maps to term character "Lower Potential")
+    pub fn third_user_expression(&self) -> &str {
         &self.user_expressions[2]
     }
     
-    /// Get user instance at position 3 (maps to term character "Purpose")
-    pub fn fourth_user_instance(&self) -> &str {
+    /// Get user expression at position 3 (maps to term character "Purpose")
+    pub fn fourth_user_expression(&self) -> &str {
         &self.user_expressions[3]
     }
     
-    /// Get user instance at position 4 (maps to term character "Source")
-    pub fn fifth_user_instance(&self) -> &str {
+    /// Get user expression at position 4 (maps to term character "Source")
+    pub fn fifth_user_expression(&self) -> &str {
         &self.user_expressions[4]
     }
     
@@ -101,14 +101,14 @@ impl Pentad {
         term_characters.get(position).copied()
     }
     
-    /// Map a user instance to its positional coordinate
-    /// Returns the 0-based index for the given user instance
+    /// Map a user expression to its positional coordinate
+    /// Returns the 0-based index for the given user expression
     pub fn instance_to_position(&self, instance: &str) -> Option<usize> {
         self.user_expressions.iter().position(|inst| inst == instance)
     }
     
-    /// Map a positional coordinate to its user instance
-    /// Returns the user instance for the given 0-based position index
+    /// Map a positional coordinate to its user expression
+    /// Returns the user expression for the given 0-based position index
     pub fn instance_from_position(&self, position: usize) -> Option<&str> {
         self.user_expressions.get(position).map(|s| s.as_str())
     }
@@ -126,13 +126,13 @@ impl Pentad {
     }
     
     /// Map a position to its user term (alias for instance_from_position)
-    /// Returns the user instance for the given 0-based position index
+    /// Returns the user expression for the given 0-based position index
     pub fn position_to_user_term(&self, position: usize) -> Option<&str> {
         self.instance_from_position(position)
     }
     
     /// Map a user term to its position (alias for instance_to_position)
-    /// Returns the 0-based index for the given user instance
+    /// Returns the 0-based index for the given user expression
     pub fn position_from_user_term(&self, user_term: &str) -> Option<usize> {
         self.instance_to_position(user_term)
     }
@@ -371,11 +371,11 @@ mod tests {
             .unwrap();
         
         assert_eq!(pentad.name(), "Test Pentad");
-        assert_eq!(pentad.first_user_instance(), "Quintessence");
-        assert_eq!(pentad.second_user_instance(), "Higher Potential");
-        assert_eq!(pentad.third_user_instance(), "Lower Potential");
-        assert_eq!(pentad.fourth_user_instance(), "Purpose");
-        assert_eq!(pentad.fifth_user_instance(), "Source");
+        assert_eq!(pentad.first_user_expression(), "Quintessence");
+        assert_eq!(pentad.second_user_expression(), "Higher Potential");
+        assert_eq!(pentad.third_user_expression(), "Lower Potential");
+        assert_eq!(pentad.fourth_user_expression(), "Purpose");
+        assert_eq!(pentad.fifth_user_expression(), "Source");
         assert!(pentad.validate().is_ok());
     }
 

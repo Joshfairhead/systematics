@@ -47,7 +47,7 @@ impl Dodecad {
         }
     }
     
-    /// Get user instance by index (0-11)
+    /// Get user expression by index (0-11)
     /// 
     /// Returns the user-provided instance for the given position index.
     /// This is the user-provided data, not the canonical term character from the system.
@@ -56,73 +56,73 @@ impl Dodecad {
     /// * `index` - Position index (0-11 for dodecad)
     /// 
     /// # Returns
-    /// * `Some(&str)` - The user instance at the given position
+    /// * `Some(&str)` - The user expression at the given position
     /// * `None` - If the index is out of bounds
     pub fn get_user_instance(&self, index: usize) -> Option<&str> {
         self.user_expressions.get(index).map(|s| s.as_str())
     }
     
-    /// Get the first user instance (maps to "Autocracy")
-    pub fn first_user_instance(&self) -> &str {
+    /// Get the first user expression (maps to "Autocracy")
+    pub fn first_user_expression(&self) -> &str {
         &self.user_expressions[0]
     }
     
-    /// Get the second user instance (maps to "Domination")
-    pub fn second_user_instance(&self) -> &str {
+    /// Get the second user expression (maps to "Domination")
+    pub fn second_user_expression(&self) -> &str {
         &self.user_expressions[1]
     }
     
-    /// Get the third user instance (maps to "Creativity")
-    pub fn third_user_instance(&self) -> &str {
+    /// Get the third user expression (maps to "Creativity")
+    pub fn third_user_expression(&self) -> &str {
         &self.user_expressions[2]
     }
     
-    /// Get the fourth user instance (maps to "Pattern")
-    pub fn fourth_user_instance(&self) -> &str {
+    /// Get the fourth user expression (maps to "Pattern")
+    pub fn fourth_user_expression(&self) -> &str {
         &self.user_expressions[3]
     }
     
-    /// Get the fifth user instance (maps to "Individuality")
-    pub fn fifth_user_instance(&self) -> &str {
+    /// Get the fifth user expression (maps to "Individuality")
+    pub fn fifth_user_expression(&self) -> &str {
         &self.user_expressions[4]
     }
     
-    /// Get the sixth user instance (maps to "Structure")
+    /// Get the sixth user expression (maps to "Structure")
     pub fn sixth_user_instance(&self) -> &str {
         &self.user_expressions[5]
     }
     
-    /// Get the seventh user instance (maps to "Repetition")
+    /// Get the seventh user expression (maps to "Repetition")
     pub fn seventh_user_instance(&self) -> &str {
         &self.user_expressions[6]
     }
     
-    /// Get the eighth user instance (maps to "Potentiality")
+    /// Get the eighth user expression (maps to "Potentiality")
     pub fn eighth_user_instance(&self) -> &str {
         &self.user_expressions[7]
     }
     
-    /// Get the ninth user instance (maps to "Subsistence")
+    /// Get the ninth user expression (maps to "Subsistence")
     pub fn ninth_user_instance(&self) -> &str {
         &self.user_expressions[8]
     }
     
-    /// Get the tenth user instance (maps to "Relatedness")
+    /// Get the tenth user expression (maps to "Relatedness")
     pub fn tenth_user_instance(&self) -> &str {
         &self.user_expressions[9]
     }
     
-    /// Get the eleventh user instance (maps to "Polarity")
+    /// Get the eleventh user expression (maps to "Polarity")
     pub fn eleventh_user_instance(&self) -> &str {
         &self.user_expressions[10]
     }
     
-    /// Get the twelfth user instance (maps to "Wholeness")
+    /// Get the twelfth user expression (maps to "Wholeness")
     pub fn twelfth_user_instance(&self) -> &str {
         &self.user_expressions[11]
     }
 
-    /// Get all user instances as a tuple
+    /// Get all user expressions as a tuple
     pub fn instances_tuple(&self) -> (&str, &str, &str, &str, &str, &str, &str, &str, &str, &str, &str, &str) {
         (&self.user_expressions[0], &self.user_expressions[1], &self.user_expressions[2], 
          &self.user_expressions[3], &self.user_expressions[4], &self.user_expressions[5], 
@@ -183,14 +183,14 @@ impl Dodecad {
         term_characters.get(position).copied()
     }
     
-    /// Map a user instance to its positional coordinate
-    /// Returns the 0-based index for the given user instance
+    /// Map a user expression to its positional coordinate
+    /// Returns the 0-based index for the given user expression
     pub fn instance_to_position(&self, instance: &str) -> Option<usize> {
         self.user_expressions.iter().position(|inst| inst == instance)
     }
     
-    /// Map a positional coordinate to its user instance
-    /// Returns the user instance for the given 0-based position index
+    /// Map a positional coordinate to its user expression
+    /// Returns the user expression for the given 0-based position index
     pub fn instance_from_position(&self, position: usize) -> Option<&str> {
         self.user_expressions.get(position).map(|s| s.as_str())
     }
@@ -208,13 +208,13 @@ impl Dodecad {
     }
     
     /// Map a position to its user term (alias for instance_from_position)
-    /// Returns the user instance for the given 0-based position index
+    /// Returns the user expression for the given 0-based position index
     pub fn position_to_user_term(&self, position: usize) -> Option<&str> {
         self.instance_from_position(position)
     }
     
     /// Map a user term to its position (alias for instance_to_position)
-    /// Returns the 0-based index for the given user instance
+    /// Returns the 0-based index for the given user expression
     pub fn position_from_user_term(&self, user_term: &str) -> Option<usize> {
         self.instance_to_position(user_term)
     }

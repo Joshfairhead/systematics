@@ -151,7 +151,7 @@ impl SurrealStorage {
                             ";
                             db.query(migration_sql).await?;
                             eprintln!("✅ Database migration from 'terms' completed");
-                        } else if first_expression.get("instances").is_some() && first_expression.get("user_expressions").is_none() {
+                        } else if first_expression.get("user_expressions").is_some() && first_expression.get("user_expressions").is_none() {
                             eprintln!("🔄 Migrating database from 'instances' to 'user_expressions'...");
                             let migration_sql = "
                                 UPDATE user_expressions SET user_expressions = instances, grammar_id = 'core' WHERE instances IS NOT NULL;
@@ -269,7 +269,7 @@ impl SurrealStorage {
             metadata: HashMap::new(),
         };
 
-        // Store the user instance
+        // Store the user expression
         let _: Option<StoredUserExpression> = self.db
             .create(("user_expressions", id_string.as_str()))
             .content(stored_user_instance)
@@ -365,7 +365,7 @@ impl SurrealStorage {
     }
 
     pub async fn get_related_user_expressions(&self, id: &str) -> Result<Vec<StoredUserExpression>, SystematicsError> {
-        // Find user instances that share instances with the given user instance
+        // Find user expressions that share instances with the given user expression
         let sql = "
             SELECT DISTINCT s2.* FROM user_expressions s1, user_expressions s2
             WHERE s1.id = $id 
@@ -408,7 +408,7 @@ impl SurrealStorage {
         let pattern = format!("{}_%", id);
         self.db.query(edges_sql).bind(("pattern", pattern)).await?;
 
-        // Delete the user instance itself
+        // Delete the user expression itself
         let deleted: Option<StoredUserExpression> = self.db.delete(("user_expressions", id)).await?;
         
         Ok(deleted.is_some())
@@ -475,7 +475,7 @@ impl SurrealStorage {
             metadata: HashMap::new(),
         };
 
-        // Store the user instance
+        // Store the user expression
         let _: Option<StoredUserExpression> = self.db
             .create(("user_expressions", id_string.as_str()))
             .content(stored_user_instance)

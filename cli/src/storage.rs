@@ -36,9 +36,9 @@ pub enum StorageCommand {
         /// Definition ID
         id: String,
     },
-    /// Find definitions containing a specific user instance
+    /// Find definitions containing a specific user expression
     FindUserInstance {
-        /// User instance to search for
+        /// User expression to search for
         user_instance: String,
     },
     /// Show definition graph
@@ -185,10 +185,10 @@ impl ApiStorage {
         
         for definition in definitions {
             println!("🔹 {} ({})", definition.name, definition.definition_type);
-            println!("  Instances: {}", definition.instances.join(" → "));
+            println!("  Instances: {}", definition.user_expressions.join(" → "));
             
             // Show connectives if they exist
-            display_connectives(&definition.connectives, &definition.instances);
+            display_connectives(&definition.connectives, &definition.user_expressions);
             
             if let Some(desc) = &definition.description {
                 println!("  Description: {}", desc);
@@ -214,10 +214,10 @@ impl ApiStorage {
         
         for definition in definitions {
             println!("🔹 {} ({})", definition.name, definition.definition_type);
-            println!("  Instances: {}", definition.instances.join(" → "));
+            println!("  Instances: {}", definition.user_expressions.join(" → "));
             
             // Show connectives if they exist
-            display_connectives(&definition.connectives, &definition.instances);
+            display_connectives(&definition.connectives, &definition.user_expressions);
             
             if let Some(desc) = &definition.description {
                 println!("  Description: {}", desc);
@@ -247,8 +247,8 @@ impl ApiStorage {
                     println!("Description: {}", desc);
                 }
                 
-                println!("\nInstances ({}):", s.instances.len());
-                for (i, instance) in s.instances.iter().enumerate() {
+                println!("\nInstances ({}):", s.user_expressions.len());
+                for (i, instance) in s.user_expressions.iter().enumerate() {
                     println!("  {}: {}", i + 1, instance);
                 }
                 
@@ -265,8 +265,8 @@ impl ApiStorage {
                     for (key, relationship) in &s.connectives {
                         if let Some((from_str, to_str)) = key.split_once(':') {
                             if let (Ok(from), Ok(to)) = (from_str.parse::<usize>(), to_str.parse::<usize>()) {
-                                                    let from_term = get_user_instance_name(&s.instances, from);
-                    let to_term = get_user_instance_name(&s.instances, to);
+                                let from_term = get_user_instance_name(&s.user_expressions, from);
+                                let to_term = get_user_instance_name(&s.user_expressions, to);
                                 
                                 max_left_width = max_left_width.max(from_term.len());
                                 max_middle_width = max_middle_width.max(relationship.len());
@@ -328,10 +328,10 @@ impl ApiStorage {
         
         for definition in related {
             println!("🔹 {} ({})", definition.name, definition.definition_type);
-            println!("  Instances: {}", definition.instances.join(" → "));
+            println!("  Instances: {}", definition.user_expressions.join(" → "));
             
             // Show connectives if they exist
-            display_connectives(&definition.connectives, &definition.instances);
+            display_connectives(&definition.connectives, &definition.user_expressions);
             
             println!("  ─────────────────────────────────────────");
             println!("  ID: {}", get_definition_id_string(&definition.id));
@@ -342,11 +342,11 @@ impl ApiStorage {
     }
 
     async fn find_user_instance_usage(&self, user_instance: &str) -> Result<(), SystematicsError> {
-        // For now, use search functionality to find user instance usage
+        // For now, use search functionality to find user expression usage
         let definitions = self.api_client.search_definitions(user_instance).await?;
         
         if definitions.is_empty() {
-            println!("🔍 No definitions found containing user instance '{}'", user_instance);
+            println!("🔍 No definitions found containing user expression '{}'", user_instance);
             return Ok(());
         }
 
@@ -355,13 +355,13 @@ impl ApiStorage {
         
         for definition in definitions {
             println!("🔹 {} ({})", definition.name, definition.definition_type);
-            println!("  Instances: {}", definition.instances.join(" → "));
+            println!("  Instances: {}", definition.user_expressions.join(" → "));
             
             // Show connectives if they exist
-            display_connectives(&definition.connectives, &definition.instances);
+            display_connectives(&definition.connectives, &definition.user_expressions);
             
-            // Highlight the matching user instance
-            let positions: Vec<usize> = definition.instances
+            // Highlight the matching user expression
+            let positions: Vec<usize> = definition.user_expressions
                 .iter()
                 .enumerate()
                 .filter(|(_, t)| t.contains(user_instance))
@@ -423,7 +423,7 @@ impl ApiStorage {
         
         for definition in &definitions {
             *type_counts.entry(definition.definition_type.clone()).or_insert(0) += 1;
-            total_terms += definition.instances.len();
+            total_terms += definition.user_expressions.len();
         }
         
         println!("Total terms: {}", total_terms);
@@ -503,8 +503,8 @@ fn parse_key_val(s: &str) -> Result<(String, String), Box<dyn std::error::Error 
     Ok((s[..pos].to_string(), s[pos + 1..].to_string()))
 }
 
-fn get_user_instance_name(user_instances: &[String], index: usize) -> String {
-    user_instances.get(index)
+fn get_user_instance_name(user_expressions: &[String], index: usize) -> String {
+    user_expressions.get(index)
         .map(|s| s.clone())
         .unwrap_or_else(|| format!("UserInstance{}", index))
 }
@@ -515,7 +515,7 @@ fn get_definition_id_string(id: &crate::api_client::StructureId) -> &str {
     }
 }
 
-fn display_connectives(connectives: &HashMap<String, String>, user_instances: &[String]) {
+fn display_connectives(connectives: &HashMap<String, String>, user_expressions: &[String]) {
     if !connectives.is_empty() {
         println!("  Connectives:");
         
@@ -528,8 +528,8 @@ fn display_connectives(connectives: &HashMap<String, String>, user_instances: &[
         for (key, relationship) in connectives {
             if let Some((from_str, to_str)) = key.split_once(':') {
                 if let (Ok(from), Ok(to)) = (from_str.parse::<usize>(), to_str.parse::<usize>()) {
-                    let from_term = get_user_instance_name(user_instances, from);
-                    let to_term = get_user_instance_name(user_instances, to);
+                    let from_term = get_user_instance_name(user_expressions, from);
+                    let to_term = get_user_instance_name(user_expressions, to);
                     
                     max_left_width = max_left_width.max(from_term.len());
                     max_middle_width = max_middle_width.max(relationship.len());

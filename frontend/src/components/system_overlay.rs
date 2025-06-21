@@ -19,7 +19,7 @@ pub struct SystemOverlayProps {
     pub definition: Option<ContentItem>,
     pub creation_mode: bool,
     pub structure_name: Option<String>,
-    pub user_instance_index: Vec<String>,
+    pub user_expressions: Vec<String>,
     pub on_instance_change: Callback<(usize, String)>,
 }
 
@@ -93,8 +93,8 @@ impl Component for SystemOverlay {
             should_update = true;
         }
         
-        // Check if user_instance_index changed
-        if new_props.user_instance_index != old_props.user_instance_index {
+        // Check if user_expressions changed
+        if new_props.user_expressions != old_props.user_expressions {
             should_update = true;
         }
         
@@ -220,7 +220,7 @@ impl SystemOverlay {
                 ContentItem::UserExpression(user_instance) => {
                     let is_placeholder = user_instance.id.as_str().map_or(false, |id| id.starts_with("placeholder-"));
                     if !is_placeholder && user_instance.user_expressions.len() == expected_count {
-                        // Real user instance with correct number of user_expressions
+                        // Real user expression with correct number of user_expressions
                         user_instance.user_expressions.clone()
                     } else {
                         // Placeholder or incorrect data - show term characters
@@ -416,8 +416,8 @@ impl SystemOverlay {
     
     fn render_point_with_positioning(&self, ctx: &Context<Self>, display_text: &str, top: &str, left: &str, is_octad: bool, position_index: usize) -> Html {
         let creation_mode = ctx.props().creation_mode;
-        let user_instances = &ctx.props().user_instance_index;
-        let current_value = user_instances.get(position_index).cloned().unwrap_or_default();
+        let user_expressions = &ctx.props().user_expressions;
+        let current_value = user_expressions.get(position_index).cloned().unwrap_or_default();
         let on_instance_change = ctx.props().on_instance_change.clone();
         
         if is_octad {

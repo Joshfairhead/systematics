@@ -7,7 +7,7 @@ use systematics_api::SystematicsError;
 pub struct CreateStructureRequest {
     pub name: String,
     pub definition_type: String,
-    pub user_instance_index: Vec<String>,
+    pub user_expressions: Vec<String>,
     pub connectives: HashMap<String, String>,
     pub description: Option<String>,
 }
@@ -25,7 +25,7 @@ pub struct StoredUserExpression {
     pub name: String,
     pub definition_type: String,
     pub grammar_id: String,
-    pub instances: Vec<String>,
+    pub user_expressions: Vec<String>,
     pub connectives: HashMap<String, String>,
     pub created_at: String,
     pub updated_at: String,
@@ -67,7 +67,7 @@ impl ApiClient {
         }
     }
 
-    pub async fn list_user_user_expressions(&self) -> Result<Vec<StoredUserExpression>, SystematicsError> {
+    pub async fn list_user_expressions(&self) -> Result<Vec<StoredUserExpression>, SystematicsError> {
         let url = format!("{}/user-instances", self.base_url);
         
         let response = self.client
@@ -165,7 +165,7 @@ impl ApiClient {
         &self,
         name: &str,
         definition_type: &str,
-        user_instance_index: Vec<String>,
+        user_expressions: Vec<String>,
         connectives: HashMap<String, String>,
         description: Option<String>,
     ) -> Result<String, SystematicsError> {
@@ -174,7 +174,7 @@ impl ApiClient {
         let request = CreateStructureRequest {
             name: name.to_string(),
             definition_type: definition_type.to_string(),
-            user_instance_index,
+            user_expressions,
             connectives,
             description,
         };
@@ -241,7 +241,7 @@ impl ApiClient {
 
     // Backward compatibility methods
     pub async fn list_definitions(&self) -> Result<Vec<StoredUserExpression>, SystematicsError> {
-        self.list_user_user_expressions().await
+        self.list_user_expressions().await
     }
 
     pub async fn search_definitions(&self, query: &str) -> Result<Vec<StoredUserExpression>, SystematicsError> {

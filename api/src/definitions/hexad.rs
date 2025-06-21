@@ -41,7 +41,7 @@ impl Hexad {
         }
     }
     
-    /// Get user instance by index (0-5)
+    /// Get user expression by index (0-5)
     /// 
     /// Returns the user-provided instance for the given position index.
     /// This is the user-provided data, not the canonical term character from the system.
@@ -50,43 +50,43 @@ impl Hexad {
     /// * `index` - Position index (0-5 for hexad)
     /// 
     /// # Returns
-    /// * `Some(&str)` - The user instance at the given position
+    /// * `Some(&str)` - The user expression at the given position
     /// * `None` - If the index is out of bounds
     pub fn get_user_instance(&self, index: usize) -> Option<&str> {
         self.user_expressions.get(index).map(|s| s.as_str())
     }
     
-    /// Get the first user instance (maps to "Resources")
-    pub fn first_user_instance(&self) -> &str {
+    /// Get the first user expression (maps to "Resources")
+    pub fn first_user_expression(&self) -> &str {
         &self.user_expressions[0]
     }
     
-    /// Get the second user instance (maps to "Values")
-    pub fn second_user_instance(&self) -> &str {
+    /// Get the second user expression (maps to "Values")
+    pub fn second_user_expression(&self) -> &str {
         &self.user_expressions[1]
     }
     
-    /// Get the third user instance (maps to "Options")
-    pub fn third_user_instance(&self) -> &str {
+    /// Get the third user expression (maps to "Options")
+    pub fn third_user_expression(&self) -> &str {
         &self.user_expressions[2]
     }
     
-    /// Get the fourth user instance (maps to "Criteria")
-    pub fn fourth_user_instance(&self) -> &str {
+    /// Get the fourth user expression (maps to "Criteria")
+    pub fn fourth_user_expression(&self) -> &str {
         &self.user_expressions[3]
     }
     
-    /// Get the fifth user instance (maps to "Facts")
-    pub fn fifth_user_instance(&self) -> &str {
+    /// Get the fifth user expression (maps to "Facts")
+    pub fn fifth_user_expression(&self) -> &str {
         &self.user_expressions[4]
     }
     
-    /// Get the sixth user instance (maps to "Priorities")
+    /// Get the sixth user expression (maps to "Priorities")
     pub fn sixth_user_instance(&self) -> &str {
         &self.user_expressions[5]
     }
 
-    /// Get all user instances as a tuple
+    /// Get all user expressions as a tuple
     pub fn instances_tuple(&self) -> (&str, &str, &str, &str, &str, &str) {
         (&self.user_expressions[0], &self.user_expressions[1], &self.user_expressions[2], 
          &self.user_expressions[3], &self.user_expressions[4], &self.user_expressions[5])
@@ -130,14 +130,14 @@ impl Hexad {
         term_characters.get(position).copied()
     }
     
-    /// Map a user instance to its positional coordinate
-    /// Returns the 0-based index for the given user instance
+    /// Map a user expression to its positional coordinate
+    /// Returns the 0-based index for the given user expression
     pub fn instance_to_position(&self, instance: &str) -> Option<usize> {
         self.user_expressions.iter().position(|inst| inst == instance)
     }
     
-    /// Map a positional coordinate to its user instance
-    /// Returns the user instance for the given 0-based position index
+    /// Map a positional coordinate to its user expression
+    /// Returns the user expression for the given 0-based position index
     pub fn instance_from_position(&self, position: usize) -> Option<&str> {
         self.user_expressions.get(position).map(|s| s.as_str())
     }
@@ -155,13 +155,13 @@ impl Hexad {
     }
     
     /// Map a position to its user term (alias for instance_from_position)
-    /// Returns the user instance for the given 0-based position index
+    /// Returns the user expression for the given 0-based position index
     pub fn position_to_user_term(&self, position: usize) -> Option<&str> {
         self.instance_from_position(position)
     }
     
     /// Map a user term to its position (alias for instance_to_position)
-    /// Returns the 0-based index for the given user instance
+    /// Returns the 0-based index for the given user expression
     pub fn position_from_user_term(&self, user_term: &str) -> Option<usize> {
         self.instance_to_position(user_term)
     }
@@ -309,7 +309,7 @@ impl HexadBuilder {
         self
     }
     
-    pub fn terms<S1: Into<String>, S2: Into<String>, S3: Into<String>, S4: Into<String>, S5: Into<String>, S6: Into<String>>(
+    pub fn user_expressions<S1: Into<String>, S2: Into<String>, S3: Into<String>, S4: Into<String>, S5: Into<String>, S6: Into<String>>(
         mut self, 
         t1: S1, t2: S2, t3: S3, t4: S4, t5: S5, t6: S6
     ) -> Self {

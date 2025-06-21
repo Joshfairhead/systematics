@@ -47,7 +47,7 @@ impl Ennead {
         }
     }
     
-    /// Get user instance by index (0-8)
+    /// Get user expression by index (0-8)
     /// 
     /// Returns the user-provided instance for the given position index.
     /// This is the user-provided data, not the canonical term character from the system.
@@ -56,13 +56,13 @@ impl Ennead {
     /// * `index` - Position index (0-8 for ennead)
     /// 
     /// # Returns
-    /// * `Some(&str)` - The user instance at the given position
+    /// * `Some(&str)` - The user expression at the given position
     /// * `None` - If the index is out of bounds
     pub fn get_user_instance(&self, index: usize) -> Option<&str> {
         self.user_expressions.get(index).map(|s| s.as_str())
     }
     
-    /// Get all user instances as a tuple
+    /// Get all user expressions as a tuple
     pub fn instances_tuple(&self) -> (&str, &str, &str, &str, &str, &str, &str, &str, &str) {
         (&self.user_expressions[0], &self.user_expressions[1], &self.user_expressions[2], 
          &self.user_expressions[3], &self.user_expressions[4], &self.user_expressions[5], 
@@ -122,14 +122,14 @@ impl Ennead {
         term_characters.get(position).copied()
     }
     
-    /// Map a user instance to its positional coordinate
-    /// Returns the 0-based index for the given user instance
+    /// Map a user expression to its positional coordinate
+    /// Returns the 0-based index for the given user expression
     pub fn instance_to_position(&self, instance: &str) -> Option<usize> {
         self.user_expressions.iter().position(|inst| inst == instance)
     }
     
-    /// Map a positional coordinate to its user instance
-    /// Returns the user instance for the given 0-based position index
+    /// Map a positional coordinate to its user expression
+    /// Returns the user expression for the given 0-based position index
     pub fn instance_from_position(&self, position: usize) -> Option<&str> {
         self.user_expressions.get(position).map(|s| s.as_str())
     }
@@ -147,13 +147,13 @@ impl Ennead {
     }
     
     /// Map a position to its user term (alias for instance_from_position)
-    /// Returns the user instance for the given 0-based position index
+    /// Returns the user expression for the given 0-based position index
     pub fn position_to_user_term(&self, position: usize) -> Option<&str> {
         self.instance_from_position(position)
     }
     
     /// Map a user term to its position (alias for instance_to_position)
-    /// Returns the 0-based index for the given user instance
+    /// Returns the 0-based index for the given user expression
     pub fn position_from_user_term(&self, user_term: &str) -> Option<usize> {
         self.instance_to_position(user_term)
     }

@@ -41,23 +41,23 @@ impl Tetrad {
         }
     }
     
-    /// Get user instance at position 0 (maps to term character "Ideal")
-    pub fn first_user_instance(&self) -> &str {
+    /// Get user expression at position 0 (maps to term character "Ideal")
+    pub fn first_user_expression(&self) -> &str {
         &self.user_expressions[0]
     }
     
-    /// Get user instance at position 1 (maps to term character "Directive") 
-    pub fn second_user_instance(&self) -> &str {
+    /// Get user expression at position 1 (maps to term character "Directive") 
+    pub fn second_user_expression(&self) -> &str {
         &self.user_expressions[1]
     }
     
-    /// Get user instance at position 2 (maps to term character "Instrumental")
-    pub fn third_user_instance(&self) -> &str {
+    /// Get user expression at position 2 (maps to term character "Instrumental")
+    pub fn third_user_expression(&self) -> &str {
         &self.user_expressions[2]
     }
     
-    /// Get user instance at position 3 (maps to term character "Ground")
-    pub fn fourth_user_instance(&self) -> &str {
+    /// Get user expression at position 3 (maps to term character "Ground")
+    pub fn fourth_user_expression(&self) -> &str {
         &self.user_expressions[3]
     }
     
@@ -102,14 +102,14 @@ impl Tetrad {
         term_characters.get(position).copied()
     }
     
-    /// Map a user instance to its positional coordinate
-    /// Returns the 0-based index for the given user instance
+    /// Map a user expression to its positional coordinate
+    /// Returns the 0-based index for the given user expression
     pub fn instance_to_position(&self, instance: &str) -> Option<usize> {
         self.user_expressions.iter().position(|inst| inst == instance)
     }
     
-    /// Map a positional coordinate to its user instance
-    /// Returns the user instance for the given 0-based position index
+    /// Map a positional coordinate to its user expression
+    /// Returns the user expression for the given 0-based position index
     pub fn instance_from_position(&self, position: usize) -> Option<&str> {
         self.user_expressions.get(position).map(|s| s.as_str())
     }
@@ -127,13 +127,13 @@ impl Tetrad {
     }
     
     /// Map a position to its user term (alias for instance_from_position)
-    /// Returns the user instance for the given 0-based position index
+    /// Returns the user expression for the given 0-based position index
     pub fn position_to_user_term(&self, position: usize) -> Option<&str> {
         self.instance_from_position(position)
     }
     
     /// Map a user term to its position (alias for instance_to_position)
-    /// Returns the 0-based index for the given user instance
+    /// Returns the 0-based index for the given user expression
     pub fn position_from_user_term(&self, user_term: &str) -> Option<usize> {
         self.instance_to_position(user_term)
     }
@@ -387,10 +387,10 @@ mod tests {
             .unwrap();
         
         assert_eq!(tetrad.name(), "Test Tetrad");
-        assert_eq!(tetrad.first_user_instance(), "Foundation");
-        assert_eq!(tetrad.second_user_instance(), "Vision");
-        assert_eq!(tetrad.third_user_instance(), "Method");
-        assert_eq!(tetrad.fourth_user_instance(), "Guide");
+        assert_eq!(tetrad.first_user_expression(), "Foundation");
+        assert_eq!(tetrad.second_user_expression(), "Vision");
+        assert_eq!(tetrad.third_user_expression(), "Method");
+        assert_eq!(tetrad.fourth_user_expression(), "Guide");
         assert_eq!(tetrad.expressions_tuple(), ("Foundation", "Vision", "Method", "Guide"));
         assert!(tetrad.validate().is_ok());
     }
@@ -501,14 +501,14 @@ mod tests {
         // Test position count
         assert_eq!(tetrad.position_count(), 4);
         
-        // Test user instance to position mapping
+        // Test user expression to position mapping
         assert_eq!(tetrad.instance_to_position("MyGround"), Some(0));
         assert_eq!(tetrad.instance_to_position("MyIdeal"), Some(1));
         assert_eq!(tetrad.instance_to_position("MyInstrumental"), Some(2));
         assert_eq!(tetrad.instance_to_position("MyDirective"), Some(3));
         assert_eq!(tetrad.instance_to_position("Invalid"), None);
         
-        // Test position to user instance mapping
+        // Test position to user expression mapping
         assert_eq!(tetrad.instance_from_position(0), Some("MyGround"));
         assert_eq!(tetrad.instance_from_position(1), Some("MyIdeal"));
         assert_eq!(tetrad.instance_from_position(2), Some("MyInstrumental"));

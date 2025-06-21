@@ -177,7 +177,7 @@ async fn list_definitions(
     match state.storage.list_user_expressions().await {
         Ok(user_instances) => Ok(Json(ApiResponse::success(user_instances))),
         Err(e) => {
-            eprintln!("Error listing user instances: {}", e);
+            eprintln!("Error listing user user_expressions: {}", e);
             Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
@@ -193,7 +193,7 @@ async fn search_definitions(
     match state.storage.search_user_expressions(&query).await {
         Ok(user_instances) => Ok(Json(ApiResponse::success(user_instances))),
         Err(e) => {
-            eprintln!("Error searching user instances: {}", e);
+            eprintln!("Error searching user user_expressions: {}", e);
             Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
@@ -208,7 +208,7 @@ async fn get_definition(
         Ok(Some(user_instance)) => Ok(Json(ApiResponse::success(user_instance))),
         Ok(None) => Err(StatusCode::NOT_FOUND),
         Err(e) => {
-            eprintln!("Error getting user instance: {}", e);
+            eprintln!("Error getting user expression: {}", e);
             Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
@@ -282,7 +282,7 @@ async fn delete_definition(
     match state.storage.delete_user_expression(&id).await {
         Ok(deleted) => Ok(Json(ApiResponse::success(deleted))),
         Err(e) => {
-            eprintln!("Error deleting user instance: {}", e);
+            eprintln!("Error deleting user expression: {}", e);
             Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
@@ -296,7 +296,7 @@ async fn get_related_definitions(
     match state.storage.get_related_user_expressions(&id).await {
         Ok(user_instances) => Ok(Json(ApiResponse::success(user_instances))),
         Err(e) => {
-            eprintln!("Error getting related user instances: {}", e);
+            eprintln!("Error getting related user user_expressions: {}", e);
             Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
@@ -724,7 +724,7 @@ async fn list_user_expressions(
     match state.storage.list_user_expressions().await {
         Ok(user_instances) => Ok(Json(ApiResponse::success(user_instances))),
         Err(e) => {
-            eprintln!("Error listing user instances: {}", e);
+            eprintln!("Error listing user user_expressions: {}", e);
             Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
@@ -740,7 +740,7 @@ async fn search_user_expressions(
     match state.storage.search_user_expressions(&query).await {
         Ok(user_instances) => Ok(Json(ApiResponse::success(user_instances))),
         Err(e) => {
-            eprintln!("Error searching user instances: {}", e);
+            eprintln!("Error searching user user_expressions: {}", e);
             Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
@@ -761,7 +761,7 @@ async fn create_user_instance(
         ))));
     }
 
-    // Validate user instance count matches structure type
+    // Validate user expression count matches structure type
     let expected_term_count = match payload.definition_type.as_str() {
         "monad" => 1,
         "dyad" => 2,
@@ -797,7 +797,7 @@ async fn create_user_instance(
         }
     }
 
-    // Store the user instance
+    // Store the user expression
     match state.storage.save_user_expression(
         &payload.name,
         &payload.definition_type,
@@ -807,7 +807,7 @@ async fn create_user_instance(
     ).await {
         Ok(id) => Ok(Json(ApiResponse::success(id))),
         Err(e) => {
-            eprintln!("Error creating user instance: {}", e);
+            eprintln!("Error creating user expression: {}", e);
             Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }

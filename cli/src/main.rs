@@ -445,7 +445,7 @@ async fn create_dyad_interactive(api: &SystematicsApi, api_storage: Option<&ApiS
     
     let mut dyad = api.create_dyad()
         .name(&name)
-        .terms(&term1, &term2)
+        .user_expressions(&term1, &term2)
         .build()?;
     
     // Collect connectives
@@ -490,7 +490,7 @@ async fn create_triad_interactive(api: &SystematicsApi, api_storage: Option<&Api
     
     let mut triad = api.create_triad()
         .name(&name)
-        .terms(&term1, &term2, &term3)
+        .user_expressions(&term1, &term2, &term3)
         .build()?;
     
     // Collect connectives
@@ -542,7 +542,7 @@ async fn create_tetrad_interactive(api: &SystematicsApi, api_storage: Option<&Ap
     
     let mut tetrad = api.create_tetrad()
         .name(&name)
-        .terms(&terms[0], &terms[1], &terms[2], &terms[3])
+        .user_expressions(&terms[0], &terms[1], &terms[2], &terms[3])
         .build()?;
     
     // Ask if user wants to add connectives
@@ -637,7 +637,7 @@ async fn create_pentad_interactive(api: &SystematicsApi, api_storage: Option<&Ap
     
     let mut pentad = api.create_pentad()
         .name(&name)
-        .terms(&terms[0], &terms[1], &terms[2], &terms[3], &terms[4])
+        .user_expressions(&terms[0], &terms[1], &terms[2], &terms[3], &terms[4])
         .build()?;
     
     if add_connectives {
@@ -723,7 +723,7 @@ async fn create_hexad_interactive(api: &SystematicsApi, api_storage: Option<&Api
 
     let hexad = api.create_hexad()
         .name(&name)
-        .terms(&terms[0], &terms[1], &terms[2], &terms[3], &terms[4], &terms[5])
+        .user_expressions(&terms[0], &terms[1], &terms[2], &terms[3], &terms[4], &terms[5])
         .build()?;
     
     println!("\n✅ Created Hexad:");
@@ -766,7 +766,7 @@ async fn create_heptad_interactive(api: &SystematicsApi, api_storage: Option<&Ap
 
     let heptad = api.create_heptad()
         .name(name.clone())
-        .terms(terms[0].clone(), terms[1].clone(), terms[2].clone(), terms[3].clone(), terms[4].clone(), terms[5].clone(), terms[6].clone())
+        .user_expressions(terms[0].clone(), terms[1].clone(), terms[2].clone(), terms[3].clone(), terms[4].clone(), terms[5].clone(), terms[6].clone())
         .build()?;
     
     println!("\n✅ Created Heptad:");
@@ -809,7 +809,7 @@ async fn create_octad_interactive(api: &SystematicsApi, api_storage: Option<&Api
 
     let octad = api.create_octad()
         .name(name.clone())
-        .terms(terms[0].clone(), terms[1].clone(), terms[2].clone(), terms[3].clone(), terms[4].clone(), terms[5].clone(), terms[6].clone(), terms[7].clone())
+        .user_expressions(terms[0].clone(), terms[1].clone(), terms[2].clone(), terms[3].clone(), terms[4].clone(), terms[5].clone(), terms[6].clone(), terms[7].clone())
         .build()?;
     
     println!("\n✅ Created Octad:");
@@ -860,7 +860,7 @@ async fn create_dodecad_interactive(api: &SystematicsApi, api_storage: Option<&A
 
     let dodecad = api.create_dodecad()
         .name(name.clone())
-        .terms(terms_array)
+        .user_expressions(terms_array)
         .build()?;
     
     println!("\n✅ Created Dodecad:");
@@ -903,7 +903,7 @@ async fn create_ennead_interactive(api: &SystematicsApi, api_storage: Option<&Ap
 
     let ennead = api.create_ennead()
         .name(name.clone())
-        .terms(terms[0].clone(), terms[1].clone(), terms[2].clone(), terms[3].clone(), terms[4].clone(), terms[5].clone(), terms[6].clone(), terms[7].clone(), terms[8].clone())
+        .user_expressions(terms[0].clone(), terms[1].clone(), terms[2].clone(), terms[3].clone(), terms[4].clone(), terms[5].clone(), terms[6].clone(), terms[7].clone(), terms[8].clone())
         .build()?;
     
     println!("\n✅ Created Ennead:");
@@ -954,7 +954,7 @@ async fn create_decad_interactive(api: &SystematicsApi, api_storage: Option<&Api
 
     let decad = api.create_decad()
         .name(name.clone())
-        .terms(terms_array)
+        .user_expressions(terms_array)
         .build()?;
     
     println!("\n✅ Created Decad:");
@@ -1005,7 +1005,7 @@ async fn create_undecad_interactive(api: &SystematicsApi, api_storage: Option<&A
 
     let undecad = api.create_undecad()
         .name(name.clone())
-        .terms(terms_array)
+        .user_expressions(terms_array)
         .build()?;
     
     println!("\n✅ Created Undecad:");

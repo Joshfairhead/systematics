@@ -146,7 +146,7 @@ impl ContentItem {
 
 pub struct App {
     // Language Tetrad Data Structure
-    user_instances: Vec<UserExpression>,          // Ground: User concrete applications
+    user_expressions: Vec<UserExpression>,          // Ground: User concrete applications
     core_grammars: Vec<CoreGrammar>,            // Directive: Bennett's canonical terms
     community_grammars: Vec<CommunityGrammar>,  // Instrumental: Community mappings
     filtered_content: Vec<ContentItem>,         // Currently displayed content
@@ -212,7 +212,7 @@ impl Component for App {
 
     fn create(ctx: &Context<Self>) -> Self {
         let app = Self {
-            user_instances: Vec::new(),
+            user_expressions: Vec::new(),
             core_grammars: Vec::new(),
             community_grammars: Vec::new(),
             filtered_content: Vec::new(),
@@ -252,7 +252,7 @@ impl Component for App {
                 let definition_type_str = self.current_definition_type.to_string();
                 
                 // Find matching definition from loaded data (don't create placeholders)
-                if let Some(definition) = self.user_instances.iter()
+                if let Some(definition) = self.user_expressions.iter()
                     .find(|s| s.definition_type == definition_type_str && !s.id.as_str().map_or(false, |id| id.starts_with("placeholder-")))
                     .cloned() 
                 {
@@ -306,17 +306,17 @@ impl Component for App {
                 self.loading = false;
                 match result {
                     Ok(definitions) => {
-                        self.user_instances = definitions;
+                        self.user_expressions = definitions;
                         
-                        // Update filtered content if we're currently showing user instances
+                        // Update filtered content if we're currently showing user expressions
                         if self.content_source == ContentSource::UserExpressions {
-                            self.filtered_content = self.user_instances.iter().map(|item| ContentItem::UserExpression(item.clone())).collect();
+                            self.filtered_content = self.user_expressions.iter().map(|item| ContentItem::UserExpression(item.clone())).collect();
                         }
                         self.error = None;
                     }
                     Err(e) => {
-                        self.error = Some(format!("Failed to load user instances: {}", e));
-                        self.user_instances = Vec::new();
+                        self.error = Some(format!("Failed to load user user_expressions: {}", e));
+                        self.user_expressions = Vec::new();
                         if self.content_source == ContentSource::UserExpressions {
                             self.filtered_content = Vec::new();
                         }
@@ -392,7 +392,7 @@ impl Component for App {
             }
             Msg::SearchDefinitions => {
                 if self.search_query.trim().is_empty() {
-                    self.filtered_content = self.user_instances.iter().map(|item| ContentItem::UserExpression(item.clone())).collect();
+                    self.filtered_content = self.user_expressions.iter().map(|item| ContentItem::UserExpression(item.clone())).collect();
                     return true;
                 }
                 
@@ -463,7 +463,7 @@ impl Component for App {
                         self.creation_mode = false;
                         self.structure_name = None;
                         self.user_input.clear();
-                        // Reload user instances to show the new one
+                        // Reload user expressions to show the new one
                         ctx.link().send_message(Msg::LoadUserExpressions);
                         // Auto-dismiss notification after 3 seconds
                         let link = ctx.link().clone();
@@ -512,10 +512,10 @@ impl Component for App {
                         }
                     }
                     ContentSource::UserExpressions => {
-                        if self.user_instances.is_empty() {
+                        if self.user_expressions.is_empty() {
                             ctx.link().send_message(Msg::LoadUserExpressions);
                         } else {
-                            self.filtered_content = self.user_instances.iter().map(|item| ContentItem::UserExpression(item.clone())).collect();
+                            self.filtered_content = self.user_expressions.iter().map(|item| ContentItem::UserExpression(item.clone())).collect();
                         }
                     }
                 }
@@ -658,7 +658,7 @@ impl App {
                         placeholder={match self.content_source {
                             ContentSource::CoreGrammar => "Search core grammar definitions...",
                             ContentSource::CommunityGrammar => "Search community grammar definitions...",
-                            ContentSource::UserExpressions => "Search user instances...",
+                            ContentSource::UserExpressions => "Search user expressions...",
                         }}
                         value={self.search_query.clone()}
                         oninput={search_input}
@@ -724,7 +724,7 @@ impl App {
                     definition={Some(item.clone())} 
                     creation_mode={self.creation_mode}
                     structure_name={self.structure_name.clone()}
-                    user_instance_index={self.user_input.clone()}
+                    user_expressions={self.user_input.clone()}
                     on_instance_change={ctx.link().callback(|(index, instance)| Msg::UserExpressionChanged(index, instance))}
                 />
             }
@@ -735,7 +735,7 @@ impl App {
                     definition={None::<ContentItem>}
                     creation_mode={self.creation_mode}
                     structure_name={self.structure_name.clone()}
-                    user_instance_index={self.user_input.clone()}
+                    user_expressions={self.user_input.clone()}
                     on_instance_change={ctx.link().callback(|(index, instance)| Msg::UserExpressionChanged(index, instance))}
                 />
             }
@@ -762,7 +762,7 @@ impl App {
         let empty_message = match self.content_source {
             ContentSource::CoreGrammar => "No core grammar definitions available",
             ContentSource::CommunityGrammar => "No community grammar definitions found",
-            ContentSource::UserExpressions => "No user instances found",
+            ContentSource::UserExpressions => "No user expressions found",
         };
         
         html! {
@@ -839,7 +839,7 @@ impl App {
                     self.community_grammars.iter().map(|item| ContentItem::CommunityGrammar(item.clone())).collect()
                 }
                 ContentSource::UserExpressions => {
-                    self.user_instances.iter().map(|item| ContentItem::UserExpression(item.clone())).collect()
+                    self.user_expressions.iter().map(|item| ContentItem::UserExpression(item.clone())).collect()
                 }
             };
         } else {
@@ -869,7 +869,7 @@ impl App {
                         .collect()
                 }
                 ContentSource::UserExpressions => {
-                    self.user_instances
+                    self.user_expressions
                         .iter()
                         .filter(|item| {
                             item.name.to_lowercase().contains(&query) ||
@@ -936,12 +936,12 @@ impl App {
         let definition_name = self.structure_name.clone().unwrap_or_else(|| "Unnamed Definition".to_string());
         
         let api_client = self.api_client.clone();
-        let user_instances = self.user_input.clone();
+        let user_expressions = self.user_input.clone();
         let callback = ctx.link().callback(Msg::DefinitionSaved);
         
         spawn_api_call(
             async move {
-                api_client.save_user_instance(&definition_name, &definition_type, &user_instances).await
+                api_client.save_user_instance(&definition_name, &definition_type, &user_expressions).await
             },
             callback,
         );
