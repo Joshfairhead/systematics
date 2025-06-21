@@ -146,7 +146,7 @@ impl ContentItem {
 
 pub struct App {
     // Language Tetrad Data Structure
-    user_expressions: Vec<UserExpression>,          // Ground: User concrete applications
+    user_expressions: Vec<UserExpression>,          // Ground: User Expressions (concrete personal applications)
     core_grammars: Vec<CoreGrammar>,            // Directive: Bennett's canonical terms
     community_grammars: Vec<CommunityGrammar>,  // Instrumental: Community mappings
     filtered_content: Vec<ContentItem>,         // Currently displayed content
@@ -174,7 +174,7 @@ pub enum Msg {
     // New messages for API integration - Language Tetrad Architecture
     DefinitionSelected(ContentItem),
     
-    // Ground: User Instances (concrete personal applications)
+    // Ground: User Expressions (concrete personal applications)
     LoadUserExpressions,
     UserExpressionsLoaded(Result<Vec<UserExpression>, anyhow::Error>),
     
@@ -483,8 +483,8 @@ impl Component for App {
                 }
                 true
             }
-            Msg::UserExpressionChanged(index, instance) => {
-                self.user_input[index] = instance;
+            Msg::UserExpressionChanged(index, expression) => {
+                self.user_input[index] = expression;
                 true
             }
             Msg::ClearNotifications => {
@@ -598,7 +598,7 @@ impl App {
         // Content source callbacks
         let core_callback = ctx.link().callback(|_| Msg::ContentSourceChanged(ContentSource::CoreGrammar));
         let community_callback = ctx.link().callback(|_| Msg::ContentSourceChanged(ContentSource::CommunityGrammar));
-        let user_instances_callback = ctx.link().callback(|_| Msg::ContentSourceChanged(ContentSource::UserExpressions));
+        let user_expressions_callback = ctx.link().callback(|_| Msg::ContentSourceChanged(ContentSource::UserExpressions));
         
         html! {
             <div class="search-controls">
@@ -620,10 +620,10 @@ impl App {
                         </button>
                         <button 
                             class={classes!("tab-button", if self.content_source == ContentSource::UserExpressions { "active" } else { "" })}
-                            onclick={user_instances_callback}
+                            onclick={user_expressions_callback}
                             disabled={self.creation_mode}
                         >
-                            {"User Instances"}
+                            {"User Expressions"}
                         </button>
                     </div>
                     <div class="action-buttons">
@@ -725,7 +725,7 @@ impl App {
                     creation_mode={self.creation_mode}
                     structure_name={self.structure_name.clone()}
                     user_expressions={self.user_input.clone()}
-                    on_instance_change={ctx.link().callback(|(index, instance)| Msg::UserExpressionChanged(index, instance))}
+                    on_instance_change={ctx.link().callback(|(index, expression)| Msg::UserExpressionChanged(index, expression))}
                 />
             }
         } else {
@@ -736,7 +736,7 @@ impl App {
                     creation_mode={self.creation_mode}
                     structure_name={self.structure_name.clone()}
                     user_expressions={self.user_input.clone()}
-                    on_instance_change={ctx.link().callback(|(index, instance)| Msg::UserExpressionChanged(index, instance))}
+                    on_instance_change={ctx.link().callback(|(index, expression)| Msg::UserExpressionChanged(index, expression))}
                 />
             }
         }
@@ -756,7 +756,7 @@ impl App {
         let browser_title = match self.content_source {
             ContentSource::CoreGrammar => "Core Grammar Definitions",
             ContentSource::CommunityGrammar => "Community Grammar Definitions",
-            ContentSource::UserExpressions => "User Instances",
+            ContentSource::UserExpressions => "User Expressions",
         };
         
         let empty_message = match self.content_source {

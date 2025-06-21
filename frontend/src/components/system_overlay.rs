@@ -447,7 +447,7 @@ impl SystemOverlay {
                     <div class={format!("point-container {}", if creation_mode { "creation-mode" } else { "display-mode" })} style={container_style}>
                         <div class={css_class}>{formatted_display}</div>
                         {if creation_mode {
-                            html! { <input class="point-input" placeholder="Enter instance..." value={current_value.clone()} oninput={input_callback} /> }
+                            html! { <input class="point-input" placeholder="Enter expression..." value={current_value.clone()} oninput={input_callback} /> }
                         } else {
                             html! {}
                         }}
@@ -466,7 +466,7 @@ impl SystemOverlay {
                 <div class={format!("point-container {} {}", if creation_mode { "creation-mode" } else { "display-mode" }, if is_octad { "octad" } else { "" })} style={format!("top: {}; left: {}; transform: translate(-50%, -50%);", top, left)}>
                     <div class="point-label">{display_text}</div>
                     {if creation_mode {
-                        html! { <input class="point-input" placeholder="Enter instance..." value={current_value.clone()} oninput={input_callback} /> }
+                        html! { <input class="point-input" placeholder="Enter expression..." value={current_value.clone()} oninput={input_callback} /> }
                     } else {
                         html! {}
                     }}

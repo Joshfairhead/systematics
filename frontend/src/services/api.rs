@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use wasm_bindgen_futures::spawn_local;
 use yew::prelude::*;
 
-// Ground: User Instances (concrete personal applications)
+// Ground: User Expressions (concrete personal applications)
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct UserExpression {
     pub id: serde_json::Value,
@@ -157,7 +157,7 @@ impl ApiClient {
             grammar_id: grammar_id.to_string(),
             user_expressions: user_expressions.to_vec(),
             connectives: std::collections::HashMap::new(),
-            description: Some(format!("User-created {} instance", definition_type)),
+            description: Some(format!("User-created {} expression", definition_type)),
         };
         
         let url = format!("{}/user-instances", self.base_url);
