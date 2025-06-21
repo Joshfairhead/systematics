@@ -27,6 +27,20 @@ pub struct StoredUserInstance {
 
 #[derive(Debug, Clone)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+pub struct StoredCommunityGrammar {
+    pub id: Thing,
+    pub structure_type: String,
+    pub name: String,
+    pub term_characters: Vec<String>,
+    pub author: String,
+    pub mapping_notes: String,
+    pub created_at: Datetime,
+    pub updated_at: Datetime,
+    pub description: Option<String>,
+}
+
+#[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct GraphNode {
     pub id: Thing,
     pub structure_id: String,
@@ -79,6 +93,14 @@ impl SurrealStorage {
             DEFINE INDEX idx_name ON user_instances COLUMNS name;
             DEFINE INDEX idx_type ON user_instances COLUMNS structure_type;
             DEFINE INDEX idx_created ON user_instances COLUMNS created_at;
+        ").await?;
+
+        db.query("
+            DEFINE TABLE community_grammars SCHEMALESS;
+            DEFINE INDEX idx_grammar_name ON community_grammars COLUMNS name;
+            DEFINE INDEX idx_grammar_type ON community_grammars COLUMNS structure_type;
+            DEFINE INDEX idx_grammar_author ON community_grammars COLUMNS author;
+            DEFINE INDEX idx_grammar_created ON community_grammars COLUMNS created_at;
         ").await?;
 
         // Migrate existing records from old table names and field names
@@ -414,6 +436,125 @@ impl SurrealStorage {
         let _edges = self.create_edges(&nodes).await?;
 
         Ok(id_string)
+    }
+
+    // CommunityGrammar storage methods
+    pub async fn list_community_grammars(&self, structure_type: Option<&str>) -> Result<Vec<StoredCommunityGrammar>, SystematicsError> {
+        let sql = if let Some(st) = structure_type {
+            "SELECT * FROM community_grammars WHERE structure_type = $structure_type ORDER BY created_at DESC"
+        } else {
+            "SELECT * FROM community_grammars ORDER BY created_at DESC"
+        };
+        
+        let mut result = if let Some(st) = structure_type {
+            self.db.query(sql).bind(("structure_type", st.to_string())).await?
+        } else {
+            self.db.query(sql).await?
+        };
+        
+        let community_grammars: Vec<StoredCommunityGrammar> = result.take(0)?;
+        Ok(community_grammars)
+    }
+
+    pub async fn get_community_grammar(&self, id: &str) -> Result<Option<StoredCommunityGrammar>, SystematicsError> {
+        let community_grammar: Option<StoredCommunityGrammar> = self.db.select(("community_grammars", id)).await?;
+        Ok(community_grammar)
+    }
+
+    pub async fn create_community_grammar(
+        &self,
+        structure_type: &str,
+        name: &str,
+        term_characters: Vec<String>,
+        author: &str,
+        mapping_notes: &str,
+        description: Option<String>,
+    ) -> Result<String, SystematicsError> {
+        let id_string = Uuid::new_v4().to_string();
+        let now = Datetime::default();
+        
+        let stored_community_grammar = StoredCommunityGrammar {
+            id: Thing::from(("community_grammars", id_string.as_str())),
+            structure_type: structure_type.to_string(),
+            name: name.to_string(),
+            term_characters,
+            author: author.to_string(),
+            mapping_notes: mapping_notes.to_string(),
+            created_at: now.clone(),
+            updated_at: now,
+            description,
+        };
+
+        // Store the community grammar
+        let _: Option<StoredCommunityGrammar> = self.db
+            .create(("community_grammars", id_string.as_str()))
+            .content(stored_community_grammar)
+            .await?;
+
+        Ok(id_string)
+    }
+
+    pub async fn update_community_grammar(
+        &self,
+        id: &str,
+        structure_type: &str,
+        name: &str,
+        term_characters: Vec<String>,
+        author: &str,
+        mapping_notes: &str,
+        description: Option<String>,
+    ) -> Result<bool, SystematicsError> {
+        let now = Datetime::default();
+        
+        let sql = "
+            UPDATE community_grammars SET 
+                structure_type = $structure_type,
+                name = $name,
+                term_characters = $term_characters,
+                author = $author,
+                mapping_notes = $mapping_notes,
+                description = $description,
+                updated_at = $now
+            WHERE id = $id
+        ";
+        
+        let mut result = self.db
+            .query(sql)
+            .bind(("id", id.to_string()))
+            .bind(("structure_type", structure_type.to_string()))
+            .bind(("name", name.to_string()))
+            .bind(("term_characters", term_characters))
+            .bind(("author", author.to_string()))
+            .bind(("mapping_notes", mapping_notes.to_string()))
+            .bind(("description", description))
+            .bind(("now", now))
+            .await?;
+            
+        let updated: Option<Vec<StoredCommunityGrammar>> = result.take(0)?;
+        Ok(updated.is_some() && !updated.unwrap().is_empty())
+    }
+
+    pub async fn delete_community_grammar(&self, id: &str) -> Result<bool, SystematicsError> {
+        let deleted: Option<StoredCommunityGrammar> = self.db.delete(("community_grammars", id)).await?;
+        Ok(deleted.is_some())
+    }
+
+    pub async fn search_community_grammars(&self, query: &str) -> Result<Vec<StoredCommunityGrammar>, SystematicsError> {
+        let sql = "
+            SELECT * FROM community_grammars 
+            WHERE name CONTAINS $query 
+            OR author CONTAINS $query 
+            OR description CONTAINS $query 
+            OR mapping_notes CONTAINS $query
+            OR array::some(term_characters, |$term| $term CONTAINS $query)
+            ORDER BY created_at DESC
+        ";
+        
+        let query_string = query.to_string();
+        let mut result = self.db.query(sql).bind(("query", query_string)).await?;
+        let community_grammars: Vec<StoredCommunityGrammar> = result.take(0)?;
+        
+        Ok(community_grammars)
     }
 }
 

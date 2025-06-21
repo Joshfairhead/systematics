@@ -389,127 +389,77 @@ cargo test --package systematics-api --lib structures::tetrad::tests
 cd cli && cargo check
 ```
 
-## Phase 6: Language Tetrad Architecture Implementation (NEXT STEPS)
+## Phase 6: Language Tetrad Architecture Implementation (CURRENT STATUS)
 
 ### Overview
-Complete the Language Tetrad terminology refactoring across the entire SysteMaster codebase. The frontend has been successfully refactored to implement the four-layer architecture, but backend components still need updating.
+Complete the Language Tetrad terminology refactoring across the entire SysteMaster codebase. The frontend has been successfully refactored to implement the four-layer architecture, and significant backend progress has been made.
 
 ### Current Status
 - ✅ **Frontend**: Complete tetrad implementation (SystemDefinition, CoreGrammar, CommunityGrammar, UserInstance)
+- ✅ **API Backend**: Phase 1 complete - Storage layer, server routes, CLI client all updated to tetrad architecture
+- ✅ **API Definitions**: Phase 2 complete - All 12 structure files updated with `instances` field naming
+- ✅ **Database Migration**: Automatic migration from `definitions` → `user_instances` table implemented
+- ✅ **CLI Integration**: Updated to use tetrad endpoints and terminology
 - ✅ **Library**: Already using correct terminology (`term_characters()`, proper source attribution)
 - ✅ **Documentation**: Language Tetrad documented with future considerations (user-expressions)
-- ⚠️ **API Backend**: Partial implementation, mixed old/new terminology
-- ⚠️ **CLI**: Still using old `StoredUserDefinition` patterns
-- ❌ **API Definitions**: All 12 structure files need complete overhaul
 
-### Estimated Timeline: 2-3 Days
+### Remaining Tasks
 
-#### Day 1: API Backend Core (6-8 hours)
+#### Phase 3: Directory Structure Alignment (1-2 hours)
 
-**API Storage Layer (2-3 hours):**
-- [ ] Rename `StoredUserDefinition` → `StoredUserInstance`
-- [ ] Update method names: `list_definitions()` → `list_user_instances()`
-- [ ] Database table rename: `definitions` → `user_instances`
-- [ ] Add tetrad-based storage methods for all four layers
-- [ ] Update ~50 occurrences in `storage.rs`
+**Library Directory Renaming:**
+- [ ] Rename `library/src/bennett/` → `library/src/core_grammar/`
+- [ ] Rename `library/src/providers/` → `library/src/community_grammar/`
+- [ ] Update module imports in `library/src/lib.rs`
+- [ ] Update any references in dependent crates (API, CLI)
 
-**API Server Routes (2-3 hours):**
-- [ ] Replace `/definitions` endpoints with tetrad-based routes:
-  - `/definitions/{type}` → `/system-definitions/{type}` (Source)
-  - `/core-grammar/{type}` (Directive)
-  - `/community-grammar/{type}` (Instrumental)  
-  - `/user-instances` (Ground)
-- [ ] Update all handler functions and request/response types
-- [ ] Update ~30 occurrences in `server.rs`
+**Rationale:** Directory names should reflect the Language Tetrad architecture:
+- `bennett/` contains Bennett's canonical term characters (Core Grammar)
+- `providers/` contains community-contributed grammar mappings (Community Grammar)
 
-**API Definitions Directory (2 hours):**
-- [ ] Update all 12 structure files (monad.rs through dodecad.rs)
-- [ ] Replace `user_instance_index` field patterns
-- [ ] Update ~200+ occurrences across definition files
-- [ ] Align with tetrad architecture patterns
+#### Phase 4: Provenance & Attribution Enhancement (Low-Mid Priority)
 
-#### Day 2: CLI & Integration (4-6 hours)
+**Provenance Fields Addition:**
+- [ ] Add provenance metadata to Core Grammar structures:
+  ```rust
+  pub struct CoreGrammarMetadata {
+      pub progenitor: String,        // "J.G. Bennett"
+      pub source: String,            // "H3uni.org"
+      pub module: String,            // "Module 2", "Module 3", etc.
+      pub attribution: String,       // "Elementary Systematics"
+      pub date_added: String,        // ISO date
+      pub version: String,           // "1.0"
+  }
+  ```
+- [ ] Add similar fields to Community Grammar for contributor attribution
+- [ ] Update API responses to include provenance data
+- [ ] Frontend display of source attribution in grammar browser
 
-**CLI Client (2-3 hours):**
-- [ ] Update `ApiClient` methods and types in `cli/src/api_client.rs`
-- [ ] Replace `StoredUserDefinition` usage throughout CLI
-- [ ] Update command line interface and display logic
-- [ ] Update ~25 occurrences in CLI codebase
+**Benefits:**
+- Academic integrity and proper attribution
+- Source traceability for research purposes
+- Version tracking for grammar evolution
+- Community contributor recognition
 
-**Integration Testing (2-3 hours):**
-- [ ] Verify frontend-backend compatibility with new endpoints
-- [ ] Test all tetrad endpoints end-to-end
-- [ ] Database migration testing and validation
-- [ ] Ensure backward compatibility during transition
+### Implementation Timeline
 
-#### Day 3: Polish & Documentation (2-4 hours)
+#### Immediate (Next 30 minutes)
+**Directory Renaming:**
+```bash
+# Library structure alignment
+mv library/src/bennett library/src/core_grammar
+mv library/src/providers library/src/community_grammar
+# Update imports
+```
 
-**Final Cleanup (1-2 hours):**
-- [ ] Remove deprecated code and unused imports
-- [ ] Update error messages to use tetrad terminology
-- [ ] Verify terminology consistency across all components
-- [ ] Run comprehensive test suite
+#### Near Term (1-2 weeks, Low Priority)
+**Provenance Enhancement:**
+- Add metadata structures
+- Update API to serve attribution data
+- Frontend attribution display
+- Documentation of sources and contributors
 
-**Documentation Updates (1-2 hours):**
-- [ ] Update component README files
-- [ ] API documentation with new endpoint structure
-- [ ] Update migration guides and examples
-- [ ] Commit final tetrad architecture implementation
-
-### Key Files Requiring Updates
-
-**High Priority (Day 1):**
-- `api/src/storage.rs` - 50+ occurrences of old terminology
-- `api/src/server.rs` - 30+ endpoint and handler updates
-- `api/src/definitions/*.rs` - 12 files, 200+ occurrences total
-
-**Medium Priority (Day 2):**
-- `cli/src/api_client.rs` - Client method updates
-- `cli/src/storage.rs` - CLI integration layer
-- Database migration scripts
-
-**Low Priority (Day 3):**
-- Documentation files
-- Example code
-- Test files
-
-### Technical Approach
-
-**Incremental Strategy:**
-1. Update one component at a time to minimize risk
-2. Maintain backward compatibility during transition
-3. Use feature flags for gradual endpoint migration
-4. Comprehensive testing after each component update
-
-**Quality Assurance:**
-- Automated testing after each major change
-- Frontend-backend integration verification
-- Database migration validation
-- Performance impact assessment
-
-### Success Criteria
-
-- [ ] All components use consistent Language Tetrad terminology
-- [ ] Frontend-backend integration maintains full functionality
-- [ ] Database successfully migrated to new schema
-- [ ] CLI commands work with new API endpoints
-- [ ] Comprehensive test suite passes
-- [ ] Documentation reflects new architecture
-
-### Risk Mitigation
-
-**Rollback Plan:**
-- Git branches for each major component update
-- Database backup before schema changes
-- Feature flags to revert to old endpoints if needed
-
-**Testing Strategy:**
-- Unit tests for each updated component
-- Integration tests for cross-component functionality
-- End-to-end testing of complete user workflows
-- Performance regression testing
-
-### Future Considerations
+#### Future Considerations (Mid-Long Term)
 
 **Terminology Evolution:**
 - "UserInstance" → "UserExpression" (documented for future consideration)
@@ -522,9 +472,42 @@ Complete the Language Tetrad terminology refactoring across the entire SysteMast
 - Community grammar validation
 - Advanced search across tetrad layers
 - Grammar inheritance patterns
+- Multi-language grammar support
+- Grammar conflict resolution
+
+### Migration Completion Status: ~95%
+
+**✅ Completed:**
+- Frontend Language Tetrad architecture (100%)
+- Backend API tetrad endpoints and storage (100%)
+- CLI tetrad integration (100%)
+- Database schema migration (100%)
+- All 12 API definition structures updated (100%)
+- Cross-component terminology consistency (100%)
+
+**🔄 In Progress:**
+- Directory structure alignment (simple rename operation)
+
+**📋 Future Enhancements:**
+- Provenance and attribution metadata (enhancement, not migration requirement)
+
+### Success Criteria (Current Status: ✅ Met)
+
+- ✅ All components use consistent Language Tetrad terminology
+- ✅ Frontend-backend integration maintains full functionality
+- ✅ Database successfully migrated to new schema
+- ✅ CLI commands work with new API endpoints
+- ✅ Comprehensive test suite passes
+- ✅ Documentation reflects new architecture
 
 ### Notes
 
-This refactoring completes the systematic Language Tetrad architecture across the entire SysteMaster codebase, eliminating terminology confusion and establishing clear separation of concerns between mathematical structures, essential grammar, extended grammar, and concrete instances.
+The Language Tetrad architecture implementation is essentially **complete** across the entire SysteMaster codebase. The systematic refactoring has successfully:
 
-The frontend implementation provides the proven pattern for backend components to follow, ensuring consistency and maintainability across the full stack.
+1. **Eliminated terminology confusion** between mathematical structures, essential grammar, extended grammar, and concrete instances
+2. **Established clear separation of concerns** across all four tetrad layers
+3. **Implemented consistent API patterns** for all data types
+4. **Maintained backward compatibility** during the transition
+5. **Provided comprehensive documentation** for future development
+
+The remaining directory renaming is a simple housekeeping task that aligns folder names with the tetrad architecture. The provenance enhancement is a valuable future addition but not required for the core migration completion.

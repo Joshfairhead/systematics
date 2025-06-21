@@ -13,7 +13,7 @@ use std::collections::HashMap;
 #[cfg(feature = "server")]
 use tower_http::cors::CorsLayer;
 
-use crate::{SurrealStorage, StoredUserInstance, SystematicsError};
+use crate::{SurrealStorage, StoredUserInstance, StoredCommunityGrammar, SystematicsError};
 
 #[cfg(feature = "server")]
 #[derive(Clone)]
@@ -72,6 +72,31 @@ pub struct CoreGrammar {
 
 #[cfg(feature = "server")]
 #[derive(Serialize)]
+pub struct CommunityGrammar {
+    pub id: serde_json::Value,
+    pub structure_type: String,
+    pub name: String,
+    pub term_characters: Vec<String>,
+    pub author: String,
+    pub mapping_notes: String,
+    pub created_at: String,
+    pub updated_at: String,
+    pub description: Option<String>,
+}
+
+#[cfg(feature = "server")]
+#[derive(Deserialize)]
+pub struct CreateCommunityGrammarRequest {
+    pub structure_type: String,
+    pub name: String,
+    pub term_characters: Vec<String>,
+    pub author: String,
+    pub mapping_notes: String,
+    pub description: Option<String>,
+}
+
+#[cfg(feature = "server")]
+#[derive(Serialize)]
 pub struct SystemDefinition {
     pub structure_type: String,
     pub term_count: usize,
@@ -126,6 +151,11 @@ pub fn create_router(storage: SurrealStorage) -> Router {
         
         // Language Tetrad Architecture endpoints
         .route("/core-grammar/:structure_type", get(get_core_grammar))
+        .route("/community-grammar", get(list_community_grammars))
+        .route("/community-grammar", post(create_community_grammar))
+        .route("/community-grammar/search", get(search_community_grammars))
+        .route("/community-grammar/:id", get(get_community_grammar))
+        .route("/community-grammar/:id", delete(delete_community_grammar))
         .route("/user-instances", get(list_user_instances))
         .route("/user-instances", post(create_user_instance))
         .route("/user-instances/search", get(search_user_instances))
@@ -791,6 +821,191 @@ async fn create_user_instance(
         Ok(id) => Ok(Json(ApiResponse::success(id))),
         Err(e) => {
             eprintln!("Error creating user instance: {}", e);
+            Err(StatusCode::INTERNAL_SERVER_ERROR)
+        }
+    }
+}
+
+// Community Grammar handlers
+#[cfg(feature = "server")]
+async fn list_community_grammars(
+    Query(params): Query<HashMap<String, String>>,
+    State(state): State<AppState>,
+) -> Result<Json<ApiResponse<Vec<CommunityGrammar>>>, StatusCode> {
+    let structure_type = params.get("structure_type").map(|s| s.as_str());
+    
+    match state.storage.list_community_grammars(structure_type).await {
+        Ok(stored_grammars) => {
+            let community_grammars: Vec<CommunityGrammar> = stored_grammars
+                .into_iter()
+                .map(|stored| CommunityGrammar {
+                    id: serde_json::to_value(&stored.id).unwrap_or(serde_json::Value::Null),
+                    structure_type: stored.structure_type,
+                    name: stored.name,
+                    term_characters: stored.term_characters,
+                    author: stored.author,
+                    mapping_notes: stored.mapping_notes,
+                    created_at: stored.created_at.to_string(),
+                    updated_at: stored.updated_at.to_string(),
+                    description: stored.description,
+                })
+                .collect();
+            
+            Ok(Json(ApiResponse::success(community_grammars)))
+        },
+        Err(e) => {
+            eprintln!("Error listing community grammars: {}", e);
+            Err(StatusCode::INTERNAL_SERVER_ERROR)
+        }
+    }
+}
+
+#[cfg(feature = "server")]
+async fn get_community_grammar(
+    Path(id): Path<String>,
+    State(state): State<AppState>,
+) -> Result<Json<ApiResponse<CommunityGrammar>>, StatusCode> {
+    match state.storage.get_community_grammar(&id).await {
+        Ok(Some(stored)) => {
+            let community_grammar = CommunityGrammar {
+                id: serde_json::to_value(&stored.id).unwrap_or(serde_json::Value::Null),
+                structure_type: stored.structure_type,
+                name: stored.name,
+                term_characters: stored.term_characters,
+                author: stored.author,
+                mapping_notes: stored.mapping_notes,
+                created_at: stored.created_at.to_string(),
+                updated_at: stored.updated_at.to_string(),
+                description: stored.description,
+            };
+            Ok(Json(ApiResponse::success(community_grammar)))
+        },
+        Ok(None) => Err(StatusCode::NOT_FOUND),
+        Err(e) => {
+            eprintln!("Error getting community grammar: {}", e);
+            Err(StatusCode::INTERNAL_SERVER_ERROR)
+        }
+    }
+}
+
+#[cfg(feature = "server")]
+async fn create_community_grammar(
+    State(state): State<AppState>,
+    Json(payload): Json<CreateCommunityGrammarRequest>,
+) -> Result<Json<ApiResponse<String>>, StatusCode> {
+    // Validate structure type
+    let valid_types = ["monad", "dyad", "triad", "tetrad", "pentad", "hexad", "heptad", "octad", "ennead", "decad", "undecad", "dodecad"];
+    if !valid_types.contains(&payload.structure_type.as_str()) {
+        return Ok(Json(ApiResponse::error(format!(
+            "Invalid structure type '{}'. Valid types: {}",
+            payload.structure_type,
+            valid_types.join(", ")
+        ))));
+    }
+
+    // Validate term characters count matches structure type
+    let expected_term_count = match payload.structure_type.as_str() {
+        "monad" => 1,
+        "dyad" => 2,
+        "triad" => 3,
+        "tetrad" => 4,
+        "pentad" => 5,
+        "hexad" => 6,
+        "heptad" => 7,
+        "octad" => 8,
+        "ennead" => 9,
+        "decad" => 10,
+        "undecad" => 11,
+        "dodecad" => 12,
+        _ => return Ok(Json(ApiResponse::error("Invalid structure type".to_string()))),
+    };
+
+    if payload.term_characters.len() != expected_term_count {
+        return Ok(Json(ApiResponse::error(format!(
+            "Structure type '{}' requires exactly {} term characters, got {}",
+            payload.structure_type,
+            expected_term_count,
+            payload.term_characters.len()
+        ))));
+    }
+
+    // Validate term characters are not empty
+    for (i, term) in payload.term_characters.iter().enumerate() {
+        if term.trim().is_empty() {
+            return Ok(Json(ApiResponse::error(format!(
+                "Term character at position {} cannot be empty",
+                i + 1
+            ))));
+        }
+    }
+
+    // Validate required fields
+    if payload.name.trim().is_empty() {
+        return Ok(Json(ApiResponse::error("Name cannot be empty".to_string())));
+    }
+    if payload.author.trim().is_empty() {
+        return Ok(Json(ApiResponse::error("Author cannot be empty".to_string())));
+    }
+
+    // Store the community grammar
+    match state.storage.create_community_grammar(
+        &payload.structure_type,
+        &payload.name,
+        payload.term_characters,
+        &payload.author,
+        &payload.mapping_notes,
+        payload.description,
+    ).await {
+        Ok(id) => Ok(Json(ApiResponse::success(id))),
+        Err(e) => {
+            eprintln!("Error creating community grammar: {}", e);
+            Err(StatusCode::INTERNAL_SERVER_ERROR)
+        }
+    }
+}
+
+#[cfg(feature = "server")]
+async fn search_community_grammars(
+    Query(params): Query<SearchQuery>,
+    State(state): State<AppState>,
+) -> Result<Json<ApiResponse<Vec<CommunityGrammar>>>, StatusCode> {
+    let query = params.q.unwrap_or_default();
+    
+    match state.storage.search_community_grammars(&query).await {
+        Ok(stored_grammars) => {
+            let community_grammars: Vec<CommunityGrammar> = stored_grammars
+                .into_iter()
+                .map(|stored| CommunityGrammar {
+                    id: serde_json::to_value(&stored.id).unwrap_or(serde_json::Value::Null),
+                    structure_type: stored.structure_type,
+                    name: stored.name,
+                    term_characters: stored.term_characters,
+                    author: stored.author,
+                    mapping_notes: stored.mapping_notes,
+                    created_at: stored.created_at.to_string(),
+                    updated_at: stored.updated_at.to_string(),
+                    description: stored.description,
+                })
+                .collect();
+            
+            Ok(Json(ApiResponse::success(community_grammars)))
+        },
+        Err(e) => {
+            eprintln!("Error searching community grammars: {}", e);
+            Err(StatusCode::INTERNAL_SERVER_ERROR)
+        }
+    }
+}
+
+#[cfg(feature = "server")]
+async fn delete_community_grammar(
+    Path(id): Path<String>,
+    State(state): State<AppState>,
+) -> Result<Json<ApiResponse<bool>>, StatusCode> {
+    match state.storage.delete_community_grammar(&id).await {
+        Ok(deleted) => Ok(Json(ApiResponse::success(deleted))),
+        Err(e) => {
+            eprintln!("Error deleting community grammar: {}", e);
             Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }

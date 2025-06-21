@@ -1,4 +1,4 @@
-use crate::{System, bennett::*};
+use crate::{System, core_grammar::*};
 
 /// Provides access to systems for different structure types
 pub trait LibraryProvider {

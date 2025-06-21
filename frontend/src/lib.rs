@@ -234,11 +234,19 @@ impl Component for App {
                 match result {
                     Ok(definitions) => {
                         self.user_instances = definitions;
+                        
+                        // Update filtered content if we're currently showing user instances
+                        if self.content_source == ContentSource::UserInstances {
+                            self.filtered_content = self.user_instances.iter().map(|item| ContentItem::UserInstance(item.clone())).collect();
+                        }
                         self.error = None;
                     }
                     Err(e) => {
                         self.error = Some(format!("Failed to load user instances: {}", e));
                         self.user_instances = Vec::new();
+                        if self.content_source == ContentSource::UserInstances {
+                            self.filtered_content = Vec::new();
+                        }
                     }
                 }
                 true
@@ -268,13 +276,21 @@ impl Component for App {
             Msg::CommunityGrammarsLoaded(result) => {
                 self.loading = false;
                 match result {
-                    Ok(user_instances) => {
-                        self.community_grammars = user_instances;
+                    Ok(community_grammars) => {
+                        self.community_grammars = community_grammars;
+                        
+                        // Update filtered content if we're currently showing community grammars
+                        if self.content_source == ContentSource::CommunityGrammar {
+                            self.filtered_content = self.community_grammars.iter().map(|item| ContentItem::CommunityGrammar(item.clone())).collect();
+                        }
                         self.error = None;
                     }
                     Err(e) => {
                         self.error = Some(format!("Failed to load community grammars: {}", e));
                         self.community_grammars = Vec::new();
+                        if self.content_source == ContentSource::CommunityGrammar {
+                            self.filtered_content = Vec::new();
+                        }
                     }
                 }
                 true
@@ -966,9 +982,7 @@ impl App {
         
         spawn_api_call(
             async move {
-                // For now, return empty community grammars - this will be implemented later
-                // when we have the community grammar API endpoints
-                Ok(Vec::new())
+                api_client.list_community_grammars(None).await
             },
             callback,
         );

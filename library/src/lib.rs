@@ -16,8 +16,8 @@
 //! - REA (Resource-Event-Agent) accounting alignment
 
 pub mod error;
-pub mod bennett;
-pub mod providers;
+pub mod core_grammar;
+pub mod community_grammar;
 
 // Core system traits and types
 /// Represents a directional relationship between two terms in a system
@@ -63,8 +63,8 @@ pub trait System: Send + Sync {
 
 // Re-export core types for convenience
 pub use error::{LibraryError, Result};
-pub use providers::{LibraryProvider, BennettLibrary};
-pub use bennett::{
+pub use community_grammar::{LibraryProvider, BennettLibrary};
+pub use core_grammar::{
     MonadicSystem, DyadicSystem, TriadicSystem, TetradicSystem, 
     PentadicSystem, HexadicSystem, HeptadicSystem, OctadicSystem, 
     EnneadicSystem, DecadicSystem, UndecadicSystem, DodecadicSystem
