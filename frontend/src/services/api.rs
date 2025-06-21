@@ -4,26 +4,87 @@ use std::collections::HashMap;
 use wasm_bindgen_futures::spawn_local;
 use yew::prelude::*;
 
-// Mirror the API types from the server
+// Ground: User Instances (concrete personal applications)
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub struct StoredUserDefinition {
-    pub id: serde_json::Value, // Thing type from SurrealDB
+pub struct UserInstance {
+    pub id: serde_json::Value,
     pub name: String,
     pub structure_type: String,
-    pub user_instance_index: Vec<String>, // Matches backend field exactly
+    pub grammar_id: String, // References either core or community grammar
+    pub instances: Vec<String>, // Concrete user data
     pub connectives: HashMap<String, String>,
-    pub created_at: String, // Simplified for frontend
+    pub created_at: String,
     pub updated_at: String,
     pub description: Option<String>,
     pub metadata: HashMap<String, String>,
+}
+
+// Directive: Core Grammar (Bennett's canonical terms)
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct CoreGrammar {
+    pub structure_type: String,
+    pub name: String, // "Bennett's Canonical"
+    pub term_characters: Vec<String>, // Bennett's canonical terms
+    pub coherence_attribute: String,
+    pub term_designation: String,
+    pub source: String,
+    pub first_order_connectives_type: String,
+    pub connectives: Vec<ConnectiveInfo>,
+}
+
+// Instrumental: Community Grammar (user-contributed mappings)
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct CommunityGrammar {
+    pub id: serde_json::Value,
+    pub structure_type: String,
+    pub name: String, // "Landry's Metaphysics", "Agent Languages"
+    pub term_characters: Vec<String>, // Alternative terms mapping to same positions
+    pub author: String,
+    pub mapping_notes: String,
+    pub created_at: String,
+    pub updated_at: String,
+    pub description: Option<String>,
+}
+
+// Source: System Definitions (pure mathematical structures)
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct SystemDefinition {
+    pub structure_type: String,
+    pub term_count: usize,
+    pub term_characters: Vec<String>, // Added for compatibility
+    pub coherence_attribute: String,
+    pub term_designation: String,
+    pub source: String,
+    pub first_order_connectives_type: String,
+    pub connectives: Vec<ConnectiveInfo>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateStructureRequest {
     pub name: String,
     pub structure_type: String,
-    pub user_instance_index: Vec<String>, // Matches backend field exactly
+    pub user_instance_index: Vec<String>, // Legacy field for backward compatibility
     pub connectives: HashMap<String, String>,
+    pub description: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CreateUserInstanceRequest {
+    pub name: String,
+    pub structure_type: String,
+    pub grammar_id: String,
+    pub instances: Vec<String>,
+    pub connectives: HashMap<String, String>,
+    pub description: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CreateCommunityGrammarRequest {
+    pub structure_type: String,
+    pub name: String,
+    pub term_characters: Vec<String>,
+    pub author: String,
+    pub mapping_notes: String,
     pub description: Option<String>,
 }
 
@@ -36,22 +97,10 @@ pub struct ApiResponse<T> {
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct ConnectiveInfo {
-    pub from_position: usize,
-    pub to_position: usize,
-    pub relationship: String,
+    pub from_index: usize,
+    pub to_index: usize,
+    pub relation_type: String,
     pub description: Option<String>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SystemDefinition {
-    pub structure_type: String,
-    pub term_count: usize,
-    pub term_characters: Vec<String>,
-    pub coherence_attribute: String,
-    pub term_designation: String,
-    pub source: String,
-    pub first_order_connectives_type: String,
-    pub connectives: Vec<ConnectiveInfo>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -101,24 +150,24 @@ impl ApiClient {
         }
     }
 
-    pub async fn list_definitions(&self) -> Result<Vec<StoredUserDefinition>, anyhow::Error> {
+    pub async fn list_definitions(&self) -> Result<Vec<UserInstance>, anyhow::Error> {
         let url = format!("{}/definitions", self.base_url);
         let response = Request::get(&url).send().await?;
         
         if response.ok() {
-            let api_response: ApiResponse<Vec<StoredUserDefinition>> = response.json().await?;
+            let api_response: ApiResponse<Vec<UserInstance>> = response.json().await?;
             api_response.data.ok_or_else(|| anyhow::anyhow!("No data in response"))
         } else {
             Err(anyhow::anyhow!("Failed to list definitions: {}", response.status()))
         }
     }
 
-    pub async fn get_definition(&self, id: &str) -> Result<StoredUserDefinition, anyhow::Error> {
+    pub async fn get_definition(&self, id: &str) -> Result<UserInstance, anyhow::Error> {
         let url = format!("{}/definitions/{}", self.base_url, id);
         let response = Request::get(&url).send().await?;
         
         if response.ok() {
-            let api_response: ApiResponse<StoredUserDefinition> = response.json().await?;
+            let api_response: ApiResponse<UserInstance> = response.json().await?;
             api_response.data.ok_or_else(|| anyhow::anyhow!("No data in response"))
         } else {
             Err(anyhow::anyhow!("Failed to get definition: {}", response.status()))
@@ -134,34 +183,84 @@ impl ApiClient {
         
         if response.ok() {
             let api_response: ApiResponse<String> = response.json().await?;
-            api_response.data.ok_or_else(|| anyhow::anyhow!("No data in response"))
+            if api_response.success {
+                api_response.data.ok_or_else(|| anyhow::anyhow!("No data in response"))
+            } else {
+                Err(anyhow::anyhow!("API error: {}", api_response.error.unwrap_or_else(|| "Unknown error".to_string())))
+            }
         } else {
             let error_text = response.text().await.unwrap_or_else(|_| "Unknown error".to_string());
             Err(anyhow::anyhow!("Failed to create definition: {}", error_text))
         }
     }
 
-    pub async fn save_definition(&self, name: &str, structure_type: &str, user_instances: &[String]) -> Result<String, anyhow::Error> {
-        let request = CreateStructureRequest {
-            name: name.to_string(),
-            structure_type: structure_type.to_string(),
-            user_instance_index: user_instances.to_vec(), // Consistent terminology
-            connectives: std::collections::HashMap::new(), // Empty for now
-            description: Some(format!("User-created {} definition", structure_type)),
-        };
-        
-        self.create_definition(request).await
-    }
-
-    pub async fn search_definitions(&self, query: &str) -> Result<Vec<StoredUserDefinition>, anyhow::Error> {
-        let url = format!("{}/definitions/search?q={}", self.base_url, query);
+    pub async fn list_user_instances(&self) -> Result<Vec<UserInstance>, anyhow::Error> {
+        let url = format!("{}/user-instances", self.base_url);
         let response = Request::get(&url).send().await?;
         
         if response.ok() {
-            let api_response: ApiResponse<Vec<StoredUserDefinition>> = response.json().await?;
+            let api_response: ApiResponse<Vec<UserInstance>> = response.json().await?;
             api_response.data.ok_or_else(|| anyhow::anyhow!("No data in response"))
         } else {
-            Err(anyhow::anyhow!("Failed to search definitions: {}", response.status()))
+            Err(anyhow::anyhow!("Failed to list user instances: {}", response.status()))
+        }
+    }
+
+    pub async fn create_user_instance(&self, name: &str, structure_type: &str, grammar_id: &str, instances: &[String]) -> Result<String, anyhow::Error> {
+        let request = CreateUserInstanceRequest {
+            name: name.to_string(),
+            structure_type: structure_type.to_string(),
+            grammar_id: grammar_id.to_string(),
+            instances: instances.to_vec(),
+            connectives: std::collections::HashMap::new(),
+            description: Some(format!("User-created {} instance", structure_type)),
+        };
+        
+        let url = format!("{}/user-instances", self.base_url);
+        let response = Request::post(&url)
+            .json(&request)?
+            .send()
+            .await?;
+        
+        if response.ok() {
+            let api_response: ApiResponse<String> = response.json().await?;
+            if api_response.success {
+                api_response.data.ok_or_else(|| anyhow::anyhow!("No data in response"))
+            } else {
+                Err(anyhow::anyhow!("API error: {}", api_response.error.unwrap_or_else(|| "Unknown error".to_string())))
+            }
+        } else {
+            let error_text = response.text().await.unwrap_or_else(|_| "Unknown error".to_string());
+            Err(anyhow::anyhow!("Failed to create user instance: {}", error_text))
+        }
+    }
+
+    pub async fn get_core_grammar(&self, structure_type: &str) -> Result<CoreGrammar, anyhow::Error> {
+        let url = format!("{}/core-grammar/{}", self.base_url, structure_type);
+        let response = Request::get(&url).send().await?;
+        
+        if response.ok() {
+            let api_response: ApiResponse<CoreGrammar> = response.json().await?;
+            api_response.data.ok_or_else(|| anyhow::anyhow!("No data in response"))
+        } else {
+            Err(anyhow::anyhow!("Failed to get core grammar: {}", response.status()))
+        }
+    }
+
+    pub async fn list_community_grammars(&self, structure_type: Option<&str>) -> Result<Vec<CommunityGrammar>, anyhow::Error> {
+        let url = if let Some(structure_type) = structure_type {
+            format!("{}/community-grammar?structure_type={}", self.base_url, structure_type)
+        } else {
+            format!("{}/community-grammar", self.base_url)
+        };
+        
+        let response = Request::get(&url).send().await?;
+        
+        if response.ok() {
+            let api_response: ApiResponse<Vec<CommunityGrammar>> = response.json().await?;
+            api_response.data.ok_or_else(|| anyhow::anyhow!("No data in response"))
+        } else {
+            Err(anyhow::anyhow!("Failed to list community grammars: {}", response.status()))
         }
     }
 
@@ -189,16 +288,45 @@ impl ApiClient {
         }
     }
 
-    pub async fn get_related_definitions(&self, id: &str) -> Result<Vec<StoredUserDefinition>, anyhow::Error> {
+    pub async fn get_related_definitions(&self, id: &str) -> Result<Vec<UserInstance>, anyhow::Error> {
         let url = format!("{}/definitions/{}/related", self.base_url, id);
         let response = Request::get(&url).send().await?;
         
         if response.ok() {
-            let api_response: ApiResponse<Vec<StoredUserDefinition>> = response.json().await?;
+            let api_response: ApiResponse<Vec<UserInstance>> = response.json().await?;
             api_response.data.ok_or_else(|| anyhow::anyhow!("No data in response"))
         } else {
             Err(anyhow::anyhow!("Failed to get related definitions: {}", response.status()))
         }
+    }
+
+    pub async fn search_definitions(&self, query: &str) -> Result<Vec<UserInstance>, anyhow::Error> {
+        let url = format!("{}/definitions/search?q={}", self.base_url, query);
+        let response = Request::get(&url).send().await?;
+        
+        if response.ok() {
+            let api_response: ApiResponse<Vec<UserInstance>> = response.json().await?;
+            api_response.data.ok_or_else(|| anyhow::anyhow!("No data in response"))
+        } else {
+            Err(anyhow::anyhow!("Failed to search definitions: {}", response.status()))
+        }
+    }
+
+    pub async fn search_user_instances(&self, query: &str) -> Result<Vec<UserInstance>, anyhow::Error> {
+        let url = format!("{}/user-instances/search?q={}", self.base_url, query);
+        let response = Request::get(&url).send().await?;
+        
+        if response.ok() {
+            let api_response: ApiResponse<Vec<UserInstance>> = response.json().await?;
+            api_response.data.ok_or_else(|| anyhow::anyhow!("No data in response"))
+        } else {
+            Err(anyhow::anyhow!("Failed to search user instances: {}", response.status()))
+        }
+    }
+
+    pub async fn save_user_instance(&self, name: &str, structure_type: &str, user_instances: &[String]) -> Result<String, anyhow::Error> {
+        let grammar_id = "core".to_string(); // Default to core grammar
+        self.create_user_instance(name, structure_type, &grammar_id, user_instances).await
     }
 }
 
@@ -212,4 +340,7 @@ where
         let result = future.await;
         callback.emit(result);
     });
-} 
+}
+
+// Backward compatibility type alias
+pub type StoredUserDefinition = UserInstance; 

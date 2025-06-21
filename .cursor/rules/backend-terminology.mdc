@@ -5,6 +5,55 @@ alwaysApply: false
 ---
 # Backend Terminology Consistency Rules
 
+## FOUNDATIONAL: Language Tetrad Architecture
+
+SysteMaster's terminology follows a systematic tetrad structure that provides clear separation of concerns:
+
+### **Source: System Definitions** 
+- **Purpose**: Pure foundational structures
+- **Content**: Mathematical essence (monad=1, dyad=2, triad=3, etc.)
+- **Nature**: Immutable structural forms, eternal patterns
+- **Implementation**: `SystemDefinition` struct with term counts and connectives
+
+### **Directive: Core Grammar**
+- **Purpose**: Authoritative essential references  
+- **Content**: Bennett's canonical term characters and relationships
+- **Nature**: System-provided, curated guidance from Bennett's Elementary Systematics
+- **Implementation**: `CoreGrammar` struct with term_characters from library
+- **Examples**: "Active/Passive/Reconciling" for triad, "Will/Being/Function" for triad
+
+### **Instrumental: Community Grammar**
+- **Purpose**: User-contributed grammar mappings and extensions
+- **Content**: Alternative term character sets that map to same structural positions
+- **Nature**: Community-validated structured extensions
+- **Implementation**: `CommunityGrammar` struct with user-contributed mappings
+- **Examples**: Landry's "Immanent/Omniscient/Transcendental" mapping to triad positions
+
+### **Ground: User Instances**
+- **Purpose**: Concrete personal applications and manifestations
+- **Content**: Individual user data that references a grammar (Core or Community)
+- **Nature**: Personal, contextual, grounded applications
+- **Implementation**: `UserInstance` struct with references to grammar_id
+- **Examples**: "English/Spanish/French" → Languages grammar → Triad position mappings
+
+### API Endpoint Structure
+```
+/definitions/{type}          # Source: Get system definition
+/core-grammar/{type}         # Directive: Get Bennett's canonical terms  
+/community-grammar/{type}    # Instrumental: Get community term mappings
+/user-instances/{type}       # Ground: Get user applications
+```
+
+### Data Flow Pattern
+1. **Source** provides structural foundation (term count, connectives)
+2. **Directive** provides canonical reference terms for each position
+3. **Instrumental** provides alternative term mappings to same positions
+4. **Ground** provides concrete user data referencing chosen grammar
+
+This tetrad ensures clear separation between mathematical structure, essential grammar, extended grammar, and concrete instances.
+
+---
+
 ## CRITICAL: Established Terminology Standards
 
 The backend has established proven terminology patterns that MUST be maintained consistently. The frontend has been refactored to align with these patterns, making backend consistency even more critical.
@@ -268,3 +317,20 @@ fn test_user_instance_to_term_character_mapping() { /* ... */ }
 - Any deviation breaks frontend-backend integration
 - Terminology consistency is critical for project maintainability
 - Source attribution ensures academic accuracy
+
+### Future Terminology Considerations
+
+#### Potential Evolution: "User Expressions"
+- **Current**: `UserInstance` for concrete applications
+- **Consideration**: `UserExpression` may better capture the creative, expressive nature of user applications
+- **Rationale**: "Expression" implies active creative manifestation rather than passive instantiation
+- **Impact**: Would affect Ground layer terminology throughout the tetrad
+- **Status**: Documented for future consideration - not implemented yet
+- **Decision**: Defer until current Language Tetrad architecture is fully stabilized
+
+#### Other Potential Refinements
+- Community Grammar → Community Lexicon (emphasizes vocabulary/mapping aspect)
+- Core Grammar → Essential Grammar (emphasizes foundational nature)
+- System Definition → Mathematical Definition (emphasizes pure structural essence)
+
+These considerations should be evaluated after the current four-layer architecture is completely implemented and tested across all components.

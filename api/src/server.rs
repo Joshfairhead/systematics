@@ -38,12 +38,36 @@ pub struct CreateStructureRequest {
 }
 
 #[cfg(feature = "server")]
+#[derive(Deserialize)]
+pub struct CreateUserInstanceRequest {
+    pub name: String,
+    pub structure_type: String,
+    pub grammar_id: String,
+    pub instances: Vec<String>,
+    pub connectives: HashMap<String, String>,
+    pub description: Option<String>,
+}
+
+#[cfg(feature = "server")]
 #[derive(Serialize)]
 pub struct ConnectiveInfo {
-    pub from_position: usize,
-    pub to_position: usize,
-    pub relationship: String,
+    pub from_index: usize,
+    pub to_index: usize,
+    pub relation_type: String,
     pub description: Option<String>,
+}
+
+#[cfg(feature = "server")]
+#[derive(Serialize)]
+pub struct CoreGrammar {
+    pub structure_type: String,
+    pub name: String,
+    pub term_characters: Vec<String>,
+    pub coherence_attribute: String,
+    pub term_designation: String,
+    pub source: String,
+    pub first_order_connectives_type: String,
+    pub connectives: Vec<ConnectiveInfo>,
 }
 
 #[cfg(feature = "server")]
@@ -91,6 +115,7 @@ pub fn create_router(storage: SurrealStorage) -> Router {
     let state = AppState { storage };
 
     Router::new()
+        // Legacy endpoints for backward compatibility
         .route("/definitions", get(list_definitions))
         .route("/definitions", post(create_definition))
         .route("/definitions/search", get(search_definitions))
@@ -98,6 +123,13 @@ pub fn create_router(storage: SurrealStorage) -> Router {
         .route("/definitions/:id", delete(delete_definition))
         .route("/definitions/:id/related", get(get_related_definitions))
         .route("/definition/:structure_type", get(get_system_definition))
+        
+        // Language Tetrad Architecture endpoints
+        .route("/core-grammar/:structure_type", get(get_core_grammar))
+        .route("/user-instances", get(list_user_instances))
+        .route("/user-instances", post(create_user_instance))
+        .route("/user-instances/search", get(search_user_instances))
+        
         .route("/health", get(health_check))
         .layer(CorsLayer::permissive())
         .with_state(state)
@@ -301,9 +333,9 @@ async fn get_system_definition(
         "tetrad" => {
             let system = systematics_library::TetradicSystem;
             let connectives = system.connectives_traits().into_iter().map(|c| ConnectiveInfo {
-                from_position: c.from_position,
-                to_position: c.to_position,
-                relationship: c.relationship,
+                from_index: c.from_position,
+                to_index: c.to_position,
+                relation_type: c.relationship,
                 description: c.description,
             }).collect();
             SystemDefinition {
@@ -320,9 +352,9 @@ async fn get_system_definition(
         "pentad" => {
             let system = systematics_library::PentadicSystem;
             let connectives = system.connectives_traits().into_iter().map(|c| ConnectiveInfo {
-                from_position: c.from_position,
-                to_position: c.to_position,
-                relationship: c.relationship,
+                from_index: c.from_position,
+                to_index: c.to_position,
+                relation_type: c.relationship,
                 description: c.description,
             }).collect();
             SystemDefinition {
@@ -436,6 +468,332 @@ async fn get_system_definition(
     };
     
     Ok(Json(ApiResponse::success(definition)))
+}
+
+#[cfg(feature = "server")]
+async fn get_core_grammar(
+    Path(structure_type): Path<String>,
+) -> Result<Json<ApiResponse<CoreGrammar>>, StatusCode> {
+    use systematics_library::System;
+    
+    let grammar = match structure_type.as_str() {
+        "monad" => {
+            let system = systematics_library::MonadicSystem;
+            CoreGrammar {
+                structure_type: "monad".to_string(),
+                name: system.name().to_string(),
+                term_characters: system.term_characters().iter().map(|s| s.to_string()).collect(),
+                coherence_attribute: system.coherence_attribute().to_string(),
+                term_designation: system.term_designation().to_string(),
+                source: system.source().to_string(),
+                first_order_connectives_type: system.first_order_connectives_type().to_string(),
+                connectives: system.connectives_traits().into_iter().map(|c| ConnectiveInfo {
+                    from_index: c.from_position,
+                    to_index: c.to_position,
+                    relation_type: c.relationship,
+                    description: c.description,
+                }).collect(),
+            }
+        },
+        "dyad" => {
+            let system = systematics_library::DyadicSystem;
+            CoreGrammar {
+                structure_type: "dyad".to_string(),
+                name: system.name().to_string(),
+                term_characters: system.term_characters().iter().map(|s| s.to_string()).collect(),
+                coherence_attribute: system.coherence_attribute().to_string(),
+                term_designation: system.term_designation().to_string(),
+                source: system.source().to_string(),
+                first_order_connectives_type: system.first_order_connectives_type().to_string(),
+                connectives: system.connectives_traits().into_iter().map(|c| ConnectiveInfo {
+                    from_index: c.from_position,
+                    to_index: c.to_position,
+                    relation_type: c.relationship,
+                    description: c.description,
+                }).collect(),
+            }
+        },
+        "triad" => {
+            let system = systematics_library::TriadicSystem;
+            CoreGrammar {
+                structure_type: "triad".to_string(),
+                name: system.name().to_string(),
+                term_characters: system.term_characters().iter().map(|s| s.to_string()).collect(),
+                coherence_attribute: system.coherence_attribute().to_string(),
+                term_designation: system.term_designation().to_string(),
+                source: system.source().to_string(),
+                first_order_connectives_type: system.first_order_connectives_type().to_string(),
+                connectives: system.connectives_traits().into_iter().map(|c| ConnectiveInfo {
+                    from_index: c.from_position,
+                    to_index: c.to_position,
+                    relation_type: c.relationship,
+                    description: c.description,
+                }).collect(),
+            }
+        },
+        "tetrad" => {
+            let system = systematics_library::TetradicSystem;
+            CoreGrammar {
+                structure_type: "tetrad".to_string(),
+                name: system.name().to_string(),
+                term_characters: system.term_characters().iter().map(|s| s.to_string()).collect(),
+                coherence_attribute: system.coherence_attribute().to_string(),
+                term_designation: system.term_designation().to_string(),
+                source: system.source().to_string(),
+                first_order_connectives_type: system.first_order_connectives_type().to_string(),
+                connectives: system.connectives_traits().into_iter().map(|c| ConnectiveInfo {
+                    from_index: c.from_position,
+                    to_index: c.to_position,
+                    relation_type: c.relationship,
+                    description: c.description,
+                }).collect(),
+            }
+        },
+        "pentad" => {
+            let system = systematics_library::PentadicSystem;
+            CoreGrammar {
+                structure_type: "pentad".to_string(),
+                name: system.name().to_string(),
+                term_characters: system.term_characters().iter().map(|s| s.to_string()).collect(),
+                coherence_attribute: system.coherence_attribute().to_string(),
+                term_designation: system.term_designation().to_string(),
+                source: system.source().to_string(),
+                first_order_connectives_type: system.first_order_connectives_type().to_string(),
+                connectives: system.connectives_traits().into_iter().map(|c| ConnectiveInfo {
+                    from_index: c.from_position,
+                    to_index: c.to_position,
+                    relation_type: c.relationship,
+                    description: c.description,
+                }).collect(),
+            }
+        },
+        "hexad" => {
+            let system = systematics_library::HexadicSystem;
+            CoreGrammar {
+                structure_type: "hexad".to_string(),
+                name: system.name().to_string(),
+                term_characters: system.term_characters().iter().map(|s| s.to_string()).collect(),
+                coherence_attribute: system.coherence_attribute().to_string(),
+                term_designation: system.term_designation().to_string(),
+                source: system.source().to_string(),
+                first_order_connectives_type: system.first_order_connectives_type().to_string(),
+                connectives: system.connectives_traits().into_iter().map(|c| ConnectiveInfo {
+                    from_index: c.from_position,
+                    to_index: c.to_position,
+                    relation_type: c.relationship,
+                    description: c.description,
+                }).collect(),
+            }
+        },
+        "heptad" => {
+            let system = systematics_library::HeptadicSystem;
+            CoreGrammar {
+                structure_type: "heptad".to_string(),
+                name: system.name().to_string(),
+                term_characters: system.term_characters().iter().map(|s| s.to_string()).collect(),
+                coherence_attribute: system.coherence_attribute().to_string(),
+                term_designation: system.term_designation().to_string(),
+                source: system.source().to_string(),
+                first_order_connectives_type: system.first_order_connectives_type().to_string(),
+                connectives: system.connectives_traits().into_iter().map(|c| ConnectiveInfo {
+                    from_index: c.from_position,
+                    to_index: c.to_position,
+                    relation_type: c.relationship,
+                    description: c.description,
+                }).collect(),
+            }
+        },
+        "octad" => {
+            let system = systematics_library::OctadicSystem;
+            CoreGrammar {
+                structure_type: "octad".to_string(),
+                name: system.name().to_string(),
+                term_characters: system.term_characters().iter().map(|s| s.to_string()).collect(),
+                coherence_attribute: system.coherence_attribute().to_string(),
+                term_designation: system.term_designation().to_string(),
+                source: system.source().to_string(),
+                first_order_connectives_type: system.first_order_connectives_type().to_string(),
+                connectives: system.connectives_traits().into_iter().map(|c| ConnectiveInfo {
+                    from_index: c.from_position,
+                    to_index: c.to_position,
+                    relation_type: c.relationship,
+                    description: c.description,
+                }).collect(),
+            }
+        },
+        "ennead" => {
+            let system = systematics_library::EnneadicSystem;
+            CoreGrammar {
+                structure_type: "ennead".to_string(),
+                name: system.name().to_string(),
+                term_characters: system.term_characters().iter().map(|s| s.to_string()).collect(),
+                coherence_attribute: system.coherence_attribute().to_string(),
+                term_designation: system.term_designation().to_string(),
+                source: system.source().to_string(),
+                first_order_connectives_type: system.first_order_connectives_type().to_string(),
+                connectives: system.connectives_traits().into_iter().map(|c| ConnectiveInfo {
+                    from_index: c.from_position,
+                    to_index: c.to_position,
+                    relation_type: c.relationship,
+                    description: c.description,
+                }).collect(),
+            }
+        },
+        "decad" => {
+            let system = systematics_library::DecadicSystem;
+            CoreGrammar {
+                structure_type: "decad".to_string(),
+                name: system.name().to_string(),
+                term_characters: system.term_characters().iter().map(|s| s.to_string()).collect(),
+                coherence_attribute: system.coherence_attribute().to_string(),
+                term_designation: system.term_designation().to_string(),
+                source: system.source().to_string(),
+                first_order_connectives_type: system.first_order_connectives_type().to_string(),
+                connectives: system.connectives_traits().into_iter().map(|c| ConnectiveInfo {
+                    from_index: c.from_position,
+                    to_index: c.to_position,
+                    relation_type: c.relationship,
+                    description: c.description,
+                }).collect(),
+            }
+        },
+        "undecad" => {
+            let system = systematics_library::UndecadicSystem;
+            CoreGrammar {
+                structure_type: "undecad".to_string(),
+                name: system.name().to_string(),
+                term_characters: system.term_characters().iter().map(|s| s.to_string()).collect(),
+                coherence_attribute: system.coherence_attribute().to_string(),
+                term_designation: system.term_designation().to_string(),
+                source: system.source().to_string(),
+                first_order_connectives_type: system.first_order_connectives_type().to_string(),
+                connectives: system.connectives_traits().into_iter().map(|c| ConnectiveInfo {
+                    from_index: c.from_position,
+                    to_index: c.to_position,
+                    relation_type: c.relationship,
+                    description: c.description,
+                }).collect(),
+            }
+        },
+        "dodecad" => {
+            let system = systematics_library::DodecadicSystem;
+            CoreGrammar {
+                structure_type: "dodecad".to_string(),
+                name: system.name().to_string(),
+                term_characters: system.term_characters().iter().map(|s| s.to_string()).collect(),
+                coherence_attribute: system.coherence_attribute().to_string(),
+                term_designation: system.term_designation().to_string(),
+                source: system.source().to_string(),
+                first_order_connectives_type: system.first_order_connectives_type().to_string(),
+                connectives: system.connectives_traits().into_iter().map(|c| ConnectiveInfo {
+                    from_index: c.from_position,
+                    to_index: c.to_position,
+                    relation_type: c.relationship,
+                    description: c.description,
+                }).collect(),
+            }
+        },
+        _ => return Err(StatusCode::NOT_FOUND),
+    };
+
+    Ok(Json(ApiResponse::success(grammar)))
+}
+
+#[cfg(feature = "server")]
+async fn list_user_instances(
+    State(state): State<AppState>,
+) -> Result<Json<ApiResponse<Vec<StoredUserDefinition>>>, StatusCode> {
+    match state.storage.list_definitions().await {
+        Ok(definitions) => Ok(Json(ApiResponse::success(definitions))),
+        Err(e) => {
+            eprintln!("Error listing user instances: {}", e);
+            Err(StatusCode::INTERNAL_SERVER_ERROR)
+        }
+    }
+}
+
+#[cfg(feature = "server")]
+async fn search_user_instances(
+    Query(params): Query<SearchQuery>,
+    State(state): State<AppState>,
+) -> Result<Json<ApiResponse<Vec<StoredUserDefinition>>>, StatusCode> {
+    let query = params.q.unwrap_or_default();
+    
+    match state.storage.search_definitions(&query).await {
+        Ok(definitions) => Ok(Json(ApiResponse::success(definitions))),
+        Err(e) => {
+            eprintln!("Error searching user instances: {}", e);
+            Err(StatusCode::INTERNAL_SERVER_ERROR)
+        }
+    }
+}
+
+#[cfg(feature = "server")]
+async fn create_user_instance(
+    State(state): State<AppState>,
+    Json(payload): Json<CreateUserInstanceRequest>,
+) -> Result<Json<ApiResponse<String>>, StatusCode> {
+    // Validate structure type
+    let valid_types = ["monad", "dyad", "triad", "tetrad", "pentad", "hexad", "heptad", "octad", "ennead", "decad", "undecad", "dodecad"];
+    if !valid_types.contains(&payload.structure_type.as_str()) {
+        return Ok(Json(ApiResponse::error(format!(
+            "Invalid structure type '{}'. Valid types: {}",
+            payload.structure_type,
+            valid_types.join(", ")
+        ))));
+    }
+
+    // Validate user instance count matches structure type
+    let expected_term_count = match payload.structure_type.as_str() {
+        "monad" => 1,
+        "dyad" => 2,
+        "triad" => 3,
+        "tetrad" => 4,
+        "pentad" => 5,
+        "hexad" => 6,
+        "heptad" => 7,
+        "octad" => 8,
+        "ennead" => 9,
+        "decad" => 10,
+        "undecad" => 11,
+        "dodecad" => 12,
+        _ => return Ok(Json(ApiResponse::error("Invalid structure type".to_string()))),
+    };
+
+    if payload.instances.len() != expected_term_count {
+        return Ok(Json(ApiResponse::error(format!(
+            "Structure type '{}' requires exactly {} instances, got {}",
+            payload.structure_type,
+            expected_term_count,
+            payload.instances.len()
+        ))));
+    }
+
+    // Validate instances are not empty
+    for (i, instance) in payload.instances.iter().enumerate() {
+        if instance.trim().is_empty() {
+            return Ok(Json(ApiResponse::error(format!(
+                "Instance at position {} cannot be empty",
+                i + 1
+            ))));
+        }
+    }
+
+    // Store the user instance
+    match state.storage.store_user_instance_direct(
+        &payload.name,
+        &payload.structure_type,
+        &payload.grammar_id,
+        payload.instances,
+        payload.connectives,
+        payload.description,
+    ).await {
+        Ok(id) => Ok(Json(ApiResponse::success(id))),
+        Err(e) => {
+            eprintln!("Error creating user instance: {}", e);
+            Err(StatusCode::INTERNAL_SERVER_ERROR)
+        }
+    }
 }
 
 #[cfg(feature = "server")]

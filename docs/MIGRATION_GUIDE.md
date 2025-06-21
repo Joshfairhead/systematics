@@ -388,3 +388,143 @@ cargo test --package systematics-api --lib structures::tetrad::tests
 # CLI still works
 cd cli && cargo check
 ```
+
+## Phase 6: Language Tetrad Architecture Implementation (NEXT STEPS)
+
+### Overview
+Complete the Language Tetrad terminology refactoring across the entire SysteMaster codebase. The frontend has been successfully refactored to implement the four-layer architecture, but backend components still need updating.
+
+### Current Status
+- ✅ **Frontend**: Complete tetrad implementation (SystemDefinition, CoreGrammar, CommunityGrammar, UserInstance)
+- ✅ **Library**: Already using correct terminology (`term_characters()`, proper source attribution)
+- ✅ **Documentation**: Language Tetrad documented with future considerations (user-expressions)
+- ⚠️ **API Backend**: Partial implementation, mixed old/new terminology
+- ⚠️ **CLI**: Still using old `StoredUserDefinition` patterns
+- ❌ **API Definitions**: All 12 structure files need complete overhaul
+
+### Estimated Timeline: 2-3 Days
+
+#### Day 1: API Backend Core (6-8 hours)
+
+**API Storage Layer (2-3 hours):**
+- [ ] Rename `StoredUserDefinition` → `StoredUserInstance`
+- [ ] Update method names: `list_definitions()` → `list_user_instances()`
+- [ ] Database table rename: `definitions` → `user_instances`
+- [ ] Add tetrad-based storage methods for all four layers
+- [ ] Update ~50 occurrences in `storage.rs`
+
+**API Server Routes (2-3 hours):**
+- [ ] Replace `/definitions` endpoints with tetrad-based routes:
+  - `/definitions/{type}` → `/system-definitions/{type}` (Source)
+  - `/core-grammar/{type}` (Directive)
+  - `/community-grammar/{type}` (Instrumental)  
+  - `/user-instances` (Ground)
+- [ ] Update all handler functions and request/response types
+- [ ] Update ~30 occurrences in `server.rs`
+
+**API Definitions Directory (2 hours):**
+- [ ] Update all 12 structure files (monad.rs through dodecad.rs)
+- [ ] Replace `user_instance_index` field patterns
+- [ ] Update ~200+ occurrences across definition files
+- [ ] Align with tetrad architecture patterns
+
+#### Day 2: CLI & Integration (4-6 hours)
+
+**CLI Client (2-3 hours):**
+- [ ] Update `ApiClient` methods and types in `cli/src/api_client.rs`
+- [ ] Replace `StoredUserDefinition` usage throughout CLI
+- [ ] Update command line interface and display logic
+- [ ] Update ~25 occurrences in CLI codebase
+
+**Integration Testing (2-3 hours):**
+- [ ] Verify frontend-backend compatibility with new endpoints
+- [ ] Test all tetrad endpoints end-to-end
+- [ ] Database migration testing and validation
+- [ ] Ensure backward compatibility during transition
+
+#### Day 3: Polish & Documentation (2-4 hours)
+
+**Final Cleanup (1-2 hours):**
+- [ ] Remove deprecated code and unused imports
+- [ ] Update error messages to use tetrad terminology
+- [ ] Verify terminology consistency across all components
+- [ ] Run comprehensive test suite
+
+**Documentation Updates (1-2 hours):**
+- [ ] Update component README files
+- [ ] API documentation with new endpoint structure
+- [ ] Update migration guides and examples
+- [ ] Commit final tetrad architecture implementation
+
+### Key Files Requiring Updates
+
+**High Priority (Day 1):**
+- `api/src/storage.rs` - 50+ occurrences of old terminology
+- `api/src/server.rs` - 30+ endpoint and handler updates
+- `api/src/definitions/*.rs` - 12 files, 200+ occurrences total
+
+**Medium Priority (Day 2):**
+- `cli/src/api_client.rs` - Client method updates
+- `cli/src/storage.rs` - CLI integration layer
+- Database migration scripts
+
+**Low Priority (Day 3):**
+- Documentation files
+- Example code
+- Test files
+
+### Technical Approach
+
+**Incremental Strategy:**
+1. Update one component at a time to minimize risk
+2. Maintain backward compatibility during transition
+3. Use feature flags for gradual endpoint migration
+4. Comprehensive testing after each component update
+
+**Quality Assurance:**
+- Automated testing after each major change
+- Frontend-backend integration verification
+- Database migration validation
+- Performance impact assessment
+
+### Success Criteria
+
+- [ ] All components use consistent Language Tetrad terminology
+- [ ] Frontend-backend integration maintains full functionality
+- [ ] Database successfully migrated to new schema
+- [ ] CLI commands work with new API endpoints
+- [ ] Comprehensive test suite passes
+- [ ] Documentation reflects new architecture
+
+### Risk Mitigation
+
+**Rollback Plan:**
+- Git branches for each major component update
+- Database backup before schema changes
+- Feature flags to revert to old endpoints if needed
+
+**Testing Strategy:**
+- Unit tests for each updated component
+- Integration tests for cross-component functionality
+- End-to-end testing of complete user workflows
+- Performance regression testing
+
+### Future Considerations
+
+**Terminology Evolution:**
+- "UserInstance" → "UserExpression" (documented for future consideration)
+- Community Grammar → Community Lexicon
+- Core Grammar → Essential Grammar
+- System Definition → Mathematical Definition
+
+**Architecture Enhancements:**
+- Grammar versioning system
+- Community grammar validation
+- Advanced search across tetrad layers
+- Grammar inheritance patterns
+
+### Notes
+
+This refactoring completes the systematic Language Tetrad architecture across the entire SysteMaster codebase, eliminating terminology confusion and establishing clear separation of concerns between mathematical structures, essential grammar, extended grammar, and concrete instances.
+
+The frontend implementation provides the proven pattern for backend components to follow, ensuring consistency and maintainability across the full stack.

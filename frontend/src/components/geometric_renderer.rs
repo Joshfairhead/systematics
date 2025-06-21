@@ -192,9 +192,9 @@ impl GeometricRenderer {
             // Look up connective relationship for this edge (extrinsic approach)
             let relationship = if let Some(connectives) = connectives {
                 connectives.iter()
-                    .find(|c| (c.from_position == edge.from && c.to_position == edge.to) ||
-                             (c.from_position == edge.to && c.to_position == edge.from))
-                    .map(|c| c.relationship.clone())
+                    .find(|c| (c.from_index == edge.from && c.to_index == edge.to) ||
+                             (c.from_index == edge.to && c.to_index == edge.from))
+                    .map(|c| c.relation_type.clone())
             } else {
                 None
             };

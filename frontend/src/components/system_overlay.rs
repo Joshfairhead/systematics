@@ -6,44 +6,40 @@
 // - Hardcoded positioning values that should be configurable
 // Priority: High - affects core systematic structure display
 
-use yew::{html, Component, Context, Html, Properties, TargetCast};
-use crate::services::api::{StoredUserDefinition, ApiClient, SystemDefinition, spawn_api_call};
+use yew::{html, Component, Context, Html, Properties, TargetCast, Callback};
+use crate::services::api::{ApiClient, SystemDefinition, spawn_api_call};
 use crate::core::geometry::GeometryCalculator;
+use crate::ContentItem;
 use std::f64::consts::PI;
 use web_sys;
 
 #[derive(Properties, PartialEq)]
-pub struct Props {
+pub struct SystemOverlayProps {
     pub system_num: i32,
-    #[prop_or_default]
-    pub definition: Option<StoredUserDefinition>,
-    #[prop_or_default]
+    pub definition: Option<ContentItem>,
     pub creation_mode: bool,
-    #[prop_or_default]
     pub structure_name: Option<String>,
-    #[prop_or_default]
     pub user_instance_index: Vec<String>,
-    #[prop_or_default]
-    pub on_instance_change: yew::Callback<(usize, String)>,
+    pub on_instance_change: Callback<(usize, String)>,
 }
 
-pub enum Msg {
+pub enum SystemOverlayMsg {
     DefinitionLoaded(Result<SystemDefinition, anyhow::Error>),
 }
 
 pub struct SystemOverlay {
-    definition: Option<SystemDefinition>,
+    current_definition: Option<SystemDefinition>,
     api_client: ApiClient,
     loading_definition: bool,
 }
 
 impl Component for SystemOverlay {
-    type Message = Msg;
-    type Properties = Props;
+    type Message = SystemOverlayMsg;
+    type Properties = SystemOverlayProps;
 
     fn create(ctx: &Context<Self>) -> Self {
         let mut component =         Self {
-            definition: None,
+            current_definition: None,
             api_client: ApiClient::new(),
             loading_definition: false,
         };
@@ -56,11 +52,11 @@ impl Component for SystemOverlay {
 
     fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
-            Msg::DefinitionLoaded(result) => {
+            SystemOverlayMsg::DefinitionLoaded(result) => {
                 self.loading_definition = false;
                 match result {
                     Ok(definition) => {
-                        self.definition = Some(definition);
+                        self.current_definition = Some(definition);
                         true
                     }
                     Err(err) => {
@@ -124,7 +120,7 @@ impl Component for SystemOverlay {
         }
         
         // Show error state if definition failed to load
-        if self.definition.is_none() {
+        if self.current_definition.is_none() {
             return html! {
                 <div class="system-overlay error">
                     <div class="error-message">
@@ -150,7 +146,7 @@ impl SystemOverlay {
         html! {}
     }
     
-    fn render_structure_content(&self, ctx: &Context<Self>, system_num: i32, definition: &Option<StoredUserDefinition>) -> Html {
+    fn render_structure_content(&self, ctx: &Context<Self>, system_num: i32, definition: &Option<ContentItem>) -> Html {
         match system_num {
             1 => self.render_monad(ctx, definition),
             2 => self.render_dyad(ctx, definition),
@@ -191,7 +187,7 @@ impl SystemOverlay {
         
         self.loading_definition = true;
         let api_client = self.api_client.clone();
-        let callback = ctx.link().callback(Msg::DefinitionLoaded);
+        let callback = ctx.link().callback(SystemOverlayMsg::DefinitionLoaded);
         
         spawn_api_call(
             async move {
@@ -202,7 +198,7 @@ impl SystemOverlay {
     }
 
     fn get_term_character(&self, position: usize) -> Option<String> {
-        self.definition
+        self.current_definition
             .as_ref()
             .and_then(|s| s.term_characters.get(position))
             .cloned()
@@ -214,31 +210,50 @@ impl SystemOverlay {
         
         // Determine what to display based on context
         let display_values = if ctx.props().creation_mode {
-            // In creation mode, use user input values
-            let user_instances = &ctx.props().user_instance_index;
-            if user_instances.len() == expected_count {
-                user_instances.clone()
-            } else {
-                // Fallback to definition term characters for creation mode
-                (0..expected_count)
-                    .map(|i| self.get_term_character(i).unwrap_or_else(|| format!("Position {}", i + 1)))
-                    .collect()
-            }
+            // In creation mode, always show term characters as reference labels
+            (0..expected_count)
+                .map(|i| self.get_term_character(i).unwrap_or_else(|| format!("Position {}", i + 1)))
+                .collect()
         } else if let Some(ref definition) = ctx.props().definition {
-            // Check if this is a real definition (not a placeholder) by checking if it has API data
-            let is_placeholder = definition.id.as_str().map_or(false, |id| id.starts_with("placeholder-"));
-            
-            if !is_placeholder && definition.user_instance_index.len() == expected_count {
-                // Real definition with correct number of user instances
-                definition.user_instance_index.clone()
-            } else {
-                // Always use definition term characters from API
-                (0..expected_count)
-                    .map(|i| self.get_term_character(i).unwrap_or_else(|| format!("Position {}", i + 1)))
-                    .collect()
+            // Handle different ContentItem types
+            match definition {
+                ContentItem::UserInstance(user_instance) => {
+                    let is_placeholder = user_instance.id.as_str().map_or(false, |id| id.starts_with("placeholder-"));
+                    if !is_placeholder && user_instance.instances.len() == expected_count {
+                        // Real user instance with correct number of instances
+                        user_instance.instances.clone()
+                    } else {
+                        // Placeholder or incorrect data - show term characters
+                        (0..expected_count)
+                            .map(|i| self.get_term_character(i).unwrap_or_else(|| format!("Position {}", i + 1)))
+                            .collect()
+                    }
+                }
+                ContentItem::CoreGrammar(core_grammar) => {
+                    if core_grammar.term_characters.len() == expected_count {
+                        // Use core grammar term characters
+                        core_grammar.term_characters.clone()
+                    } else {
+                        // Fallback to system definition term characters
+                        (0..expected_count)
+                            .map(|i| self.get_term_character(i).unwrap_or_else(|| format!("Position {}", i + 1)))
+                            .collect()
+                    }
+                }
+                ContentItem::CommunityGrammar(community_grammar) => {
+                    if community_grammar.term_characters.len() == expected_count {
+                        // Use community grammar term characters
+                        community_grammar.term_characters.clone()
+                    } else {
+                        // Fallback to system definition term characters
+                        (0..expected_count)
+                            .map(|i| self.get_term_character(i).unwrap_or_else(|| format!("Position {}", i + 1)))
+                            .collect()
+                    }
+                }
             }
         } else {
-            // No definition loaded - always use definition term characters from API
+            // No definition loaded - show term characters
             (0..expected_count)
                 .map(|i| self.get_term_character(i).unwrap_or_else(|| format!("Position {}", i + 1)))
                 .collect()
@@ -473,51 +488,51 @@ impl SystemOverlay {
         }
     }
 
-    fn render_monad(&self, ctx: &Context<Self>, _definition: &Option<StoredUserDefinition>) -> Html {
+    fn render_monad(&self, ctx: &Context<Self>, _definition: &Option<ContentItem>) -> Html {
         self.render_system_with_definition(ctx, "monad", 1)
     }
 
-    fn render_dyad(&self, ctx: &Context<Self>, _definition: &Option<StoredUserDefinition>) -> Html {
+    fn render_dyad(&self, ctx: &Context<Self>, _definition: &Option<ContentItem>) -> Html {
         self.render_system_with_definition(ctx, "dyad", 2)
     }
 
-    fn render_triad(&self, ctx: &Context<Self>, _definition: &Option<StoredUserDefinition>) -> Html {
+    fn render_triad(&self, ctx: &Context<Self>, _definition: &Option<ContentItem>) -> Html {
         self.render_system_with_definition(ctx, "triad", 3)
     }
 
-    fn render_tetrad(&self, ctx: &Context<Self>, _definition: &Option<StoredUserDefinition>) -> Html {
+    fn render_tetrad(&self, ctx: &Context<Self>, _definition: &Option<ContentItem>) -> Html {
         self.render_system_with_definition(ctx, "tetrad", 4)
     }
 
-    fn render_pentad(&self, ctx: &Context<Self>, _definition: &Option<StoredUserDefinition>) -> Html {
+    fn render_pentad(&self, ctx: &Context<Self>, _definition: &Option<ContentItem>) -> Html {
         self.render_system_with_definition(ctx, "pentad", 5)
     }
 
-    fn render_hexad(&self, ctx: &Context<Self>, _definition: &Option<StoredUserDefinition>) -> Html {
+    fn render_hexad(&self, ctx: &Context<Self>, _definition: &Option<ContentItem>) -> Html {
         self.render_system_with_definition(ctx, "hexad", 6)
     }
 
-    fn render_heptad(&self, ctx: &Context<Self>, _definition: &Option<StoredUserDefinition>) -> Html {
+    fn render_heptad(&self, ctx: &Context<Self>, _definition: &Option<ContentItem>) -> Html {
         self.render_system_with_definition(ctx, "heptad", 7)
     }
 
-    fn render_octad(&self, ctx: &Context<Self>, _definition: &Option<StoredUserDefinition>) -> Html {
+    fn render_octad(&self, ctx: &Context<Self>, _definition: &Option<ContentItem>) -> Html {
         self.render_system_with_definition(ctx, "octad", 8)
     }
 
-    fn render_ennead(&self, ctx: &Context<Self>, _definition: &Option<StoredUserDefinition>) -> Html {
+    fn render_ennead(&self, ctx: &Context<Self>, _definition: &Option<ContentItem>) -> Html {
         self.render_system_with_definition(ctx, "ennead", 9)
     }
 
-    fn render_decad(&self, ctx: &Context<Self>, _definition: &Option<StoredUserDefinition>) -> Html {
+    fn render_decad(&self, ctx: &Context<Self>, _definition: &Option<ContentItem>) -> Html {
         self.render_system_with_definition(ctx, "decad", 10)
     }
 
-    fn render_undecad(&self, ctx: &Context<Self>, _definition: &Option<StoredUserDefinition>) -> Html {
+    fn render_undecad(&self, ctx: &Context<Self>, _definition: &Option<ContentItem>) -> Html {
         self.render_system_with_definition(ctx, "undecad", 11)
     }
 
-    fn render_dodecad(&self, ctx: &Context<Self>, _definition: &Option<StoredUserDefinition>) -> Html {
+    fn render_dodecad(&self, ctx: &Context<Self>, _definition: &Option<ContentItem>) -> Html {
         self.render_system_with_definition(ctx, "dodecad", 12)
     }
 } 

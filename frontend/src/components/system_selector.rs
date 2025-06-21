@@ -7,6 +7,8 @@ use web_sys::HtmlSelectElement;
 pub struct Props {
     pub on_system_selected: Callback<i32>,
     pub selected_system: i32,
+    #[prop_or(false)]
+    pub disabled: bool,
 }
 
 pub struct SystemSelector;
@@ -42,11 +44,12 @@ impl Component for SystemSelector {
         });
 
         let selected_system = ctx.props().selected_system;
+        let disabled = ctx.props().disabled;
 
         html! {
             <div>
                 <label for="system-selector">{"Select System: "}</label>
-                <select id="system-selector" {onchange}>
+                <select id="system-selector" {onchange} {disabled}>
                     <option value="1" selected={selected_system == 1}>{"Monad (1)"}</option>
                     <option value="2" selected={selected_system == 2}>{"Dyad (2)"}</option>
                     <option value="3" selected={selected_system == 3}>{"Triad (3)"}</option>

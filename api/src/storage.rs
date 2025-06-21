@@ -16,7 +16,8 @@ pub struct StoredUserDefinition {
     pub id: Thing,
     pub name: String,
     pub structure_type: String,
-    pub user_instance_index: Vec<String>,
+    pub grammar_id: String,
+    pub instances: Vec<String>,
     pub connectives: HashMap<String, String>,
     pub created_at: Datetime,
     pub updated_at: Datetime,
@@ -80,22 +81,30 @@ impl SurrealStorage {
             DEFINE INDEX idx_created ON definitions COLUMNS created_at;
         ").await?;
 
-        // Migrate existing records from 'terms' to 'user_instance_index' field
+        // Migrate existing records from 'terms' to 'instances' field
         // First, check if migration is needed
         let check_sql = "SELECT * FROM definitions LIMIT 1";
         if let Ok(mut result) = db.query(check_sql).await {
             if let Ok(definitions) = result.take::<Vec<serde_json::Value>>(0) {
                 if !definitions.is_empty() {
-                    // Check if first record has old 'terms' field
+                    // Check if first record has old 'terms' or 'user_instance_index' fields
                     if let Some(first_definition) = definitions.first() {
-                        if first_definition.get("terms").is_some() && first_definition.get("user_instance_index").is_none() {
-                            eprintln!("🔄 Migrating database from 'terms' to 'user_instance_index'...");
+                        if first_definition.get("terms").is_some() && first_definition.get("instances").is_none() {
+                            eprintln!("🔄 Migrating database from 'terms' to 'instances'...");
                             let migration_sql = "
-                                UPDATE definitions SET user_instance_index = terms WHERE terms IS NOT NULL;
+                                UPDATE definitions SET instances = terms, grammar_id = 'core' WHERE terms IS NOT NULL;
                                 UPDATE definitions UNSET terms;
                             ";
                             db.query(migration_sql).await?;
-                            eprintln!("✅ Database migration completed");
+                            eprintln!("✅ Database migration from 'terms' completed");
+                        } else if first_definition.get("user_instance_index").is_some() && first_definition.get("instances").is_none() {
+                            eprintln!("🔄 Migrating database from 'user_instance_index' to 'instances'...");
+                            let migration_sql = "
+                                UPDATE definitions SET instances = user_instance_index, grammar_id = 'core' WHERE user_instance_index IS NOT NULL;
+                                UPDATE definitions UNSET user_instance_index;
+                            ";
+                            db.query(migration_sql).await?;
+                            eprintln!("✅ Database migration from 'user_instance_index' completed");
                         }
                     }
                 }
@@ -150,7 +159,8 @@ impl SurrealStorage {
             id: Thing::from(("definitions", id_string.as_str())),
             name: name.to_string(),
             structure_type: definition.structure_type().to_string(),
-            user_instance_index: definition.user_instance_index().to_vec(),
+            grammar_id: "core".to_string(),
+            instances: definition.user_instance_index().to_vec(),
             connectives,
             created_at: now.clone(),
             updated_at: now,
@@ -242,7 +252,7 @@ impl SurrealStorage {
             SELECT * FROM definitions 
             WHERE name CONTAINS $query 
             OR description CONTAINS $query 
-            OR array::some(user_instance_index, |$user_instance| $user_instance CONTAINS $query)
+            OR array::some(instances, |$user_instance| $user_instance CONTAINS $query)
             ORDER BY created_at DESC
         ";
         
@@ -259,8 +269,8 @@ impl SurrealStorage {
             SELECT DISTINCT s2.* FROM definitions s1, definitions s2
             WHERE s1.id = $id 
             AND s2.id != $id
-            AND array::intersect(s1.user_instance_index, s2.user_instance_index) != []
-            ORDER BY array::len(array::intersect(s1.user_instance_index, s2.user_instance_index)) DESC
+            AND array::intersect(s1.instances, s2.instances) != []
+            ORDER BY array::len(array::intersect(s1.instances, s2.instances)) DESC
         ";
         
         let id_string = id.to_string();
@@ -327,7 +337,7 @@ impl SurrealStorage {
     pub async fn get_user_instance_usage(&self, user_instance: &str) -> Result<Vec<StoredUserDefinition>, SystematicsError> {
         let sql = "
             SELECT * FROM definitions 
-            WHERE array::some(user_instance_index, |$ui| $ui = $user_instance)
+            WHERE array::some(instances, |$ui| $ui = $user_instance)
             ORDER BY created_at DESC
         ";
         
@@ -354,7 +364,8 @@ impl SurrealStorage {
             id: Thing::from(("definitions", id_string.as_str())),
             name: name.to_string(),
             structure_type: structure_type.to_string(),
-            user_instance_index: user_instance_index.clone(),
+            grammar_id: "core".to_string(),
+            instances: user_instance_index.clone(),
             connectives,
             created_at: now.clone(),
             updated_at: now,
@@ -370,6 +381,45 @@ impl SurrealStorage {
 
         // Store nodes and create graph representation
         let nodes = self.create_nodes(&id_string, &user_instance_index).await?;
+        let _edges = self.create_edges(&nodes).await?;
+
+        Ok(id_string)
+    }
+
+    /// Store a user instance directly from API request data
+    pub async fn store_user_instance_direct(
+        &self,
+        name: &str,
+        structure_type: &str,
+        grammar_id: &str,
+        instances: Vec<String>,
+        connectives: HashMap<String, String>,
+        description: Option<String>,
+    ) -> Result<String, SystematicsError> {
+        let id_string = Uuid::new_v4().to_string();
+        let now = Datetime::default();
+        
+        let stored_definition = StoredUserDefinition {
+            id: Thing::from(("definitions", id_string.as_str())),
+            name: name.to_string(),
+            structure_type: structure_type.to_string(),
+            grammar_id: grammar_id.to_string(),
+            instances: instances.clone(),
+            connectives,
+            created_at: now.clone(),
+            updated_at: now,
+            description,
+            metadata: HashMap::new(),
+        };
+
+        // Store the definition
+        let _: Option<StoredUserDefinition> = self.db
+            .create(("definitions", id_string.as_str()))
+            .content(stored_definition)
+            .await?;
+
+        // Store nodes and create graph representation
+        let nodes = self.create_nodes(&id_string, &instances).await?;
         let _edges = self.create_edges(&nodes).await?;
 
         Ok(id_string)
