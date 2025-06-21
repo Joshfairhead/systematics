@@ -387,7 +387,7 @@ impl DodecadBuilder {
         self
     }
     
-    pub fn terms(mut self, terms: [String; 12]) -> Self {
+    pub fn user_expressions(mut self, terms: [String; 12]) -> Self {
         self.terms = terms;
         self
     }
@@ -433,7 +433,7 @@ mod tests {
         
         let dodecad = DodecadBuilder::new()
             .name("Test Dodecad".to_string())
-            .terms(terms)
+            .user_expressions(terms)
             .build()
             .unwrap();
         
@@ -452,7 +452,7 @@ mod tests {
         
         let dodecad = DodecadBuilder::new()
             .name("Test".to_string())
-            .terms(terms)
+            .user_expressions(terms)
             .build()
             .unwrap();
         
@@ -473,7 +473,7 @@ mod tests {
         
         let dodecad = DodecadBuilder::new()
             .name("Test".to_string())
-            .terms(terms)
+            .user_expressions(terms)
             .build()
             .unwrap();
         

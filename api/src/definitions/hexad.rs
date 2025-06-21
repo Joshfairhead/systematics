@@ -351,7 +351,7 @@ mod tests {
     fn test_hexad_creation() {
         let hexad = HexadBuilder::new()
             .name("Test Hexad".to_string())
-            .terms(
+            .user_expressions(
                 "Resource1".to_string(), "Value1".to_string(), "Option1".to_string(),
                 "Criteria1".to_string(), "Fact1".to_string(), "Priority1".to_string()
             )
@@ -367,7 +367,7 @@ mod tests {
     fn test_term_characters() {
         let hexad = HexadBuilder::new()
             .name("Test".to_string())
-            .terms("A".to_string(), "B".to_string(), "C".to_string(), "D".to_string(), "E".to_string(), "F".to_string())
+            .user_expressions("A".to_string(), "B".to_string(), "C".to_string(), "D".to_string(), "E".to_string(), "F".to_string())
             .build()
             .unwrap();
         
@@ -385,7 +385,7 @@ mod tests {
     fn test_trait_compliance() {
         let hexad = HexadBuilder::new()
             .name("Test".to_string())
-            .terms("A".to_string(), "B".to_string(), "C".to_string(), "D".to_string(), "E".to_string(), "F".to_string())
+            .user_expressions("A".to_string(), "B".to_string(), "C".to_string(), "D".to_string(), "E".to_string(), "F".to_string())
             .build()
             .unwrap();
         

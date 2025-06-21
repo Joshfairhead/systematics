@@ -352,7 +352,7 @@ impl OctadBuilder {
         self
     }
     
-    pub fn terms(mut self, t1: String, t2: String, t3: String, t4: String, t5: String, t6: String, t7: String, t8: String) -> Self {
+    pub fn user_expressions(mut self, t1: String, t2: String, t3: String, t4: String, t5: String, t6: String, t7: String, t8: String) -> Self {
         self.terms = [t1, t2, t3, t4, t5, t6, t7, t8];
         self
     }
@@ -392,7 +392,7 @@ mod tests {
     fn test_octad_creation() {
         let octad = OctadBuilder::new()
             .name("Test Octad".to_string())
-            .terms(
+            .user_expressions(
                 "T1".to_string(), "T2".to_string(), "T3".to_string(), "T4".to_string(),
                 "T5".to_string(), "T6".to_string(), "T7".to_string(), "T8".to_string()
             )
@@ -408,7 +408,7 @@ mod tests {
     fn test_term_characters() {
         let octad = OctadBuilder::new()
             .name("Test".to_string())
-            .terms("A".to_string(), "B".to_string(), "C".to_string(), "D".to_string(), "E".to_string(), "F".to_string(), "G".to_string(), "H".to_string())
+            .user_expressions("A".to_string(), "B".to_string(), "C".to_string(), "D".to_string(), "E".to_string(), "F".to_string(), "G".to_string(), "H".to_string())
             .build()
             .unwrap();
         
@@ -422,7 +422,7 @@ mod tests {
     fn test_trait_compliance() {
         let octad = OctadBuilder::new()
             .name("Test".to_string())
-            .terms("A".to_string(), "B".to_string(), "C".to_string(), "D".to_string(), "E".to_string(), "F".to_string(), "G".to_string(), "H".to_string())
+            .user_expressions("A".to_string(), "B".to_string(), "C".to_string(), "D".to_string(), "E".to_string(), "F".to_string(), "G".to_string(), "H".to_string())
             .build()
             .unwrap();
         

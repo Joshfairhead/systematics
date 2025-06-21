@@ -62,7 +62,7 @@ impl Tetrad {
     }
     
     /// Get all terms as a tuple
-    pub fn terms_tuple(&self) -> (&str, &str, &str, &str) {
+    pub fn expressions_tuple(&self) -> (&str, &str, &str, &str) {
         (&self.user_expressions[0], &self.user_expressions[1], &self.user_expressions[2], &self.user_expressions[3])
     }
     
@@ -330,8 +330,8 @@ impl TetradBuilder {
         self
     }
     
-    /// Set the terms for the tetrad
-    pub fn terms<S1: Into<String>, S2: Into<String>, S3: Into<String>, S4: Into<String>>(
+    /// Set the user expressions for the tetrad
+    pub fn user_expressions<S1: Into<String>, S2: Into<String>, S3: Into<String>, S4: Into<String>>(
         mut self, 
         ground: S1, 
         ideal: S2, 
@@ -382,7 +382,7 @@ mod tests {
     fn test_tetrad_creation() {
         let tetrad = TetradBuilder::new()
             .name("Test Tetrad")
-            .terms("Foundation", "Vision", "Method", "Guide")
+            .user_expressions("Foundation", "Vision", "Method", "Guide")
             .build()
             .unwrap();
         
@@ -391,7 +391,7 @@ mod tests {
         assert_eq!(tetrad.second_user_instance(), "Vision");
         assert_eq!(tetrad.third_user_instance(), "Method");
         assert_eq!(tetrad.fourth_user_instance(), "Guide");
-        assert_eq!(tetrad.terms_tuple(), ("Foundation", "Vision", "Method", "Guide"));
+        assert_eq!(tetrad.expressions_tuple(), ("Foundation", "Vision", "Method", "Guide"));
         assert!(tetrad.validate().is_ok());
     }
 
@@ -399,7 +399,7 @@ mod tests {
     fn test_term_characters() {
         let tetrad = TetradBuilder::new()
             .name("Test Tetrad")
-            .terms("A", "B", "C", "D")
+            .user_expressions("A", "B", "C", "D")
             .build()
             .unwrap();
         
@@ -411,7 +411,7 @@ mod tests {
     fn test_connective_relationships() {
         let tetrad = TetradBuilder::new()
             .name("Test Tetrad")
-            .terms("Ground", "Ideal", "Instrumental", "Directive")
+            .user_expressions("Ground", "Ideal", "Instrumental", "Directive")
             .build()
             .unwrap();
         
@@ -427,21 +427,21 @@ mod tests {
         // Valid tetrad
         let valid_tetrad = TetradBuilder::new()
             .name("Valid")
-            .terms("A", "B", "C", "D")
+            .user_expressions("A", "B", "C", "D")
             .build();
         assert!(valid_tetrad.is_ok());
         
         // Empty term should fail
         let invalid_tetrad = TetradBuilder::new()
             .name("Invalid")
-            .terms("A", "", "C", "D")
+            .user_expressions("A", "", "C", "D")
             .build();
         assert!(invalid_tetrad.is_err());
         
         // Duplicate terms should fail
         let duplicate_tetrad = TetradBuilder::new()
             .name("Duplicate")
-            .terms("Same", "Same", "Different", "Another")
+            .user_expressions("Same", "Same", "Different", "Another")
             .build();
         assert!(duplicate_tetrad.is_err());
     }
@@ -450,7 +450,7 @@ mod tests {
     fn test_tetrad_terms_method() {
         let tetrad = TetradBuilder::new()
             .name("Test")
-            .terms("One", "Two", "Three", "Four")
+            .user_expressions("One", "Two", "Three", "Four")
             .build()
             .unwrap();
         
@@ -466,7 +466,7 @@ mod tests {
     fn test_trait_compliance() {
         let tetrad = TetradBuilder::new()
             .name("Test")
-            .terms("A", "B", "C", "D")
+            .user_expressions("A", "B", "C", "D")
             .build()
             .unwrap();
         
@@ -480,7 +480,7 @@ mod tests {
     fn test_positional_coordinate_mapping() {
         let tetrad = TetradBuilder::new()
             .name("Test")
-            .terms("MyGround", "MyIdeal", "MyInstrumental", "MyDirective")
+            .user_expressions("MyGround", "MyIdeal", "MyInstrumental", "MyDirective")
             .build()
             .unwrap();
         
@@ -520,7 +520,7 @@ mod tests {
     fn test_position_alias_methods() {
         let tetrad = TetradBuilder::new()
             .name("Test")
-            .terms("MyGround", "MyIdeal", "MyInstrumental", "MyDirective")
+            .user_expressions("MyGround", "MyIdeal", "MyInstrumental", "MyDirective")
             .build()
             .unwrap();
         

@@ -302,7 +302,7 @@ impl DecadBuilder {
         self
     }
     
-    pub fn terms(mut self, terms: [String; 10]) -> Self {
+    pub fn user_expressions(mut self, terms: [String; 10]) -> Self {
         self.terms = terms;
         self
     }

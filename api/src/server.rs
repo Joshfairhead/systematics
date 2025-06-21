@@ -232,14 +232,14 @@ async fn create_definition(
             valid_types
         ))));
     }
-    
+
     // Validate term count matches structure type
     let expected_term_count = match payload.definition_type.as_str() {
         "monad" => 1, "dyad" => 2, "triad" => 3, "tetrad" => 4, "pentad" => 5, "hexad" => 6,
         "heptad" => 7, "octad" => 8, "ennead" => 9, "decad" => 10, "undecad" => 11, "dodecad" => 12,
         _ => return Ok(Json(ApiResponse::error("Invalid structure type".to_string()))),
     };
-    
+
     if payload.user_expressions.len() != expected_term_count {
         return Ok(Json(ApiResponse::error(format!(
             "Structure type '{}' requires exactly {} user expressions, got {}",
@@ -248,7 +248,7 @@ async fn create_definition(
             payload.user_expressions.len()
         ))));
     }
-    
+
     // Validate no empty user expressions
     for (i, user_expression) in payload.user_expressions.iter().enumerate() {
         if user_expression.trim().is_empty() {
@@ -258,7 +258,7 @@ async fn create_definition(
             ))));
         }
     }
-    
+
     match state.storage.save_user_expression(
         &payload.name,
         &payload.definition_type,

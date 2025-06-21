@@ -302,7 +302,7 @@ impl UndecadBuilder {
         self
     }
     
-    pub fn terms(mut self, terms: [String; 11]) -> Self {
+    pub fn user_expressions(mut self, terms: [String; 11]) -> Self {
         self.terms = terms;
         self
     }

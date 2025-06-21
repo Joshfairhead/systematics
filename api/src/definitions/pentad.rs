@@ -61,7 +61,7 @@ impl Pentad {
     }
     
     /// Get all terms as a tuple
-    pub fn terms_tuple(&self) -> (&str, &str, &str, &str, &str) {
+    pub fn expressions_tuple(&self) -> (&str, &str, &str, &str, &str) {
         (&self.user_expressions[0], &self.user_expressions[1], &self.user_expressions[2], &self.user_expressions[3], &self.user_expressions[4])
     }
     
@@ -318,7 +318,22 @@ impl PentadBuilder {
         self
     }
     
-    pub fn terms<S1: Into<String>, S2: Into<String>, S3: Into<String>, S4: Into<String>, S5: Into<String>>(
+
+    
+    pub fn build(self) -> Result<Pentad> {
+        let name = self.name.unwrap_or_else(|| "Unnamed Pentad".to_string());
+        let terms = self.terms.ok_or_else(|| SystematicsError::Builder {
+            reason: "Pentad requires 5 terms".to_string(),
+        })?;
+        
+        let pentad = Pentad::new(name, terms);
+        
+        pentad.validate()?;
+        Ok(pentad)
+    }
+
+    /// Set the user expressions for the pentad
+    pub fn user_expressions<S1: Into<String>, S2: Into<String>, S3: Into<String>, S4: Into<String>, S5: Into<String>>(
         mut self, 
         first: S1, 
         second: S2, 
@@ -335,18 +350,6 @@ impl PentadBuilder {
         ]);
         self
     }
-    
-    pub fn build(self) -> Result<Pentad> {
-        let name = self.name.unwrap_or_else(|| "Unnamed Pentad".to_string());
-        let terms = self.terms.ok_or_else(|| SystematicsError::Builder {
-            reason: "Pentad requires 5 terms".to_string(),
-        })?;
-        
-        let pentad = Pentad::new(name, terms);
-        
-        pentad.validate()?;
-        Ok(pentad)
-    }
 }
 
 #[cfg(test)]
@@ -357,7 +360,7 @@ mod tests {
     fn test_pentad_creation() {
         let pentad = PentadBuilder::new()
             .name("Test Pentad")
-            .terms(
+            .user_expressions(
                 "Quintessence",
                 "Higher Potential",
                 "Lower Potential",
@@ -380,7 +383,7 @@ mod tests {
     fn test_term_characters() {
         let pentad = PentadBuilder::new()
             .name("Test")
-            .terms("A".to_string(), "B".to_string(), "C".to_string(), "D".to_string(), "E".to_string())
+            .user_expressions("A".to_string(), "B".to_string(), "C".to_string(), "D".to_string(), "E".to_string())
             .build()
             .unwrap();
         
@@ -397,7 +400,7 @@ mod tests {
     fn test_connective_relationships() {
         let mut pentad = PentadBuilder::new()
             .name("Test")
-            .terms("A".to_string(), "B".to_string(), "C".to_string(), "D".to_string(), "E".to_string())
+            .user_expressions("A".to_string(), "B".to_string(), "C".to_string(), "D".to_string(), "E".to_string())
             .build()
             .unwrap();
         
@@ -411,28 +414,28 @@ mod tests {
         // Test empty name
         let result = PentadBuilder::new()
             .name("")
-            .terms("A".to_string(), "B".to_string(), "C".to_string(), "D".to_string(), "E".to_string())
+            .user_expressions("A".to_string(), "B".to_string(), "C".to_string(), "D".to_string(), "E".to_string())
             .build();
         assert!(result.is_err());
         
         // Test empty term
         let result = PentadBuilder::new()
             .name("Test")
-            .terms("".to_string(), "B".to_string(), "C".to_string(), "D".to_string(), "E".to_string())
+            .user_expressions("".to_string(), "B".to_string(), "C".to_string(), "D".to_string(), "E".to_string())
             .build();
         assert!(result.is_err());
         
         // Test duplicate terms
         let result = PentadBuilder::new()
             .name("Test")
-            .terms("A".to_string(), "A".to_string(), "C".to_string(), "D".to_string(), "E".to_string())
+            .user_expressions("A".to_string(), "A".to_string(), "C".to_string(), "D".to_string(), "E".to_string())
             .build();
         assert!(result.is_err());
         
         // Test valid pentad
         let result = PentadBuilder::new()
             .name("Valid")
-            .terms("A".to_string(), "B".to_string(), "C".to_string(), "D".to_string(), "E".to_string())
+            .user_expressions("A".to_string(), "B".to_string(), "C".to_string(), "D".to_string(), "E".to_string())
             .build();
         assert!(result.is_ok());
     }
@@ -441,7 +444,7 @@ mod tests {
     fn test_pentad_terms_method() {
         let pentad = PentadBuilder::new()
             .name("Test")
-            .terms("First".to_string(), "Second".to_string(), "Third".to_string(), "Fourth".to_string(), "Fifth".to_string())
+            .user_expressions("First".to_string(), "Second".to_string(), "Third".to_string(), "Fourth".to_string(), "Fifth".to_string())
             .build()
             .unwrap();
         
@@ -453,7 +456,7 @@ mod tests {
         assert_eq!(terms[3], "Fourth");
         assert_eq!(terms[4], "Fifth");
         
-        let tuple = pentad.terms_tuple();
+        let tuple = pentad.expressions_tuple();
         assert_eq!(tuple, ("First", "Second", "Third", "Fourth", "Fifth"));
     }
 
@@ -461,7 +464,7 @@ mod tests {
     fn test_trait_compliance() {
         let pentad = PentadBuilder::new()
             .name("Test")
-            .terms("A".to_string(), "B".to_string(), "C".to_string(), "D".to_string(), "E".to_string())
+            .user_expressions("A".to_string(), "B".to_string(), "C".to_string(), "D".to_string(), "E".to_string())
             .build()
             .unwrap();
         
