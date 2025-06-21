@@ -18,6 +18,7 @@ pub struct App {
     filtered_structures: Vec<StoredStructure>,
     selected_structure: Option<StoredStructure>,
     current_schema: Option<SystemDefinition>,
+    current_system_num: i32, // Track the currently selected system
     loading: bool,
     error: Option<String>,
     success_message: Option<String>,
@@ -60,17 +61,12 @@ impl Component for App {
     type Properties = ();
 
     fn create(ctx: &Context<Self>) -> Self {
-        // Create initial placeholder structures and select monad by default
-        let placeholder_structures = Self::create_initial_placeholder_structures();
-        let initial_monad = placeholder_structures.iter()
-            .find(|s| s.structure_type == "monad")
-            .cloned();
-        
         let app = Self {
-            structures: placeholder_structures.clone(),
-            filtered_structures: placeholder_structures,
-            selected_structure: initial_monad,
+            structures: Vec::new(), // Start with empty structures, load from API
+            filtered_structures: Vec::new(),
+            selected_structure: None, // No initial selection, let user choose
             current_schema: None,
+            current_system_num: 1, // Default to monad
             loading: true,
             error: None,
             success_message: None,
@@ -86,7 +82,7 @@ impl Component for App {
         // Load structures on component creation
         ctx.link().send_message(Msg::LoadStructures);
         
-        // Load schema for the initially selected structure (monad)
+        // Load schema for the initially selected system (monad)
         ctx.link().send_message(Msg::SystemSelected(1));
         
         app
@@ -95,7 +91,9 @@ impl Component for App {
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             Msg::SystemSelected(system_num) => {
-                // Legacy support - find structure by type
+                // Update current system selection
+                self.current_system_num = system_num;
+                
                 let structure_type = match system_num {
                     1 => "monad",
                     2 => "dyad", 
@@ -112,18 +110,18 @@ impl Component for App {
                     _ => return false,
                 };
                 
-                // Find matching structure from loaded data
+                // Find matching structure from loaded data (don't create placeholders)
                 if let Some(structure) = self.structures.iter()
-                    .find(|s| s.structure_type == structure_type)
+                    .find(|s| s.structure_type == structure_type && !s.id.as_str().map_or(false, |id| id.starts_with("placeholder-")))
                     .cloned() 
                 {
                     self.selected_structure = Some(structure);
                 } else {
-                    // If no API data yet, create a placeholder
-                    self.selected_structure = Some(self.create_placeholder_structure(structure_type, system_num));
+                    // No real structure found - clear selection to show schema data
+                    self.selected_structure = None;
                 }
                 
-                // Load schema for the selected structure type
+                // Always load schema for the selected structure type
                 self.load_schema_for_structure_type(ctx, structure_type);
                 true
             }
@@ -134,6 +132,7 @@ impl Component for App {
                 
                 // Load schema for the selected structure type
                 self.load_schema_for_structure_type(ctx, &structure_type);
+                self.current_system_num = self.structure_type_to_number(&structure_type);
                 true
             }
             Msg::LoadStructures => {
@@ -154,20 +153,13 @@ impl Component for App {
                     Ok(structures) => {
                         self.structures = structures;
                         self.filtered_structures = self.structures.clone();
-                        // Select first structure if none selected
-                        if self.selected_structure.is_none() && !self.structures.is_empty() {
-                            self.selected_structure = Some(self.structures[0].clone());
-                        }
                         self.error = None;
                     }
                     Err(e) => {
                         self.error = Some(format!("Failed to load structures: {}", e));
-                        // Fallback to placeholder data
-                        self.structures = self.create_placeholder_structures();
-                        self.filtered_structures = self.structures.clone();
-                        if self.selected_structure.is_none() {
-                            self.selected_structure = Some(self.structures[0].clone());
-                        }
+                        // Don't create placeholder data - let the system work with empty structures and schema data
+                        self.structures = Vec::new();
+                        self.filtered_structures = Vec::new();
                     }
                 }
                 true
@@ -306,12 +298,28 @@ impl Component for App {
     fn view(&self, ctx: &Context<Self>) -> Html {
         let on_system_selected = ctx.link().callback(Msg::SystemSelected);
         
-        // Determine the structure type and system number from selected structure
+        // Determine the structure type and system number from selected structure or current selection
         let (structure_type, system_num) = if let Some(ref structure) = self.selected_structure {
             let num = self.structure_type_to_number(&structure.structure_type);
             (structure.structure_type.clone(), num)
         } else {
-            ("monad".to_string(), 1)
+            // Use current system selection instead of defaulting to monad
+            let structure_type = match self.current_system_num {
+                1 => "monad",
+                2 => "dyad",
+                3 => "triad",
+                4 => "tetrad",
+                5 => "pentad",
+                6 => "hexad",
+                7 => "heptad",
+                8 => "octad",
+                9 => "ennead",
+                10 => "decad",
+                11 => "undecad",
+                12 => "dodecad",
+                _ => "monad",
+            };
+            (structure_type.to_string(), self.current_system_num)
         };
 
         // Create system-specific CSS class
@@ -335,7 +343,6 @@ impl Component for App {
                         {self.render_structure_overlay(ctx)}
                     </div>
                 </div>
-                {self.render_structure_info()}
                 {self.render_structure_browser(ctx)}
                 {self.render_notifications()}
             </div>
@@ -345,19 +352,12 @@ impl Component for App {
 
 impl App {
     fn render_header(&self, ctx: &Context<Self>) -> Html {
-        let toggle_browser = ctx.link().callback(|_| Msg::ToggleStructureBrowser);
-        
         html! {
             <header class="app-header">
                 <div class="header-content">
                     <div class="header-title">
                         <h1>{"SysteMaster"}</h1>
                         <p>{"Systematic Thinking Framework"}</p>
-                    </div>
-                    <div class="header-controls">
-                        <button class="load-button" onclick={toggle_browser}>
-                            {if self.show_structure_browser { "Hide Browser" } else { "Load Structure" }}
-                        </button>
                     </div>
                 </div>
             </header>
@@ -469,7 +469,7 @@ impl App {
         } else {
             html! {
                 <SystemOverlay 
-                    system_num={1} 
+                    system_num={self.current_system_num} 
                     creation_mode={self.creation_mode}
                     structure_name={self.structure_name.clone()}
                     user_instance_index={self.user_instance_index.clone()}
@@ -479,25 +479,6 @@ impl App {
         }
     }
 
-    fn render_structure_info(&self) -> Html {
-        if let Some(ref structure) = self.selected_structure {
-            html! {
-                <div class="structure-info">
-                    <h3>{&structure.name}</h3>
-                    <p><strong>{"Type: "}</strong>{&structure.structure_type}</p>
-                    {if let Some(ref desc) = structure.description {
-                        html! { <p><strong>{"Description: "}</strong>{desc}</p> }
-                    } else {
-                        html! {}
-                    }}
-                    <p><strong>{"User Instances: "}</strong>{structure.user_instance_index.join(", ")}</p>
-                </div>
-            }
-        } else {
-            html! {}
-        }
-    }
-    
     fn render_structure_browser(&self, ctx: &Context<Self>) -> Html {
         if !self.show_structure_browser {
             return html! {};

@@ -1,3 +1,11 @@
+// TODO: REFACTOR NEEDED - This file has accumulated technical debt
+// - Terminology inconsistencies throughout
+// - Complex positioning logic that could be simplified
+// - Mixed responsibilities (rendering, positioning, data handling)
+// - Method names that don't follow our terminology rules
+// - Hardcoded positioning values that should be configurable
+// Priority: High - affects core systematic structure display
+
 use yew::{html, Component, Context, Html, Properties, TargetCast};
 use crate::services::api::{StoredStructure, ApiClient, SystemDefinition, spawn_api_call};
 use crate::core::geometry::GeometryCalculator;
@@ -200,25 +208,39 @@ impl SystemOverlay {
             .cloned()
     }
     
-    fn render_system_with_terms(&self, ctx: &Context<Self>, system_type: &str, expected_terms: usize) -> Html {
+    fn render_system_with_definition(&self, ctx: &Context<Self>, system_type: &str, expected_count: usize) -> Html {
         let svg_size = 400.0;
         let points = self.get_system_layout(system_type, svg_size);
         
         // Determine what to display based on context
-        let display_values = if let Some(ref structure) = ctx.props().structure {
-            // If we have a loaded structure, use its user instances
-            if structure.user_instance_index.len() == expected_terms {
-                structure.user_instance_index.clone() // This contains user instances from the loaded structure
+        let display_values = if ctx.props().creation_mode {
+            // In creation mode, use user input values
+            let user_instances = &ctx.props().user_instance_index;
+            if user_instances.len() == expected_count {
+                user_instances.clone()
             } else {
-                // Fallback to schema term characters if loaded structure has wrong number of user instances
-                (0..expected_terms)
-                    .map(|i| self.get_term_character(i).unwrap_or_else(|| format!("Term {}", i + 1)))
+                // Fallback to schema term characters for creation mode
+                (0..expected_count)
+                    .map(|i| self.get_term_character(i).unwrap_or_else(|| format!("Position {}", i + 1)))
+                    .collect()
+            }
+        } else if let Some(ref structure) = ctx.props().structure {
+            // Check if this is a real structure (not a placeholder) by checking if it has API data
+            let is_placeholder = structure.id.as_str().map_or(false, |id| id.starts_with("placeholder-"));
+            
+            if !is_placeholder && structure.user_instance_index.len() == expected_count {
+                // Real structure with correct number of user instances
+                structure.user_instance_index.clone()
+            } else {
+                // Always use schema term characters from API
+                (0..expected_count)
+                    .map(|i| self.get_term_character(i).unwrap_or_else(|| format!("Position {}", i + 1)))
                     .collect()
             }
         } else {
-            // No loaded structure, use schema term characters
-            (0..expected_terms)
-                .map(|i| self.get_term_character(i).unwrap_or_else(|| format!("Term {}", i + 1)))
+            // No structure loaded - always use schema term characters from API
+            (0..expected_count)
+                .map(|i| self.get_term_character(i).unwrap_or_else(|| format!("Position {}", i + 1)))
                 .collect()
         };
         
@@ -452,50 +474,50 @@ impl SystemOverlay {
     }
 
     fn render_monad(&self, ctx: &Context<Self>, _structure: &Option<StoredStructure>) -> Html {
-        self.render_system_with_terms(ctx, "monad", 1)
+        self.render_system_with_definition(ctx, "monad", 1)
     }
 
     fn render_dyad(&self, ctx: &Context<Self>, _structure: &Option<StoredStructure>) -> Html {
-        self.render_system_with_terms(ctx, "dyad", 2)
+        self.render_system_with_definition(ctx, "dyad", 2)
     }
 
     fn render_triad(&self, ctx: &Context<Self>, _structure: &Option<StoredStructure>) -> Html {
-        self.render_system_with_terms(ctx, "triad", 3)
+        self.render_system_with_definition(ctx, "triad", 3)
     }
 
     fn render_tetrad(&self, ctx: &Context<Self>, _structure: &Option<StoredStructure>) -> Html {
-        self.render_system_with_terms(ctx, "tetrad", 4)
+        self.render_system_with_definition(ctx, "tetrad", 4)
     }
 
     fn render_pentad(&self, ctx: &Context<Self>, _structure: &Option<StoredStructure>) -> Html {
-        self.render_system_with_terms(ctx, "pentad", 5)
+        self.render_system_with_definition(ctx, "pentad", 5)
     }
 
     fn render_hexad(&self, ctx: &Context<Self>, _structure: &Option<StoredStructure>) -> Html {
-        self.render_system_with_terms(ctx, "hexad", 6)
+        self.render_system_with_definition(ctx, "hexad", 6)
     }
 
     fn render_heptad(&self, ctx: &Context<Self>, _structure: &Option<StoredStructure>) -> Html {
-        self.render_system_with_terms(ctx, "heptad", 7)
+        self.render_system_with_definition(ctx, "heptad", 7)
     }
 
     fn render_octad(&self, ctx: &Context<Self>, _structure: &Option<StoredStructure>) -> Html {
-        self.render_system_with_terms(ctx, "octad", 8)
+        self.render_system_with_definition(ctx, "octad", 8)
     }
 
     fn render_ennead(&self, ctx: &Context<Self>, _structure: &Option<StoredStructure>) -> Html {
-        self.render_system_with_terms(ctx, "ennead", 9)
+        self.render_system_with_definition(ctx, "ennead", 9)
     }
 
     fn render_decad(&self, ctx: &Context<Self>, _structure: &Option<StoredStructure>) -> Html {
-        self.render_system_with_terms(ctx, "decad", 10)
+        self.render_system_with_definition(ctx, "decad", 10)
     }
 
     fn render_undecad(&self, ctx: &Context<Self>, _structure: &Option<StoredStructure>) -> Html {
-        self.render_system_with_terms(ctx, "undecad", 11)
+        self.render_system_with_definition(ctx, "undecad", 11)
     }
 
     fn render_dodecad(&self, ctx: &Context<Self>, _structure: &Option<StoredStructure>) -> Html {
-        self.render_system_with_terms(ctx, "dodecad", 12)
+        self.render_system_with_definition(ctx, "dodecad", 12)
     }
 } 
