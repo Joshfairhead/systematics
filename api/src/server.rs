@@ -13,7 +13,7 @@ use std::collections::HashMap;
 #[cfg(feature = "server")]
 use tower_http::cors::CorsLayer;
 
-use crate::{SurrealStorage, StoredUserDefinition, SystematicsError};
+use crate::{SurrealStorage, StoredUserInstance, SystematicsError};
 
 #[cfg(feature = "server")]
 #[derive(Clone)]
@@ -143,11 +143,11 @@ async fn health_check() -> Json<ApiResponse<&'static str>> {
 #[cfg(feature = "server")]
 async fn list_definitions(
     State(state): State<AppState>,
-) -> Result<Json<ApiResponse<Vec<StoredUserDefinition>>>, StatusCode> {
-    match state.storage.list_definitions().await {
-        Ok(definitions) => Ok(Json(ApiResponse::success(definitions))),
+) -> Result<Json<ApiResponse<Vec<StoredUserInstance>>>, StatusCode> {
+    match state.storage.list_user_instances().await {
+        Ok(user_instances) => Ok(Json(ApiResponse::success(user_instances))),
         Err(e) => {
-            eprintln!("Error listing definitions: {}", e);
+            eprintln!("Error listing user instances: {}", e);
             Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
@@ -157,13 +157,13 @@ async fn list_definitions(
 async fn search_definitions(
     Query(params): Query<SearchQuery>,
     State(state): State<AppState>,
-) -> Result<Json<ApiResponse<Vec<StoredUserDefinition>>>, StatusCode> {
+) -> Result<Json<ApiResponse<Vec<StoredUserInstance>>>, StatusCode> {
     let query = params.q.unwrap_or_default();
     
-    match state.storage.search_definitions(&query).await {
-        Ok(definitions) => Ok(Json(ApiResponse::success(definitions))),
+    match state.storage.search_user_instances(&query).await {
+        Ok(user_instances) => Ok(Json(ApiResponse::success(user_instances))),
         Err(e) => {
-            eprintln!("Error searching definitions: {}", e);
+            eprintln!("Error searching user instances: {}", e);
             Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
@@ -173,12 +173,12 @@ async fn search_definitions(
 async fn get_definition(
     Path(id): Path<String>,
     State(state): State<AppState>,
-) -> Result<Json<ApiResponse<StoredUserDefinition>>, StatusCode> {
-    match state.storage.get_definition(&id).await {
-        Ok(Some(definition)) => Ok(Json(ApiResponse::success(definition))),
+) -> Result<Json<ApiResponse<StoredUserInstance>>, StatusCode> {
+    match state.storage.get_user_instance(&id).await {
+        Ok(Some(user_instance)) => Ok(Json(ApiResponse::success(user_instance))),
         Ok(None) => Err(StatusCode::NOT_FOUND),
         Err(e) => {
-            eprintln!("Error getting definition: {}", e);
+            eprintln!("Error getting user instance: {}", e);
             Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
@@ -256,10 +256,10 @@ async fn delete_definition(
     Path(id): Path<String>,
     State(state): State<AppState>,
 ) -> Result<Json<ApiResponse<bool>>, StatusCode> {
-    match state.storage.delete_definition(&id).await {
+    match state.storage.delete_user_instance(&id).await {
         Ok(deleted) => Ok(Json(ApiResponse::success(deleted))),
         Err(e) => {
-            eprintln!("Error deleting definition: {}", e);
+            eprintln!("Error deleting user instance: {}", e);
             Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
@@ -269,11 +269,11 @@ async fn delete_definition(
 async fn get_related_definitions(
     Path(id): Path<String>,
     State(state): State<AppState>,
-) -> Result<Json<ApiResponse<Vec<StoredUserDefinition>>>, StatusCode> {
-    match state.storage.get_related_definitions(&id).await {
-        Ok(definitions) => Ok(Json(ApiResponse::success(definitions))),
+) -> Result<Json<ApiResponse<Vec<StoredUserInstance>>>, StatusCode> {
+    match state.storage.get_related_user_instances(&id).await {
+        Ok(user_instances) => Ok(Json(ApiResponse::success(user_instances))),
         Err(e) => {
-            eprintln!("Error getting related definitions: {}", e);
+            eprintln!("Error getting related user instances: {}", e);
             Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
@@ -702,9 +702,9 @@ async fn get_core_grammar(
 #[cfg(feature = "server")]
 async fn list_user_instances(
     State(state): State<AppState>,
-) -> Result<Json<ApiResponse<Vec<StoredUserDefinition>>>, StatusCode> {
-    match state.storage.list_definitions().await {
-        Ok(definitions) => Ok(Json(ApiResponse::success(definitions))),
+) -> Result<Json<ApiResponse<Vec<StoredUserInstance>>>, StatusCode> {
+    match state.storage.list_user_instances().await {
+        Ok(user_instances) => Ok(Json(ApiResponse::success(user_instances))),
         Err(e) => {
             eprintln!("Error listing user instances: {}", e);
             Err(StatusCode::INTERNAL_SERVER_ERROR)
@@ -716,11 +716,11 @@ async fn list_user_instances(
 async fn search_user_instances(
     Query(params): Query<SearchQuery>,
     State(state): State<AppState>,
-) -> Result<Json<ApiResponse<Vec<StoredUserDefinition>>>, StatusCode> {
+) -> Result<Json<ApiResponse<Vec<StoredUserInstance>>>, StatusCode> {
     let query = params.q.unwrap_or_default();
     
-    match state.storage.search_definitions(&query).await {
-        Ok(definitions) => Ok(Json(ApiResponse::success(definitions))),
+    match state.storage.search_user_instances(&query).await {
+        Ok(user_instances) => Ok(Json(ApiResponse::success(user_instances))),
         Err(e) => {
             eprintln!("Error searching user instances: {}", e);
             Err(StatusCode::INTERNAL_SERVER_ERROR)

@@ -20,11 +20,12 @@ pub struct ApiResponse<T> {
 }
 
 #[derive(Debug, Deserialize, Serialize)]
-pub struct StoredUserDefinition {
+pub struct StoredUserInstance {
     pub id: StructureId,
     pub name: String,
     pub structure_type: String,
-    pub user_instance_index: Vec<String>,
+    pub grammar_id: String,
+    pub instances: Vec<String>,
     pub connectives: HashMap<String, String>,
     pub created_at: String,
     pub updated_at: String,
@@ -66,8 +67,8 @@ impl ApiClient {
         }
     }
 
-    pub async fn list_definitions(&self) -> Result<Vec<StoredUserDefinition>, SystematicsError> {
-        let url = format!("{}/definitions", self.base_url);
+    pub async fn list_user_instances(&self) -> Result<Vec<StoredUserInstance>, SystematicsError> {
+        let url = format!("{}/user-instances", self.base_url);
         
         let response = self.client
             .get(&url)
@@ -82,7 +83,7 @@ impl ApiClient {
             )));
         }
 
-        let api_response: ApiResponse<Vec<StoredUserDefinition>> = response
+        let api_response: ApiResponse<Vec<StoredUserInstance>> = response
             .json()
             .await
             .map_err(|e| SystematicsError::Storage(format!("Failed to parse response: {}", e)))?;
@@ -96,8 +97,8 @@ impl ApiClient {
         }
     }
 
-    pub async fn search_definitions(&self, query: &str) -> Result<Vec<StoredUserDefinition>, SystematicsError> {
-        let url = format!("{}/definitions/search?q={}", self.base_url, urlencoding::encode(query));
+    pub async fn search_user_instances(&self, query: &str) -> Result<Vec<StoredUserInstance>, SystematicsError> {
+        let url = format!("{}/user-instances/search?q={}", self.base_url, urlencoding::encode(query));
         
         let response = self.client
             .get(&url)
@@ -112,7 +113,7 @@ impl ApiClient {
             )));
         }
 
-        let api_response: ApiResponse<Vec<StoredUserDefinition>> = response
+        let api_response: ApiResponse<Vec<StoredUserInstance>> = response
             .json()
             .await
             .map_err(|e| SystematicsError::Storage(format!("Failed to parse response: {}", e)))?;
@@ -126,7 +127,7 @@ impl ApiClient {
         }
     }
 
-    pub async fn get_definition(&self, id: &str) -> Result<Option<StoredUserDefinition>, SystematicsError> {
+    pub async fn get_user_instance(&self, id: &str) -> Result<Option<StoredUserInstance>, SystematicsError> {
         let url = format!("{}/definitions/{}", self.base_url, id);
         
         let response = self.client
@@ -146,7 +147,7 @@ impl ApiClient {
             )));
         }
 
-        let api_response: ApiResponse<StoredUserDefinition> = response
+        let api_response: ApiResponse<StoredUserInstance> = response
             .json()
             .await
             .map_err(|e| SystematicsError::Storage(format!("Failed to parse response: {}", e)))?;
@@ -206,7 +207,60 @@ impl ApiClient {
         }
     }
 
+
+
+    pub async fn get_related_user_instances(&self, id: &str) -> Result<Vec<StoredUserInstance>, SystematicsError> {
+        let url = format!("{}/definitions/{}/related", self.base_url, id);
+        
+        let response = self.client
+            .get(&url)
+            .send()
+            .await
+            .map_err(|e| SystematicsError::Storage(format!("HTTP request failed: {}", e)))?;
+
+        if !response.status().is_success() {
+            return Err(SystematicsError::Storage(format!(
+                "API request failed with status: {}", 
+                response.status()
+            )));
+        }
+
+        let api_response: ApiResponse<Vec<StoredUserInstance>> = response
+            .json()
+            .await
+            .map_err(|e| SystematicsError::Storage(format!("Failed to parse response: {}", e)))?;
+
+        if api_response.success {
+            Ok(api_response.data.unwrap_or_default())
+        } else {
+            Err(SystematicsError::Storage(
+                api_response.error.unwrap_or_else(|| "Unknown API error".to_string())
+            ))
+        }
+    }
+
+    // Backward compatibility methods
+    pub async fn list_definitions(&self) -> Result<Vec<StoredUserInstance>, SystematicsError> {
+        self.list_user_instances().await
+    }
+
+    pub async fn search_definitions(&self, query: &str) -> Result<Vec<StoredUserInstance>, SystematicsError> {
+        self.search_user_instances(query).await
+    }
+
+    pub async fn get_definition(&self, id: &str) -> Result<Option<StoredUserInstance>, SystematicsError> {
+        self.get_user_instance(id).await
+    }
+
+    pub async fn get_related_definitions(&self, id: &str) -> Result<Vec<StoredUserInstance>, SystematicsError> {
+        self.get_related_user_instances(id).await
+    }
+
     pub async fn delete_definition(&self, id: &str) -> Result<bool, SystematicsError> {
+        self.delete_user_instance(id).await
+    }
+
+    pub async fn delete_user_instance(&self, id: &str) -> Result<bool, SystematicsError> {
         let url = format!("{}/definitions/{}", self.base_url, id);
         
         let response = self.client
@@ -229,36 +283,6 @@ impl ApiClient {
 
         if api_response.success {
             Ok(api_response.data.unwrap_or(false))
-        } else {
-            Err(SystematicsError::Storage(
-                api_response.error.unwrap_or_else(|| "Unknown API error".to_string())
-            ))
-        }
-    }
-
-    pub async fn get_related_definitions(&self, id: &str) -> Result<Vec<StoredUserDefinition>, SystematicsError> {
-        let url = format!("{}/definitions/{}/related", self.base_url, id);
-        
-        let response = self.client
-            .get(&url)
-            .send()
-            .await
-            .map_err(|e| SystematicsError::Storage(format!("HTTP request failed: {}", e)))?;
-
-        if !response.status().is_success() {
-            return Err(SystematicsError::Storage(format!(
-                "API request failed with status: {}", 
-                response.status()
-            )));
-        }
-
-        let api_response: ApiResponse<Vec<StoredUserDefinition>> = response
-            .json()
-            .await
-            .map_err(|e| SystematicsError::Storage(format!("Failed to parse response: {}", e)))?;
-
-        if api_response.success {
-            Ok(api_response.data.unwrap_or_default())
         } else {
             Err(SystematicsError::Storage(
                 api_response.error.unwrap_or_else(|| "Unknown API error".to_string())

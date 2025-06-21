@@ -185,10 +185,10 @@ impl ApiStorage {
         
         for definition in definitions {
             println!("🔹 {} ({})", definition.name, definition.structure_type);
-            println!("  Terms: {}", definition.user_instance_index.join(" → "));
+            println!("  Instances: {}", definition.instances.join(" → "));
             
             // Show connectives if they exist
-            display_connectives(&definition.connectives, &definition.user_instance_index);
+            display_connectives(&definition.connectives, &definition.instances);
             
             if let Some(desc) = &definition.description {
                 println!("  Description: {}", desc);
@@ -214,10 +214,10 @@ impl ApiStorage {
         
         for definition in definitions {
             println!("🔹 {} ({})", definition.name, definition.structure_type);
-            println!("  Terms: {}", definition.user_instance_index.join(" → "));
+            println!("  Instances: {}", definition.instances.join(" → "));
             
             // Show connectives if they exist
-            display_connectives(&definition.connectives, &definition.user_instance_index);
+            display_connectives(&definition.connectives, &definition.instances);
             
             if let Some(desc) = &definition.description {
                 println!("  Description: {}", desc);
@@ -247,9 +247,9 @@ impl ApiStorage {
                     println!("Description: {}", desc);
                 }
                 
-                println!("\nTerms ({}):", s.user_instance_index.len());
-                for (i, term) in s.user_instance_index.iter().enumerate() {
-                    println!("  {}: {}", i + 1, term);
+                println!("\nInstances ({}):", s.instances.len());
+                for (i, instance) in s.instances.iter().enumerate() {
+                    println!("  {}: {}", i + 1, instance);
                 }
                 
                 // Show connectives if they exist
@@ -265,8 +265,8 @@ impl ApiStorage {
                     for (key, relationship) in &s.connectives {
                         if let Some((from_str, to_str)) = key.split_once(':') {
                             if let (Ok(from), Ok(to)) = (from_str.parse::<usize>(), to_str.parse::<usize>()) {
-                                                    let from_term = get_user_instance_name(&s.user_instance_index, from);
-                    let to_term = get_user_instance_name(&s.user_instance_index, to);
+                                                    let from_term = get_user_instance_name(&s.instances, from);
+                    let to_term = get_user_instance_name(&s.instances, to);
                                 
                                 max_left_width = max_left_width.max(from_term.len());
                                 max_middle_width = max_middle_width.max(relationship.len());
@@ -328,10 +328,10 @@ impl ApiStorage {
         
         for definition in related {
             println!("🔹 {} ({})", definition.name, definition.structure_type);
-            println!("  Terms: {}", definition.user_instance_index.join(" → "));
+            println!("  Instances: {}", definition.instances.join(" → "));
             
             // Show connectives if they exist
-            display_connectives(&definition.connectives, &definition.user_instance_index);
+            display_connectives(&definition.connectives, &definition.instances);
             
             println!("  ─────────────────────────────────────────");
             println!("  ID: {}", get_definition_id_string(&definition.id));
@@ -355,13 +355,13 @@ impl ApiStorage {
         
         for definition in definitions {
             println!("🔹 {} ({})", definition.name, definition.structure_type);
-            println!("  Terms: {}", definition.user_instance_index.join(" → "));
+            println!("  Instances: {}", definition.instances.join(" → "));
             
             // Show connectives if they exist
-            display_connectives(&definition.connectives, &definition.user_instance_index);
+            display_connectives(&definition.connectives, &definition.instances);
             
             // Highlight the matching user instance
-            let positions: Vec<usize> = definition.user_instance_index
+            let positions: Vec<usize> = definition.instances
                 .iter()
                 .enumerate()
                 .filter(|(_, t)| t.contains(user_instance))
@@ -423,7 +423,7 @@ impl ApiStorage {
         
         for definition in &definitions {
             *type_counts.entry(definition.structure_type.clone()).or_insert(0) += 1;
-            total_terms += definition.user_instance_index.len();
+            total_terms += definition.instances.len();
         }
         
         println!("Total terms: {}", total_terms);
