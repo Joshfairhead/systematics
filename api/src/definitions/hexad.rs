@@ -359,8 +359,8 @@ mod tests {
             .unwrap();
         
         assert_eq!(hexad.name(), "Test Hexad");
-        assert_eq!(hexad.get_term(0), Some("Resource1"));
-        assert_eq!(hexad.get_term(5), Some("Priority1"));
+        assert_eq!(hexad.instance_from_position(0), Some("Resource1"));
+        assert_eq!(hexad.instance_from_position(5), Some("Priority1"));
     }
 
     #[test]

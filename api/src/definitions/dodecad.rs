@@ -438,8 +438,8 @@ mod tests {
             .unwrap();
         
         assert_eq!(dodecad.name(), "Test Dodecad");
-        assert_eq!(dodecad.get_term(0), Some("T1"));
-        assert_eq!(dodecad.get_term(11), Some("T12"));
+        assert_eq!(dodecad.instance_from_position(0), Some("T1"));
+        assert_eq!(dodecad.instance_from_position(11), Some("T12"));
     }
 
     #[test]

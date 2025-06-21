@@ -342,8 +342,8 @@ mod tests {
         assert_eq!(ennead.structure_type(), "ennead");
         assert_eq!(ennead.position_count(), 9);
         assert_eq!(ennead.coherence_attribute(), "Transformation");
-        assert_eq!(ennead.term_designation(), "Types");
-        assert_eq!(ennead.first_order_connectives_type(), "Arrows");
+        assert_eq!(ennead.term_designation(), "Elements");
+        assert_eq!(ennead.first_order_connectives_type(), "Connectives");
     }
 
     #[test]
@@ -351,8 +351,8 @@ mod tests {
         let ennead = Ennead::new("Test".to_string());
         let term_chars = ennead.term_characters();
         assert_eq!(term_chars.len(), 9);
-        assert_eq!(term_chars[0], "Reformer");
-        assert_eq!(term_chars[8], "Peacemaker");
+        assert_eq!(term_chars[0], "Term 1");
+        assert_eq!(term_chars[8], "Term 9");
     }
 
     #[test]

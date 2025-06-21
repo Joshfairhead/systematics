@@ -400,8 +400,8 @@ mod tests {
             .unwrap();
         
         assert_eq!(octad.name(), "Test Octad");
-        assert_eq!(octad.get_term(0), Some("T1"));
-        assert_eq!(octad.get_term(7), Some("T8"));
+        assert_eq!(octad.instance_from_position(0), Some("T1"));
+        assert_eq!(octad.instance_from_position(7), Some("T8"));
     }
 
     #[test]

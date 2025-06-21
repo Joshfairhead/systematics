@@ -105,7 +105,7 @@ mod tests {
             .build()
             .unwrap();
             
-        assert_eq!(heptad.coherence_attribute(), "Transformation");
+        assert_eq!(heptad.coherence_attribute(), "Generation");
         assert_eq!(heptad.term_designation(), "States");
         assert_eq!(heptad.first_order_connectives_type(), "Connectives");
 

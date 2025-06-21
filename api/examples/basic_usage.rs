@@ -17,7 +17,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     
     // Display the monad in a clean format
     println!("✓ Created: {}", monad.name());
-    println!("  Term: {}", monad.term());
+    println!("  Term: {}", monad.first_user_instance());
     
     if !monad.attributes().is_empty() {
         println!("  Attributes: {}", monad.attributes().join(", "));

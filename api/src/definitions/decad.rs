@@ -342,9 +342,9 @@ mod tests {
         assert_eq!(decad.name(), "Test Decad");
         assert_eq!(decad.structure_type(), "decad");
         assert_eq!(decad.position_count(), 10);
-        assert_eq!(decad.coherence_attribute(), "Completion");
-        assert_eq!(decad.term_designation(), "Principles");
-        assert_eq!(decad.first_order_connectives_type(), "Progressions");
+        assert_eq!(decad.coherence_attribute(), "Intrinsic Harmony");
+        assert_eq!(decad.term_designation(), "Elements");
+        assert_eq!(decad.first_order_connectives_type(), "Connectives");
     }
 
     #[test]
@@ -352,8 +352,8 @@ mod tests {
         let decad = Decad::new("Test".to_string());
         let term_chars = decad.term_characters();
         assert_eq!(term_chars.len(), 10);
-        assert_eq!(term_chars[0], "Unity");
-        assert_eq!(term_chars[9], "Perfection");
+        assert_eq!(term_chars[0], "Term 1");
+        assert_eq!(term_chars[9], "Term 10");
     }
 
     #[test]

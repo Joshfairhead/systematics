@@ -395,8 +395,8 @@ mod tests {
             .unwrap();
         
         assert_eq!(heptad.name(), "Test Heptad");
-        assert_eq!(heptad.get_term(0), Some("Insight1"));
-        assert_eq!(heptad.get_term(6), Some("Value1"));
+        assert_eq!(heptad.instance_from_position(0), Some("Insight1"));
+        assert_eq!(heptad.instance_from_position(6), Some("Value1"));
     }
 
     #[test]

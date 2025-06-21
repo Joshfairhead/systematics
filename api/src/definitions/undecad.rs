@@ -342,9 +342,9 @@ mod tests {
         assert_eq!(undecad.name(), "Test Undecad");
         assert_eq!(undecad.structure_type(), "undecad");
         assert_eq!(undecad.position_count(), 11);
-        assert_eq!(undecad.coherence_attribute(), "Transcendence");
-        assert_eq!(undecad.term_designation(), "Transitions");
-        assert_eq!(undecad.first_order_connectives_type(), "Phases");
+        assert_eq!(undecad.coherence_attribute(), "Articulate Symmetry");
+        assert_eq!(undecad.term_designation(), "Elements");
+        assert_eq!(undecad.first_order_connectives_type(), "Connectives");
     }
 
     #[test]
@@ -352,8 +352,8 @@ mod tests {
         let undecad = Undecad::new("Test".to_string());
         let term_chars = undecad.term_characters();
         assert_eq!(term_chars.len(), 11);
-        assert_eq!(term_chars[0], "Initiation");
-        assert_eq!(term_chars[10], "Transmission");
+        assert_eq!(term_chars[0], "Term 1");
+        assert_eq!(term_chars[10], "Term 11");
     }
 
     #[test]
