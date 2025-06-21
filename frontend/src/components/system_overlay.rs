@@ -217,11 +217,11 @@ impl SystemOverlay {
         } else if let Some(ref definition) = ctx.props().definition {
             // Handle different ContentItem types
             match definition {
-                ContentItem::UserInstance(user_instance) => {
+                ContentItem::UserExpression(user_instance) => {
                     let is_placeholder = user_instance.id.as_str().map_or(false, |id| id.starts_with("placeholder-"));
-                    if !is_placeholder && user_instance.instances.len() == expected_count {
-                        // Real user instance with correct number of instances
-                        user_instance.instances.clone()
+                    if !is_placeholder && user_instance.user_expressions.len() == expected_count {
+                        // Real user instance with correct number of user_expressions
+                        user_instance.user_expressions.clone()
                     } else {
                         // Placeholder or incorrect data - show term characters
                         (0..expected_count)

@@ -92,7 +92,7 @@ data/*.db
 data/*.sqlite
 data/*.sqlite3
 data/systematics.db/
-data/*.json
+data/*.json 
 data/*.sql
 
 # WASM build artifacts

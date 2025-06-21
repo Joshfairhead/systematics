@@ -24,7 +24,7 @@ pub struct Dyad {
     name: String,
     
     // User's instances for each positional coordinate (dyad has 2 positions)  
-    instances: [String; 2],
+    user_expressions: [String; 2],
     
 
     
@@ -49,7 +49,7 @@ impl Dyad {
         Self {
             id: Uuid::new_v4().to_string(),
             name,
-            instances: [first_instance, second_instance],
+            user_expressions: [first_instance, second_instance],
             connectives,
             system: DyadicSystem,
         }
@@ -61,17 +61,17 @@ impl Dyad {
     
     /// Get the first user instance (maps to "Essence")
     pub fn first_instance(&self) -> &str {
-        &self.instances[0]
+        &self.user_expressions[0]
     }
     
     /// Get the second user instance (maps to "Existence")
     pub fn second_instance(&self) -> &str {
-        &self.instances[1]
+        &self.user_expressions[1]
     }
     
     /// Get both user instances as a tuple
     pub fn instances_tuple(&self) -> (&str, &str) {
-        (&self.instances[0], &self.instances[1])
+        (&self.user_expressions[0], &self.user_expressions[1])
     }
     
     /// Get the number of positional coordinates in this structure
@@ -96,13 +96,13 @@ impl Dyad {
     /// Map a user instance to its positional coordinate
     /// Returns the 0-based index for the given user instance
     pub fn instance_to_position(&self, instance: &str) -> Option<usize> {
-        self.instances.iter().position(|inst| inst == instance)
+        self.user_expressions.iter().position(|inst| inst == instance)
     }
     
     /// Map a positional coordinate to its user instance
     /// Returns the user instance for the given 0-based position index
     pub fn instance_from_position(&self, position: usize) -> Option<&str> {
-        self.instances.get(position).map(|s| s.as_str())
+        self.user_expressions.get(position).map(|s| s.as_str())
     }
     
     /// Map a position to its term character (alias for term_character_from_position)
@@ -195,8 +195,8 @@ impl SystematicStructure for Dyad {
         self.system.term_characters().iter().map(|s| s.to_string()).collect()
     }
     
-    fn user_instance_index(&self) -> &[String] {
-        &self.instances
+    fn user_expressions(&self) -> &[String] {
+        &self.user_expressions
     }
     
     fn first_order_connectives_type(&self) -> &str {
@@ -228,21 +228,21 @@ impl SystematicStructure for Dyad {
         }
         
         // Validate first instance is not empty
-        if self.instances[0].trim().is_empty() {
+        if self.user_expressions[0].trim().is_empty() {
             return Err(SystematicsError::StructureValidation {
                 reason: "First instance (Essence) cannot be empty".to_string(),
             });
         }
         
         // Validate second instance is not empty
-        if self.instances[1].trim().is_empty() {
+        if self.user_expressions[1].trim().is_empty() {
             return Err(SystematicsError::StructureValidation {
                 reason: "Second instance (Existence) cannot be empty".to_string(),
             });
         }
         
         // Validate instance lengths
-        for (i, instance) in self.instances.iter().enumerate() {
+        for (i, instance) in self.user_expressions.iter().enumerate() {
             if instance.len() > 100 {
                 return Err(SystematicsError::StructureValidation {
                     reason: format!("Instance {} is too long (max 100 characters)", i + 1),
@@ -251,7 +251,7 @@ impl SystematicStructure for Dyad {
         }
         
         // Validate instances contain only allowed characters
-        for (i, instance) in self.instances.iter().enumerate() {
+        for (i, instance) in self.user_expressions.iter().enumerate() {
             if !instance.chars().all(|c| c.is_alphanumeric() || c.is_whitespace() || ".,!?'-()".contains(c)) {
                 return Err(SystematicsError::StructureValidation {
                     reason: format!("Instance {} contains invalid characters", i + 1),
@@ -260,7 +260,7 @@ impl SystematicStructure for Dyad {
         }
         
         // Validate instances are different (dyad should represent duality)
-        if self.instances[0].trim().to_lowercase() == self.instances[1].trim().to_lowercase() {
+        if self.user_expressions[0].trim().to_lowercase() == self.user_expressions[1].trim().to_lowercase() {
             return Err(SystematicsError::StructureValidation {
                 reason: "Dyad instances should be different to represent duality".to_string(),
             });
@@ -290,8 +290,8 @@ impl SystematicStructure for Dyad {
                 let pair = if from < to { (*from, *to) } else { (*to, *from) };
                 if !shown_pairs.contains(&pair) {
                     shown_pairs.insert(pair);
-                    let left_term = &self.instances[pair.0];
-                    let right_term = &self.instances[pair.1];
+                    let left_term = &self.user_expressions[pair.0];
+                    let right_term = &self.user_expressions[pair.1];
                     display_items.push((left_term, relationship, right_term));
                 }
             }
@@ -329,6 +329,7 @@ pub struct DyadBuilder {
     name: Option<String>,
     first_instance: Option<String>,
     second_instance: Option<String>,
+    connectives: Option<HashMap<(usize, usize), String>>,
 }
 
 impl DyadBuilder {
@@ -337,6 +338,7 @@ impl DyadBuilder {
             name: None,
             first_instance: None,
             second_instance: None,
+            connectives: None,
         }
     }
     
@@ -359,18 +361,19 @@ impl DyadBuilder {
     }
     
     /// Set both instances at once
-    pub fn instances<S1: Into<String>, S2: Into<String>>(mut self, first: S1, second: S2) -> Self {
+    pub fn user_expressions<S1: Into<String>, S2: Into<String>>(mut self, first: S1, second: S2) -> Self {
         self.first_instance = Some(first.into());
         self.second_instance = Some(second.into());
         self
     }
     
-    /// Legacy method for backward compatibility - maps to instances()
-    pub fn terms<S1: Into<String>, S2: Into<String>>(self, first: S1, second: S2) -> Self {
-        self.instances(first, second)
+    /// Set custom connectives
+    pub fn connectives(mut self, connectives: HashMap<(usize, usize), String>) -> Self {
+        self.connectives = Some(connectives);
+        self
     }
-
-    /// Build the dyad structure
+    
+    /// Build the dyad
     pub fn build(self) -> Result<Dyad> {
         let name = self.name.unwrap_or_else(|| "Unnamed Dyad".to_string());
         
@@ -407,7 +410,7 @@ mod tests {
     fn test_dyad_creation() {
         let dyad = DyadBuilder::new()
             .name("Test Dyad")
-            .instances("Spirit", "Matter")
+            .user_expressions("Spirit", "Matter")
             .build()
             .unwrap();
             
@@ -421,7 +424,7 @@ mod tests {
     fn test_dyad_instances_method() {
         let dyad = DyadBuilder::new()
             .name("Test")
-            .instances("Essence", "Existence")
+            .user_expressions("Essence", "Existence")
             .build()
             .unwrap();
             
@@ -434,7 +437,7 @@ mod tests {
     fn test_positional_coordinate_mapping() {
         let dyad = DyadBuilder::new()
             .name("Test")
-            .instances("MyEssence", "MyExistence")
+            .user_expressions("MyEssence", "MyExistence")
             .build()
             .unwrap();
         
@@ -481,7 +484,7 @@ mod tests {
         // Test identical instances (should represent duality)
         let result = DyadBuilder::new()
             .name("Invalid Dyad")
-            .instances("Same", "Same")
+            .user_expressions("Same", "Same")
             .build();
         assert!(result.is_err());
     }
@@ -490,7 +493,7 @@ mod tests {
     fn test_term_characters() {
         let dyad = DyadBuilder::new()
             .name("Test")
-            .instances("Spirit", "Matter")
+            .user_expressions("Spirit", "Matter")
             .build()
             .unwrap();
             
@@ -502,7 +505,7 @@ mod tests {
     fn test_connective_relationship() {
         let dyad = DyadBuilder::new()
             .name("Test")
-            .instances("Spirit", "Matter")
+            .user_expressions("Spirit", "Matter")
             .build()
             .unwrap();
             
@@ -514,7 +517,7 @@ mod tests {
     fn test_trait_compliance() {
         let dyad = DyadBuilder::new()
             .name("Test")
-            .instances("Essence", "Existence")
+            .user_expressions("Essence", "Existence")
             .build()
             .unwrap();
             
@@ -522,31 +525,18 @@ mod tests {
         assert_eq!(Dyad::TERM_COUNT, 2);
         assert!(!dyad.id().is_empty());
         assert_eq!(dyad.name(), "Test");
-        assert_eq!(dyad.user_instance_index().len(), 2);
-        assert_eq!(dyad.user_instance_index()[0], "Essence");
-        assert_eq!(dyad.user_instance_index()[1], "Existence");
+        assert_eq!(dyad.user_expressions().len(), 2);
+        assert_eq!(dyad.user_expressions()[0], "Essence");
+        assert_eq!(dyad.user_expressions()[1], "Existence");
         assert_eq!(dyad.term_characters(), vec!["Essence", "Existence"]);
         assert!(dyad.validate().is_ok());
-    }
-    
-    #[test]
-    fn test_legacy_terms_method() {
-        // Test backward compatibility with terms() method
-        let dyad = DyadBuilder::new()
-            .name("Test")
-            .terms("Spirit", "Matter")
-            .build()
-            .unwrap();
-            
-        assert_eq!(dyad.first_instance(), "Spirit");
-        assert_eq!(dyad.second_instance(), "Matter");
     }
     
     #[test]
     fn test_position_alias_methods() {
         let dyad = DyadBuilder::new()
             .name("Test")
-            .instances("Spirit", "Matter")
+            .user_expressions("Spirit", "Matter")
             .build()
             .unwrap();
         

@@ -334,3 +334,48 @@ fn test_user_instance_to_term_character_mapping() { /* ... */ }
 - System Definition → Mathematical Definition (emphasizes pure structural essence)
 
 These considerations should be evaluated after the current four-layer architecture is completely implemented and tested across all components.
+
+## Current Implementation Status
+
+✅ **Completed**: Full Language Tetrad implementation with `user_expressions` terminology
+✅ **Database**: `StoredUserExpression` with `user_expressions` field
+✅ **API Methods**: All updated to use `user_expressions` terminology  
+✅ **Trait Method**: `user_expressions()` returns user-provided expressions
+✅ **Builder Methods**: Primary method is `user_expressions()`, with legacy compatibility
+
+## Research Questions
+
+### Future Language Evolution Consideration. 
+Theme: Pragmatic language evolution... enneagram? 1 fill a monad, 4 spill it everywhere, 2 create distinctions, 8 envision the refactor, 5 do the significant work, 7 check quality?
+
+**RESEARCH QUESTION**: Consider further refactoring Language Tetrad terminology for enhanced conceptual clarity:
+
+- `core_grammar` → `core_language`
+- `community_grammar` → `community_language`  
+- `user_expressions` → `user_grammar`
+
+**Rationale**: This would create cleaner semantic layers where "language" represents systematic communication systems and "grammar" represents specific rule sets within those languages.
+
+**Current State**: The current implementation using `user_expressions` works well and is conceptually sound.
+
+**Considerations**:
+- `user_grammar` might better align with the linguistic metaphor
+- Need deeper consideration of Bennett's systematic principles
+- How do users conceptualize their applications vs formal grammar structures?
+- Does "expression" vs "grammar" better capture the user's relationship to the system?
+
+**Decision Required**: This needs further research into systematic principles and user experience before implementation.
+
+## Field Naming Standards
+
+- **Database fields**: `user_expressions` (clear, unambiguous)
+- **API responses**: `user_expressions` field in JSON
+- **Method names**: `user_expressions()` for trait methods
+- **Builder methods**: `user_expressions()` as primary, `instances()` and `terms()` as legacy
+
+## Legacy Compatibility
+
+Maintain backward compatibility during transitions:
+- `instances()` → `user_expressions()` (legacy method available)
+- `terms()` → `user_expressions()` (legacy method available)
+- Database migrations handle old field names automatically

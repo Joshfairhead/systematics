@@ -19,7 +19,7 @@ pub struct Monad {
     name: String,
     
     // User's instances for each position (monad has 1 position)
-    instances: [String; 1],
+    user_expressions: [String; 1],
     
     // User-defined attributes
     attributes: Vec<String>,
@@ -41,7 +41,7 @@ impl Monad {
         Self {
             id: Uuid::new_v4().to_string(),
             name,
-            instances: [String::new()],
+            user_expressions: [String::new()],
             attributes: Vec::new(),
             connectives: HashMap::new(),
             system: MonadicSystem,
@@ -57,7 +57,7 @@ impl Monad {
     /// Returns the user's term that maps to Bennett's term character for this position.
     /// This is the user-provided data, not the canonical term character from the system.
     pub fn first_user_instance(&self) -> &str {
-        &self.instances[0]
+        &self.user_expressions[0]
     }
     
     /// Get all attributes
@@ -133,8 +133,8 @@ impl SystematicStructure for Monad {
         self.system.term_characters().iter().map(|s| s.to_string()).collect()
     }
     
-    fn user_instance_index(&self) -> &[String] {
-        &self.instances
+    fn user_expressions(&self) -> &[String] {
+        &self.user_expressions
     }
     
     fn first_order_connectives_type(&self) -> &str {
@@ -166,21 +166,21 @@ impl SystematicStructure for Monad {
         }
         
         // Validate term is not empty
-        if self.instances[0].trim().is_empty() {
+        if self.user_expressions[0].trim().is_empty() {
             return Err(SystematicsError::StructureValidation {
                 reason: "Monad term cannot be empty".to_string(),
             });
         }
         
         // Validate term length
-        if self.instances[0].len() > 100 {
+        if self.user_expressions[0].len() > 100 {
             return Err(SystematicsError::StructureValidation {
                 reason: "Monad term is too long (max 100 characters)".to_string(),
             });
         }
         
         // Validate term contains only allowed characters
-        if !self.instances[0].chars().all(|c| c.is_alphanumeric() || c.is_whitespace() || ".,!?'-()".contains(c)) {
+        if !self.user_expressions[0].chars().all(|c| c.is_alphanumeric() || c.is_whitespace() || ".,!?'-()".contains(c)) {
             return Err(SystematicsError::StructureValidation {
                 reason: "Monad term contains invalid characters".to_string(),
             });
@@ -279,7 +279,7 @@ impl MonadBuilder {
         })?;
         
         let mut monad = Monad::new(name);
-                    monad.instances[0] = term;
+                    monad.user_expressions[0] = term;
         monad.attributes = self.attributes;
             
         monad.validate()?;
@@ -370,8 +370,8 @@ mod tests {
         assert_eq!(Monad::TERM_COUNT, 1);
         assert!(!monad.id().is_empty());
         assert_eq!(monad.name(), "Test");
-        assert_eq!(monad.user_instance_index().len(), 1);
-        assert_eq!(monad.user_instance_index()[0], "Absolute");
+        assert_eq!(monad.user_expressions().len(), 1);
+        assert_eq!(monad.user_expressions()[0], "Absolute");
         assert_eq!(monad.term_characters(), vec!["Unity"]);
         assert!(monad.validate().is_ok());
     }

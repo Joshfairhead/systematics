@@ -16,7 +16,7 @@ pub struct Ennead {
     name: String,
     
     // User's terms for each index position (ennead has 9 term indices)
-    instances: [String; 9],
+    user_expressions: [String; 9],
     
     // User-defined attributes
     attributes: Vec<String>,
@@ -36,7 +36,7 @@ impl Ennead {
         Self {
             id: Uuid::new_v4().to_string(),
             name,
-            instances: [
+            user_expressions: [
                 String::new(), String::new(), String::new(), String::new(),
                 String::new(), String::new(), String::new(), String::new(),
                 String::new()
@@ -59,14 +59,14 @@ impl Ennead {
     /// * `Some(&str)` - The user instance at the given position
     /// * `None` - If the index is out of bounds
     pub fn get_user_instance(&self, index: usize) -> Option<&str> {
-        self.instances.get(index).map(|s| s.as_str())
+        self.user_expressions.get(index).map(|s| s.as_str())
     }
     
     /// Get all user instances as a tuple
     pub fn instances_tuple(&self) -> (&str, &str, &str, &str, &str, &str, &str, &str, &str) {
-        (&self.instances[0], &self.instances[1], &self.instances[2], 
-         &self.instances[3], &self.instances[4], &self.instances[5], 
-         &self.instances[6], &self.instances[7], &self.instances[8])
+        (&self.user_expressions[0], &self.user_expressions[1], &self.user_expressions[2], 
+         &self.user_expressions[3], &self.user_expressions[4], &self.user_expressions[5], 
+         &self.user_expressions[6], &self.user_expressions[7], &self.user_expressions[8])
     }
     
     /// Add an attribute to the ennead
@@ -125,13 +125,13 @@ impl Ennead {
     /// Map a user instance to its positional coordinate
     /// Returns the 0-based index for the given user instance
     pub fn instance_to_position(&self, instance: &str) -> Option<usize> {
-        self.instances.iter().position(|inst| inst == instance)
+        self.user_expressions.iter().position(|inst| inst == instance)
     }
     
     /// Map a positional coordinate to its user instance
     /// Returns the user instance for the given 0-based position index
     pub fn instance_from_position(&self, position: usize) -> Option<&str> {
-        self.instances.get(position).map(|s| s.as_str())
+        self.user_expressions.get(position).map(|s| s.as_str())
     }
     
     /// Map a position to its term character (alias for term_character_from_position)
@@ -190,8 +190,8 @@ impl SystematicStructure for Ennead {
         self.system.term_characters().iter().map(|s| s.to_string()).collect()
     }
     
-    fn user_instance_index(&self) -> &[String] {
-        &self.instances
+    fn user_expressions(&self) -> &[String] {
+        &self.user_expressions
     }
     
     fn first_order_connectives_type(&self) -> &str {
@@ -215,7 +215,7 @@ impl SystematicStructure for Ennead {
         }
         
         // Validate all nine terms are not empty
-        for (i, term) in self.instances.iter().enumerate() {
+        for (i, term) in self.user_expressions.iter().enumerate() {
             if term.trim().is_empty() {
                 return Err(SystematicsError::StructureValidation {
                     reason: format!("Term at position {} cannot be empty", i + 1),
@@ -226,11 +226,11 @@ impl SystematicStructure for Ennead {
         // Check for duplicate terms
         for i in 0..9 {
             for j in (i + 1)..9 {
-                if !self.instances[i].trim().is_empty() && 
-                   self.instances[i].trim() == self.instances[j].trim() {
+                if !self.user_expressions[i].trim().is_empty() && 
+                   self.user_expressions[i].trim() == self.user_expressions[j].trim() {
                     return Err(SystematicsError::StructureValidation {
                         reason: format!("Duplicate term '{}' found at positions {} and {}", 
-                                       self.instances[i].trim(), i + 1, j + 1),
+                                       self.user_expressions[i].trim(), i + 1, j + 1),
                     });
                 }
             }
@@ -252,7 +252,7 @@ impl SystematicStructure for Ennead {
         }
         
         println!("\n--- User Terms ---");
-        for (i, user_term) in self.instances.iter().enumerate() {
+        for (i, user_term) in self.user_expressions.iter().enumerate() {
             if !user_term.is_empty() {
                 println!("Position {}: {}", i + 1, user_term);
             }
@@ -320,7 +320,7 @@ impl EnneadBuilder {
         let ennead = Ennead {
             id: Uuid::new_v4().to_string(),
             name: self.name,
-            instances: self.terms,
+            user_expressions: self.terms,
             attributes: self.attributes,
             connectives: self.connectives.unwrap_or_default(),
             system: EnneadicSystem,
@@ -361,6 +361,6 @@ mod tests {
         assert_eq!(Ennead::TERM_COUNT, 9);
         
         // Test SystematicStructure trait methods
-        assert_eq!(ennead.user_instance_index().len(), 9);
+        assert_eq!(ennead.user_expressions().len(), 9);
     }
 } 

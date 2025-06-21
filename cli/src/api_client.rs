@@ -20,7 +20,7 @@ pub struct ApiResponse<T> {
 }
 
 #[derive(Debug, Deserialize, Serialize)]
-pub struct StoredUserInstance {
+pub struct StoredUserExpression {
     pub id: StructureId,
     pub name: String,
     pub definition_type: String,
@@ -67,7 +67,7 @@ impl ApiClient {
         }
     }
 
-    pub async fn list_user_instances(&self) -> Result<Vec<StoredUserInstance>, SystematicsError> {
+    pub async fn list_user_user_expressions(&self) -> Result<Vec<StoredUserExpression>, SystematicsError> {
         let url = format!("{}/user-instances", self.base_url);
         
         let response = self.client
@@ -83,7 +83,7 @@ impl ApiClient {
             )));
         }
 
-        let api_response: ApiResponse<Vec<StoredUserInstance>> = response
+        let api_response: ApiResponse<Vec<StoredUserExpression>> = response
             .json()
             .await
             .map_err(|e| SystematicsError::Storage(format!("Failed to parse response: {}", e)))?;
@@ -97,7 +97,7 @@ impl ApiClient {
         }
     }
 
-    pub async fn search_user_instances(&self, query: &str) -> Result<Vec<StoredUserInstance>, SystematicsError> {
+    pub async fn search_user_instances(&self, query: &str) -> Result<Vec<StoredUserExpression>, SystematicsError> {
         let url = format!("{}/user-instances/search?q={}", self.base_url, urlencoding::encode(query));
         
         let response = self.client
@@ -113,7 +113,7 @@ impl ApiClient {
             )));
         }
 
-        let api_response: ApiResponse<Vec<StoredUserInstance>> = response
+        let api_response: ApiResponse<Vec<StoredUserExpression>> = response
             .json()
             .await
             .map_err(|e| SystematicsError::Storage(format!("Failed to parse response: {}", e)))?;
@@ -127,7 +127,7 @@ impl ApiClient {
         }
     }
 
-    pub async fn get_user_instance(&self, id: &str) -> Result<Option<StoredUserInstance>, SystematicsError> {
+    pub async fn get_user_expression(&self, id: &str) -> Result<Option<StoredUserExpression>, SystematicsError> {
         let url = format!("{}/definitions/{}", self.base_url, id);
         
         let response = self.client
@@ -147,7 +147,7 @@ impl ApiClient {
             )));
         }
 
-        let api_response: ApiResponse<StoredUserInstance> = response
+        let api_response: ApiResponse<StoredUserExpression> = response
             .json()
             .await
             .map_err(|e| SystematicsError::Storage(format!("Failed to parse response: {}", e)))?;
@@ -209,7 +209,7 @@ impl ApiClient {
 
 
 
-    pub async fn get_related_user_instances(&self, id: &str) -> Result<Vec<StoredUserInstance>, SystematicsError> {
+    pub async fn get_related_user_instances(&self, id: &str) -> Result<Vec<StoredUserExpression>, SystematicsError> {
         let url = format!("{}/definitions/{}/related", self.base_url, id);
         
         let response = self.client
@@ -225,7 +225,7 @@ impl ApiClient {
             )));
         }
 
-        let api_response: ApiResponse<Vec<StoredUserInstance>> = response
+        let api_response: ApiResponse<Vec<StoredUserExpression>> = response
             .json()
             .await
             .map_err(|e| SystematicsError::Storage(format!("Failed to parse response: {}", e)))?;
@@ -240,27 +240,27 @@ impl ApiClient {
     }
 
     // Backward compatibility methods
-    pub async fn list_definitions(&self) -> Result<Vec<StoredUserInstance>, SystematicsError> {
-        self.list_user_instances().await
+    pub async fn list_definitions(&self) -> Result<Vec<StoredUserExpression>, SystematicsError> {
+        self.list_user_user_expressions().await
     }
 
-    pub async fn search_definitions(&self, query: &str) -> Result<Vec<StoredUserInstance>, SystematicsError> {
+    pub async fn search_definitions(&self, query: &str) -> Result<Vec<StoredUserExpression>, SystematicsError> {
         self.search_user_instances(query).await
     }
 
-    pub async fn get_definition(&self, id: &str) -> Result<Option<StoredUserInstance>, SystematicsError> {
-        self.get_user_instance(id).await
+    pub async fn get_definition(&self, id: &str) -> Result<Option<StoredUserExpression>, SystematicsError> {
+        self.get_user_expression(id).await
     }
 
-    pub async fn get_related_definitions(&self, id: &str) -> Result<Vec<StoredUserInstance>, SystematicsError> {
+    pub async fn get_related_definitions(&self, id: &str) -> Result<Vec<StoredUserExpression>, SystematicsError> {
         self.get_related_user_instances(id).await
     }
 
     pub async fn delete_definition(&self, id: &str) -> Result<bool, SystematicsError> {
-        self.delete_user_instance(id).await
+        self.delete_user_expression(id).await
     }
 
-    pub async fn delete_user_instance(&self, id: &str) -> Result<bool, SystematicsError> {
+    pub async fn delete_user_expression(&self, id: &str) -> Result<bool, SystematicsError> {
         let url = format!("{}/definitions/{}", self.base_url, id);
         
         let response = self.client

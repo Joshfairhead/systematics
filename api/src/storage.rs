@@ -12,12 +12,12 @@ use serde_json;
 
 #[derive(Debug, Clone)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-pub struct StoredUserInstance {
+pub struct StoredUserExpression {
     pub id: Thing,
     pub name: String,
     pub definition_type: String,
     pub grammar_id: String,
-    pub instances: Vec<String>,
+    pub user_expressions: Vec<String>,
     pub connectives: HashMap<String, String>,
     pub created_at: Datetime,
     pub updated_at: Datetime,
@@ -71,7 +71,7 @@ impl SurrealStorage {
         let db = Surreal::new::<RocksDb>(db_path).await?;
         
         // Use a namespace and database
-        db.use_ns("systematics").use_db("user_instances").await?;
+        db.use_ns("systematics").use_db("user_expressions").await?;
         
         // Initialize schema
         Self::init_schema(&db).await?;
@@ -89,10 +89,10 @@ impl SurrealStorage {
     async fn init_schema(db: &Surreal<Db>) -> Result<(), SystematicsError> {
         // Create tables and indexes - using SCHEMALESS to avoid type conflicts
         db.query("
-            DEFINE TABLE user_instances SCHEMALESS;
-            DEFINE INDEX idx_name ON user_instances COLUMNS name;
-            DEFINE INDEX idx_type ON user_instances COLUMNS definition_type;
-            DEFINE INDEX idx_created ON user_instances COLUMNS created_at;
+            DEFINE TABLE user_expressions SCHEMALESS;
+            DEFINE INDEX idx_name ON user_expressions COLUMNS name;
+            DEFINE INDEX idx_type ON user_expressions COLUMNS definition_type;
+            DEFINE INDEX idx_created ON user_expressions COLUMNS created_at;
         ").await?;
 
         db.query("
@@ -109,48 +109,80 @@ impl SurrealStorage {
         if let Ok(mut result) = db.query(check_definitions_sql).await {
             if let Ok(definitions) = result.take::<Vec<serde_json::Value>>(0) {
                 if !definitions.is_empty() {
-                    eprintln!("🔄 Migrating from 'definitions' table to 'user_instances' table...");
+                    eprintln!("🔄 Migrating from 'definitions' table to 'user_expressions' table...");
                     let migration_sql = "
-                        INSERT INTO user_instances SELECT * FROM definitions;
+                        INSERT INTO user_expressions SELECT * FROM definitions;
                         DELETE FROM definitions;
                     ";
                     db.query(migration_sql).await?;
-                    eprintln!("✅ Table migration from 'definitions' to 'user_instances' completed");
+                    eprintln!("✅ Table migration from 'definitions' to 'user_expressions' completed");
                 }
             }
         }
 
-        // Check for field migrations in user_instances table
-        let check_sql = "SELECT * FROM user_instances LIMIT 1";
+        // Check if migration is needed from old 'user_expressions' table
+        let check_instances_sql = "SELECT * FROM user_expressions LIMIT 1";
+        if let Ok(mut result) = db.query(check_instances_sql).await {
+            if let Ok(instances) = result.take::<Vec<serde_json::Value>>(0) {
+                if !instances.is_empty() {
+                    eprintln!("🔄 Migrating from 'user_expressions' table to 'user_expressions' table...");
+                    let migration_sql = "
+                        INSERT INTO user_expressions SELECT * FROM user_expressions;
+                        DELETE FROM user_expressions;
+                    ";
+                    db.query(migration_sql).await?;
+                    eprintln!("✅ Table migration from 'user_expressions' to 'user_expressions' completed");
+                }
+            }
+        }
+
+        // Check for field migrations in user_expressions table
+        let check_sql = "SELECT * FROM user_expressions LIMIT 1";
         if let Ok(mut result) = db.query(check_sql).await {
-            if let Ok(user_instances) = result.take::<Vec<serde_json::Value>>(0) {
-                if !user_instances.is_empty() {
+            if let Ok(user_expressions) = result.take::<Vec<serde_json::Value>>(0) {
+                if !user_expressions.is_empty() {
                     // Check if first record has old field names
-                    if let Some(first_instance) = user_instances.first() {
-                        if first_instance.get("terms").is_some() && first_instance.get("instances").is_none() {
-                            eprintln!("🔄 Migrating database from 'terms' to 'instances'...");
+                    if let Some(first_expression) = user_expressions.first() {
+                        if first_expression.get("terms").is_some() && first_expression.get("user_expressions").is_none() {
+                            eprintln!("🔄 Migrating database from 'terms' to 'user_expressions'...");
                             let migration_sql = "
-                                UPDATE user_instances SET instances = terms, grammar_id = 'core' WHERE terms IS NOT NULL;
-                                UPDATE user_instances UNSET terms;
+                                UPDATE user_expressions SET user_expressions = terms, grammar_id = 'core' WHERE terms IS NOT NULL;
+                                UPDATE user_expressions UNSET terms;
                             ";
                             db.query(migration_sql).await?;
                             eprintln!("✅ Database migration from 'terms' completed");
-                        } else if first_instance.get("user_instance_index").is_some() && first_instance.get("instances").is_none() {
-                            eprintln!("🔄 Migrating database from 'user_instance_index' to 'instances'...");
+                        } else if first_expression.get("instances").is_some() && first_expression.get("user_expressions").is_none() {
+                            eprintln!("🔄 Migrating database from 'instances' to 'user_expressions'...");
                             let migration_sql = "
-                                UPDATE user_instances SET instances = user_instance_index, grammar_id = 'core' WHERE user_instance_index IS NOT NULL;
-                                UPDATE user_instances UNSET user_instance_index;
+                                UPDATE user_expressions SET user_expressions = instances, grammar_id = 'core' WHERE instances IS NOT NULL;
+                                UPDATE user_expressions UNSET instances;
+                            ";
+                            db.query(migration_sql).await?;
+                            eprintln!("✅ Database migration from 'instances' completed");
+                        } else if first_expression.get("expressions").is_some() && first_expression.get("user_expressions").is_none() {
+                            eprintln!("🔄 Migrating database from 'expressions' to 'user_expressions'...");
+                            let migration_sql = "
+                                UPDATE user_expressions SET user_expressions = expressions, grammar_id = 'core' WHERE expressions IS NOT NULL;
+                                UPDATE user_expressions UNSET expressions;
+                            ";
+                            db.query(migration_sql).await?;
+                            eprintln!("✅ Database migration from 'expressions' completed");
+                        } else if first_expression.get("user_instance_index").is_some() && first_expression.get("user_expressions").is_none() {
+                            eprintln!("🔄 Migrating database from 'user_instance_index' to 'user_expressions'...");
+                            let migration_sql = "
+                                UPDATE user_expressions SET user_expressions = user_instance_index, grammar_id = 'core' WHERE user_instance_index IS NOT NULL;
+                                UPDATE user_expressions UNSET user_instance_index;
                             ";
                             db.query(migration_sql).await?;
                             eprintln!("✅ Database migration from 'user_instance_index' completed");
                         }
                         
                         // Check if we need to migrate structure_type to definition_type
-                        if first_instance.get("structure_type").is_some() && first_instance.get("definition_type").is_none() {
+                        if first_expression.get("structure_type").is_some() && first_expression.get("definition_type").is_none() {
                             eprintln!("🔄 Migrating database from 'structure_type' to 'definition_type'...");
                             let migration_sql = "
-                                UPDATE user_instances SET definition_type = structure_type WHERE structure_type IS NOT NULL;
-                                UPDATE user_instances UNSET structure_type;
+                                UPDATE user_expressions SET definition_type = structure_type WHERE structure_type IS NOT NULL;
+                                UPDATE user_expressions UNSET structure_type;
                             ";
                             db.query(migration_sql).await?;
                             eprintln!("✅ Database migration from 'structure_type' completed");
@@ -224,12 +256,12 @@ impl SurrealStorage {
             })
             .collect();
         
-        let stored_user_instance = StoredUserInstance {
-            id: Thing::from(("user_instances", id_string.as_str())),
+        let stored_user_instance = StoredUserExpression {
+            id: Thing::from(("user_expressions", id_string.as_str())),
             name: name.to_string(),
             definition_type: definition.definition_type().to_string(),
             grammar_id: "core".to_string(),
-            instances: definition.user_instance_index().to_vec(),
+            user_expressions: definition.user_expressions().to_vec(),
             connectives,
             created_at: now.clone(),
             updated_at: now,
@@ -238,23 +270,23 @@ impl SurrealStorage {
         };
 
         // Store the user instance
-        let _: Option<StoredUserInstance> = self.db
-            .create(("user_instances", id_string.as_str()))
+        let _: Option<StoredUserExpression> = self.db
+            .create(("user_expressions", id_string.as_str()))
             .content(stored_user_instance)
             .await?;
 
         // Store nodes and create graph representation
-        let nodes = self.create_nodes(&id_string, definition.user_instance_index()).await?;
+        let nodes = self.create_nodes(&id_string, definition.user_expressions()).await?;
         let _edges = self.create_edges(&nodes).await?;
 
         Ok(id_string)
     }
 
-    async fn create_nodes(&self, structure_id: &str, user_instances: &[String]) -> Result<Vec<GraphNode>, SystematicsError> {
+    async fn create_nodes(&self, structure_id: &str, user_expressions: &[String]) -> Result<Vec<GraphNode>, SystematicsError> {
         let mut nodes = Vec::new();
         let now = Datetime::default();
 
-        for (position, user_instance) in user_instances.iter().enumerate() {
+        for (position, user_instance) in user_expressions.iter().enumerate() {
             let node_id = format!("{}_{}", structure_id, position);
             let node = GraphNode {
                 id: Thing::from(("nodes", node_id.as_str())),
@@ -306,47 +338,47 @@ impl SurrealStorage {
         Ok(edges)
     }
 
-    pub async fn get_user_instance(&self, id: &str) -> Result<Option<StoredUserInstance>, SystematicsError> {
-        let user_instance: Option<StoredUserInstance> = self.db.select(("user_instances", id)).await?;
+    pub async fn get_user_expression(&self, id: &str) -> Result<Option<StoredUserExpression>, SystematicsError> {
+        let user_instance: Option<StoredUserExpression> = self.db.select(("user_expressions", id)).await?;
         Ok(user_instance)
     }
 
-    pub async fn list_user_instances(&self) -> Result<Vec<StoredUserInstance>, SystematicsError> {
-        let user_instances: Vec<StoredUserInstance> = self.db.select("user_instances").await?;
-        Ok(user_instances)
+    pub async fn list_user_expressions(&self) -> Result<Vec<StoredUserExpression>, SystematicsError> {
+        let user_expressions: Vec<StoredUserExpression> = self.db.select("user_expressions").await?;
+        Ok(user_expressions)
     }
 
-    pub async fn search_user_instances(&self, query: &str) -> Result<Vec<StoredUserInstance>, SystematicsError> {
+    pub async fn search_user_expressions(&self, query: &str) -> Result<Vec<StoredUserExpression>, SystematicsError> {
         let sql = "
-            SELECT * FROM user_instances 
+            SELECT * FROM user_expressions 
             WHERE name CONTAINS $query 
             OR description CONTAINS $query 
-            OR array::some(instances, |$user_instance| $user_instance CONTAINS $query)
+            OR array::some(user_expressions, |$user_expression| $user_expression CONTAINS $query)
             ORDER BY created_at DESC
         ";
         
         let query_string = query.to_string();
         let mut result = self.db.query(sql).bind(("query", query_string)).await?;
-        let user_instances: Vec<StoredUserInstance> = result.take(0)?;
+        let user_expressions: Vec<StoredUserExpression> = result.take(0)?;
         
-        Ok(user_instances)
+        Ok(user_expressions)
     }
 
-    pub async fn get_related_user_instances(&self, id: &str) -> Result<Vec<StoredUserInstance>, SystematicsError> {
+    pub async fn get_related_user_expressions(&self, id: &str) -> Result<Vec<StoredUserExpression>, SystematicsError> {
         // Find user instances that share instances with the given user instance
         let sql = "
-            SELECT DISTINCT s2.* FROM user_instances s1, user_instances s2
+            SELECT DISTINCT s2.* FROM user_expressions s1, user_expressions s2
             WHERE s1.id = $id 
             AND s2.id != $id
-            AND array::intersect(s1.instances, s2.instances) != []
-            ORDER BY array::len(array::intersect(s1.instances, s2.instances)) DESC
+            AND array::intersect(s1.user_expressions, s2.user_expressions) != []
+            ORDER BY array::len(array::intersect(s1.user_expressions, s2.user_expressions)) DESC
         ";
         
         let id_string = id.to_string();
         let mut result = self.db.query(sql).bind(("id", id_string)).await?;
-        let user_instances: Vec<StoredUserInstance> = result.take(0)?;
+        let user_expressions: Vec<StoredUserExpression> = result.take(0)?;
         
-        Ok(user_instances)
+        Ok(user_expressions)
     }
 
     pub async fn get_definition_graph(&self, id: &str) -> Result<(Vec<GraphNode>, Vec<GraphEdge>), SystematicsError> {
@@ -365,7 +397,7 @@ impl SurrealStorage {
         Ok((nodes, edges))
     }
 
-    pub async fn delete_user_instance(&self, id: &str) -> Result<bool, SystematicsError> {
+    pub async fn delete_user_expression(&self, id: &str) -> Result<bool, SystematicsError> {
         // Delete associated nodes and edges first
         let nodes_sql = "DELETE FROM nodes WHERE structure_id = $id";
         let id_string = id.to_string();
@@ -377,17 +409,17 @@ impl SurrealStorage {
         self.db.query(edges_sql).bind(("pattern", pattern)).await?;
 
         // Delete the user instance itself
-        let deleted: Option<StoredUserInstance> = self.db.delete(("user_instances", id)).await?;
+        let deleted: Option<StoredUserExpression> = self.db.delete(("user_expressions", id)).await?;
         
         Ok(deleted.is_some())
     }
 
-    pub async fn update_user_instance_metadata(
+    pub async fn update_user_expression_metadata(
         &self,
         id: &str,
         metadata: HashMap<String, String>,
     ) -> Result<bool, SystematicsError> {
-        let sql = "UPDATE user_instances SET metadata = $metadata, updated_at = $now WHERE id = $id";
+        let sql = "UPDATE user_expressions SET metadata = $metadata, updated_at = $now WHERE id = $id";
         let now = Datetime::default();
         let id_string = id.to_string();
         
@@ -398,57 +430,44 @@ impl SurrealStorage {
             .bind(("now", now))
             .await?;
             
-        let updated: Option<Vec<StoredUserInstance>> = result.take(0)?;
+        let updated: Option<Vec<StoredUserExpression>> = result.take(0)?;
         
         Ok(updated.is_some() && !updated.unwrap().is_empty())
     }
 
-    pub async fn get_instance_usage(&self, instance: &str) -> Result<Vec<StoredUserInstance>, SystematicsError> {
+    pub async fn get_instance_usage(&self, instance: &str) -> Result<Vec<StoredUserExpression>, SystematicsError> {
         let sql = "
-            SELECT * FROM user_instances 
-            WHERE array::some(instances, |$ui| $ui = $instance)
+            SELECT * FROM user_expressions 
+            WHERE array::some(user_expressions, |$ue| $ue = $instance)
             ORDER BY created_at DESC
         ";
         
         let instance_string = instance.to_string();
         let mut result = self.db.query(sql).bind(("instance", instance_string)).await?;
-        let user_instances: Vec<StoredUserInstance> = result.take(0)?;
+        let user_expressions: Vec<StoredUserExpression> = result.take(0)?;
         
-        Ok(user_instances)
+        Ok(user_expressions)
     }
 
-    /// Store a user instance directly from API request data (legacy method)
-    pub async fn store_definition_direct(
+    /// Store a user expression directly from API request data
+    pub async fn save_user_expression(
         &self,
         name: &str,
         definition_type: &str,
-        user_instance_index: Vec<String>,
+        user_expressions: Vec<String>,
         connectives: HashMap<String, String>,
         description: Option<String>,
     ) -> Result<String, SystematicsError> {
-        // Delegate to the new method for backward compatibility
-        self.store_user_instance_direct(name, definition_type, "core", user_instance_index, connectives, description).await
-    }
-
-    /// Store a user instance directly from API request data
-    pub async fn store_user_instance_direct(
-        &self,
-        name: &str,
-        definition_type: &str,
-        grammar_id: &str,
-        instances: Vec<String>,
-        connectives: HashMap<String, String>,
-        description: Option<String>,
-    ) -> Result<String, SystematicsError> {
+        let grammar_id = "core"; // Default to core grammar
         let id_string = Uuid::new_v4().to_string();
         let now = Datetime::default();
         
-        let stored_user_instance = StoredUserInstance {
-            id: Thing::from(("user_instances", id_string.as_str())),
+        let stored_user_instance = StoredUserExpression {
+            id: Thing::from(("user_expressions", id_string.as_str())),
             name: name.to_string(),
             definition_type: definition_type.to_string(),
             grammar_id: grammar_id.to_string(),
-            instances: instances.clone(),
+            user_expressions: user_expressions.clone(),
             connectives,
             created_at: now.clone(),
             updated_at: now,
@@ -457,13 +476,13 @@ impl SurrealStorage {
         };
 
         // Store the user instance
-        let _: Option<StoredUserInstance> = self.db
-            .create(("user_instances", id_string.as_str()))
+        let _: Option<StoredUserExpression> = self.db
+            .create(("user_expressions", id_string.as_str()))
             .content(stored_user_instance)
             .await?;
 
         // Store nodes and create graph representation
-        let nodes = self.create_nodes(&id_string, &instances).await?;
+        let nodes = self.create_nodes(&id_string, &user_expressions).await?;
         let _edges = self.create_edges(&nodes).await?;
 
         Ok(id_string)

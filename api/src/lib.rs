@@ -43,7 +43,7 @@ pub use error::{SystematicsError, Result};
 pub use definitions::*;
 pub use systematics_library::{System, LibraryProvider, BennettLibrary};
 pub use permutations::{Permutation, PermutationSet};
-pub use storage::{SurrealStorage, StoredUserInstance, StoredCommunityGrammar, GraphNode, GraphEdge};
+pub use storage::{SurrealStorage, StoredUserExpression, StoredCommunityGrammar, GraphNode, GraphEdge};
 
 #[cfg(feature = "server")]
 pub use server::{start_server, create_router, AppState, ApiResponse};
@@ -95,8 +95,8 @@ pub trait SystematicStructure {
     /// For a monad: `["Unity"]`, for a dyad: `["Essence", "Existence"]`.
     fn term_characters(&self) -> Vec<String>;
 
-    /// Get current user-provided term values for each position (for storage)
-    fn user_instance_index(&self) -> &[String];
+    /// Get current user-provided expression values for each position (for storage)
+    fn user_expressions(&self) -> &[String];
     
     /// Get the type for the first order connectives of this structure type
     fn first_order_connectives_type(&self) -> &str;

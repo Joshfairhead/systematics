@@ -18,7 +18,7 @@ pub struct Triad {
     name: String,
     
     // User's instances for each positional coordinate (triad has 3 positions)
-    instances: [String; 3],
+    user_expressions: [String; 3],
     
     // Connective relationships between instances (from_index, to_index) -> relationship
     connectives: HashMap<(usize, usize), String>,
@@ -35,7 +35,7 @@ impl Triad {
         Self {
             id: Uuid::new_v4().to_string(),
             name,
-            instances: [first_instance, second_instance, third_instance],
+            user_expressions: [first_instance, second_instance, third_instance],
             connectives,
             system: TriadicSystem,
         }
@@ -47,22 +47,22 @@ impl Triad {
     
     /// Get the first user instance (maps to "Will")
     pub fn first_instance(&self) -> &str {
-        &self.instances[0]
+        &self.user_expressions[0]
     }
     
     /// Get the second user instance (maps to "Being")
     pub fn second_instance(&self) -> &str {
-        &self.instances[1]
+        &self.user_expressions[1]
     }
     
     /// Get the third user instance (maps to "Function")
     pub fn third_instance(&self) -> &str {
-        &self.instances[2]
+        &self.user_expressions[2]
     }
     
     /// Get all user instances as a tuple
     pub fn instances_tuple(&self) -> (&str, &str, &str) {
-        (&self.instances[0], &self.instances[1], &self.instances[2])
+        (&self.user_expressions[0], &self.user_expressions[1], &self.user_expressions[2])
     }
     
     /// Get the number of positional coordinates in this structure
@@ -87,13 +87,13 @@ impl Triad {
     /// Map a user instance to its positional coordinate
     /// Returns the 0-based index for the given user instance
     pub fn instance_to_position(&self, instance: &str) -> Option<usize> {
-        self.instances.iter().position(|inst| inst == instance)
+        self.user_expressions.iter().position(|inst| inst == instance)
     }
     
     /// Map a positional coordinate to its user instance
     /// Returns the user instance for the given 0-based position index
     pub fn instance_from_position(&self, position: usize) -> Option<&str> {
-        self.instances.get(position).map(|s| s.as_str())
+        self.user_expressions.get(position).map(|s| s.as_str())
     }
     
     /// Map a position to its term character (alias for term_character_from_position)
@@ -169,8 +169,8 @@ impl SystematicStructure for Triad {
         self.system.term_characters().iter().map(|s| s.to_string()).collect()
     }
     
-    fn user_instance_index(&self) -> &[String] {
-        &self.instances
+    fn user_expressions(&self) -> &[String] {
+        &self.user_expressions
     }
     
     fn first_order_connectives_type(&self) -> &str {
@@ -195,7 +195,7 @@ impl SystematicStructure for Triad {
         
         // Validate all three instances are not empty
         let canonical_names = ["Will", "Being", "Function"];
-        for (i, instance) in self.instances.iter().enumerate() {
+        for (i, instance) in self.user_expressions.iter().enumerate() {
             if instance.trim().is_empty() {
                 return Err(SystematicsError::StructureValidation {
                     reason: format!("Instance {} ({}) cannot be empty", i + 1, canonical_names[i]),
@@ -204,7 +204,7 @@ impl SystematicStructure for Triad {
         }
         
         // Validate instance lengths
-        for (i, instance) in self.instances.iter().enumerate() {
+        for (i, instance) in self.user_expressions.iter().enumerate() {
             if instance.len() > 100 {
                 return Err(SystematicsError::StructureValidation {
                     reason: format!("Instance {} is too long (max 100 characters)", i + 1),
@@ -213,7 +213,7 @@ impl SystematicStructure for Triad {
         }
         
         // Validate instances contain only allowed characters
-        for (i, instance) in self.instances.iter().enumerate() {
+        for (i, instance) in self.user_expressions.iter().enumerate() {
             if !instance.chars().all(|c| c.is_alphanumeric() || c.is_whitespace() || ".,!?'-()".contains(c)) {
                 return Err(SystematicsError::StructureValidation {
                     reason: format!("Instance {} contains invalid characters", i + 1),
@@ -224,7 +224,7 @@ impl SystematicStructure for Triad {
         // Validate instances are all different
         for i in 0..3 {
             for j in (i + 1)..3 {
-                if self.instances[i].trim().to_lowercase() == self.instances[j].trim().to_lowercase() {
+                if self.user_expressions[i].trim().to_lowercase() == self.user_expressions[j].trim().to_lowercase() {
                     return Err(SystematicsError::StructureValidation {
                         reason: format!("Instances {} and {} should be different to represent distinct aspects", i + 1, j + 1),
                     });
@@ -255,8 +255,8 @@ impl SystematicStructure for Triad {
                 let pair = if from < to { (*from, *to) } else { (*to, *from) };
                 if !shown_pairs.contains(&pair) {
                     shown_pairs.insert(pair);
-                    let left_term = &self.instances[pair.0];
-                    let right_term = &self.instances[pair.1];
+                    let left_term = &self.user_expressions[pair.0];
+                    let right_term = &self.user_expressions[pair.1];
                     display_items.push((left_term, relationship, right_term));
                 }
             }
@@ -330,7 +330,7 @@ impl TriadBuilder {
     }
     
     /// Set all instances at once
-    pub fn instances<S1: Into<String>, S2: Into<String>, S3: Into<String>>(
+    pub fn user_expressions<S1: Into<String>, S2: Into<String>, S3: Into<String>>(
         mut self, 
         first: S1, 
         second: S2, 
@@ -340,16 +340,6 @@ impl TriadBuilder {
         self.second_instance = Some(second.into());
         self.third_instance = Some(third.into());
         self
-    }
-    
-    /// Legacy method for backward compatibility - maps to instances()
-    pub fn terms<S1: Into<String>, S2: Into<String>, S3: Into<String>>(
-        self, 
-        first: S1, 
-        second: S2, 
-        third: S3
-    ) -> Self {
-        self.instances(first, second, third)
     }
     
     /// Set custom connectives
@@ -396,7 +386,7 @@ mod tests {
     fn test_triad_creation() {
         let triad = TriadBuilder::new()
             .name("Test Triad")
-            .instances("Will", "Being", "Function")
+            .user_expressions("Will", "Being", "Function")
             .build()
             .unwrap();
         
@@ -412,7 +402,7 @@ mod tests {
     fn test_term_characters() {
         let triad = TriadBuilder::new()
             .name("Test Triad")
-            .instances("A", "B", "C")
+            .user_expressions("A", "B", "C")
             .build()
             .unwrap();
         
@@ -424,7 +414,7 @@ mod tests {
     fn test_positional_coordinate_mapping() {
         let triad = TriadBuilder::new()
             .name("Test")
-            .instances("MyWill", "MyBeing", "MyFunction")
+            .user_expressions("MyWill", "MyBeing", "MyFunction")
             .build()
             .unwrap();
         
@@ -460,7 +450,7 @@ mod tests {
     fn test_connective_relationships() {
         let triad = TriadBuilder::new()
             .name("Test Triad")
-            .instances("Will", "Function", "Being")
+            .user_expressions("Will", "Function", "Being")
             .build()
             .unwrap();
         
@@ -473,21 +463,21 @@ mod tests {
         // Valid triad
         let valid_triad = TriadBuilder::new()
             .name("Valid")
-            .instances("A", "B", "C")
+            .user_expressions("A", "B", "C")
             .build();
         assert!(valid_triad.is_ok());
         
         // Empty instance should fail
         let invalid_triad = TriadBuilder::new()
             .name("Invalid")
-            .instances("A", "", "C")
+            .user_expressions("A", "", "C")
             .build();
         assert!(invalid_triad.is_err());
         
         // Duplicate instances should fail
         let duplicate_triad = TriadBuilder::new()
             .name("Duplicate")
-            .instances("Same", "Same", "Different")
+            .user_expressions("Same", "Same", "Different")
             .build();
         assert!(duplicate_triad.is_err());
     }
@@ -496,7 +486,7 @@ mod tests {
     fn test_triad_instances_method() {
         let triad = TriadBuilder::new()
             .name("Test")
-            .instances("One", "Two", "Three")
+            .user_expressions("One", "Two", "Three")
             .build()
             .unwrap();
         
@@ -510,7 +500,7 @@ mod tests {
     fn test_trait_compliance() {
         let triad = TriadBuilder::new()
             .name("Test")
-            .instances("A", "B", "C")
+            .user_expressions("A", "B", "C")
             .build()
             .unwrap();
         
@@ -518,33 +508,19 @@ mod tests {
         assert_eq!(Triad::TERM_COUNT, 3);
         assert!(!triad.id().is_empty());
         assert_eq!(triad.name(), "Test");
-        assert_eq!(triad.user_instance_index().len(), 3);
-        assert_eq!(triad.user_instance_index()[0], "A");
-        assert_eq!(triad.user_instance_index()[1], "B");
-        assert_eq!(triad.user_instance_index()[2], "C");
+        assert_eq!(triad.user_expressions().len(), 3);
+        assert_eq!(triad.user_expressions()[0], "A");
+        assert_eq!(triad.user_expressions()[1], "B");
+        assert_eq!(triad.user_expressions()[2], "C");
         assert_eq!(triad.term_characters(), vec!["Will", "Being", "Function"]);
         assert!(triad.validate().is_ok());
-    }
-    
-    #[test]
-    fn test_legacy_terms_method() {
-        // Test backward compatibility with terms() method
-        let triad = TriadBuilder::new()
-            .name("Test")
-            .terms("Spirit", "Mind", "Body")
-            .build()
-            .unwrap();
-            
-        assert_eq!(triad.first_instance(), "Spirit");
-        assert_eq!(triad.second_instance(), "Mind");
-        assert_eq!(triad.third_instance(), "Body");
     }
     
     #[test]
     fn test_position_alias_methods() {
         let triad = TriadBuilder::new()
             .name("Test")
-            .instances("MyWill", "MyBeing", "MyFunction")
+            .user_expressions("MyWill", "MyBeing", "MyFunction")
             .build()
             .unwrap();
         

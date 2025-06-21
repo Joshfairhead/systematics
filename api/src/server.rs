@@ -13,7 +13,7 @@ use std::collections::HashMap;
 #[cfg(feature = "server")]
 use tower_http::cors::CorsLayer;
 
-use crate::{SurrealStorage, StoredUserInstance, SystematicsError};
+use crate::{SurrealStorage, StoredUserExpression, SystematicsError};
 
 #[cfg(feature = "server")]
 #[derive(Clone)]
@@ -32,7 +32,7 @@ pub struct SearchQuery {
 pub struct CreateStructureRequest {
     pub name: String,
     pub definition_type: String,
-    pub user_instance_index: Vec<String>,
+    pub user_expressions: Vec<String>,
     pub connectives: HashMap<String, String>,
     pub description: Option<String>,
 }
@@ -43,7 +43,7 @@ pub struct CreateUserInstanceRequest {
     pub name: String,
     pub definition_type: String,
     pub grammar_id: String,
-    pub instances: Vec<String>,
+    pub user_expressions: Vec<String>,
     pub connectives: HashMap<String, String>,
     pub description: Option<String>,
 }
@@ -156,9 +156,9 @@ pub fn create_router(storage: SurrealStorage) -> Router {
         .route("/community-grammar/search", get(search_community_grammars))
         .route("/community-grammar/:id", get(get_community_grammar))
         .route("/community-grammar/:id", delete(delete_community_grammar))
-        .route("/user-instances", get(list_user_instances))
+        .route("/user-instances", get(list_user_expressions))
         .route("/user-instances", post(create_user_instance))
-        .route("/user-instances/search", get(search_user_instances))
+        .route("/user-instances/search", get(search_user_expressions))
         
         .route("/health", get(health_check))
         .layer(CorsLayer::permissive())
@@ -173,8 +173,8 @@ async fn health_check() -> Json<ApiResponse<&'static str>> {
 #[cfg(feature = "server")]
 async fn list_definitions(
     State(state): State<AppState>,
-) -> Result<Json<ApiResponse<Vec<StoredUserInstance>>>, StatusCode> {
-    match state.storage.list_user_instances().await {
+) -> Result<Json<ApiResponse<Vec<StoredUserExpression>>>, StatusCode> {
+    match state.storage.list_user_expressions().await {
         Ok(user_instances) => Ok(Json(ApiResponse::success(user_instances))),
         Err(e) => {
             eprintln!("Error listing user instances: {}", e);
@@ -187,10 +187,10 @@ async fn list_definitions(
 async fn search_definitions(
     Query(params): Query<SearchQuery>,
     State(state): State<AppState>,
-) -> Result<Json<ApiResponse<Vec<StoredUserInstance>>>, StatusCode> {
+) -> Result<Json<ApiResponse<Vec<StoredUserExpression>>>, StatusCode> {
     let query = params.q.unwrap_or_default();
     
-    match state.storage.search_user_instances(&query).await {
+    match state.storage.search_user_expressions(&query).await {
         Ok(user_instances) => Ok(Json(ApiResponse::success(user_instances))),
         Err(e) => {
             eprintln!("Error searching user instances: {}", e);
@@ -203,8 +203,8 @@ async fn search_definitions(
 async fn get_definition(
     Path(id): Path<String>,
     State(state): State<AppState>,
-) -> Result<Json<ApiResponse<StoredUserInstance>>, StatusCode> {
-    match state.storage.get_user_instance(&id).await {
+) -> Result<Json<ApiResponse<StoredUserExpression>>, StatusCode> {
+    match state.storage.get_user_expression(&id).await {
         Ok(Some(user_instance)) => Ok(Json(ApiResponse::success(user_instance))),
         Ok(None) => Err(StatusCode::NOT_FOUND),
         Err(e) => {
@@ -220,62 +220,55 @@ async fn create_definition(
     Json(payload): Json<CreateStructureRequest>,
 ) -> Result<Json<ApiResponse<String>>, StatusCode> {
     // Validate structure type
-    let valid_types = ["monad", "dyad", "triad", "tetrad", "pentad", "hexad", "heptad", "octad", "ennead", "decad", "undecad", "dodecad"];
+    let valid_types = [
+        "monad", "dyad", "triad", "tetrad", "pentad", "hexad", 
+        "heptad", "octad", "ennead", "decad", "undecad", "dodecad"
+    ];
+    
     if !valid_types.contains(&payload.definition_type.as_str()) {
         return Ok(Json(ApiResponse::error(format!(
-            "Invalid structure type '{}'. Valid types: {}",
+            "Invalid structure type: {}. Valid types: {:?}",
             payload.definition_type,
-            valid_types.join(", ")
+            valid_types
         ))));
     }
-
-    // Validate user instance count matches structure type
+    
+    // Validate term count matches structure type
     let expected_term_count = match payload.definition_type.as_str() {
-        "monad" => 1,
-        "dyad" => 2,
-        "triad" => 3,
-        "tetrad" => 4,
-        "pentad" => 5,
-        "hexad" => 6,
-        "heptad" => 7,
-        "octad" => 8,
-        "ennead" => 9,
-        "decad" => 10,
-        "undecad" => 11,
-        "dodecad" => 12,
+        "monad" => 1, "dyad" => 2, "triad" => 3, "tetrad" => 4, "pentad" => 5, "hexad" => 6,
+        "heptad" => 7, "octad" => 8, "ennead" => 9, "decad" => 10, "undecad" => 11, "dodecad" => 12,
         _ => return Ok(Json(ApiResponse::error("Invalid structure type".to_string()))),
     };
-
-    if payload.user_instance_index.len() != expected_term_count {
+    
+    if payload.user_expressions.len() != expected_term_count {
         return Ok(Json(ApiResponse::error(format!(
-            "Structure type '{}' requires exactly {} user instances, got {}",
+            "Structure type '{}' requires exactly {} user expressions, got {}",
             payload.definition_type,
             expected_term_count,
-            payload.user_instance_index.len()
+            payload.user_expressions.len()
         ))));
     }
-
-    // Validate user instances are not empty
-    for (i, user_instance) in payload.user_instance_index.iter().enumerate() {
-        if user_instance.trim().is_empty() {
+    
+    // Validate no empty user expressions
+    for (i, user_expression) in payload.user_expressions.iter().enumerate() {
+        if user_expression.trim().is_empty() {
             return Ok(Json(ApiResponse::error(format!(
-                "User instance at position {} cannot be empty",
+                "User expression at position {} cannot be empty",
                 i + 1
             ))));
         }
     }
-
-    // Store the definition
-    match state.storage.store_definition_direct(
+    
+    match state.storage.save_user_expression(
         &payload.name,
         &payload.definition_type,
-        payload.user_instance_index,
+        payload.user_expressions,
         payload.connectives,
         payload.description,
     ).await {
         Ok(id) => Ok(Json(ApiResponse::success(id))),
         Err(e) => {
-            eprintln!("Error creating definition: {}", e);
+            eprintln!("Error saving user expression: {}", e);
             Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
@@ -286,7 +279,7 @@ async fn delete_definition(
     Path(id): Path<String>,
     State(state): State<AppState>,
 ) -> Result<Json<ApiResponse<bool>>, StatusCode> {
-    match state.storage.delete_user_instance(&id).await {
+    match state.storage.delete_user_expression(&id).await {
         Ok(deleted) => Ok(Json(ApiResponse::success(deleted))),
         Err(e) => {
             eprintln!("Error deleting user instance: {}", e);
@@ -299,8 +292,8 @@ async fn delete_definition(
 async fn get_related_definitions(
     Path(id): Path<String>,
     State(state): State<AppState>,
-) -> Result<Json<ApiResponse<Vec<StoredUserInstance>>>, StatusCode> {
-    match state.storage.get_related_user_instances(&id).await {
+) -> Result<Json<ApiResponse<Vec<StoredUserExpression>>>, StatusCode> {
+    match state.storage.get_related_user_expressions(&id).await {
         Ok(user_instances) => Ok(Json(ApiResponse::success(user_instances))),
         Err(e) => {
             eprintln!("Error getting related user instances: {}", e);
@@ -725,10 +718,10 @@ async fn get_core_grammar(
 }
 
 #[cfg(feature = "server")]
-async fn list_user_instances(
+async fn list_user_expressions(
     State(state): State<AppState>,
-) -> Result<Json<ApiResponse<Vec<StoredUserInstance>>>, StatusCode> {
-    match state.storage.list_user_instances().await {
+) -> Result<Json<ApiResponse<Vec<StoredUserExpression>>>, StatusCode> {
+    match state.storage.list_user_expressions().await {
         Ok(user_instances) => Ok(Json(ApiResponse::success(user_instances))),
         Err(e) => {
             eprintln!("Error listing user instances: {}", e);
@@ -738,13 +731,13 @@ async fn list_user_instances(
 }
 
 #[cfg(feature = "server")]
-async fn search_user_instances(
+async fn search_user_expressions(
     Query(params): Query<SearchQuery>,
     State(state): State<AppState>,
-) -> Result<Json<ApiResponse<Vec<StoredUserInstance>>>, StatusCode> {
+) -> Result<Json<ApiResponse<Vec<StoredUserExpression>>>, StatusCode> {
     let query = params.q.unwrap_or_default();
     
-    match state.storage.search_user_instances(&query).await {
+    match state.storage.search_user_expressions(&query).await {
         Ok(user_instances) => Ok(Json(ApiResponse::success(user_instances))),
         Err(e) => {
             eprintln!("Error searching user instances: {}", e);
@@ -785,17 +778,17 @@ async fn create_user_instance(
         _ => return Ok(Json(ApiResponse::error("Invalid structure type".to_string()))),
     };
 
-    if payload.instances.len() != expected_term_count {
+    if payload.user_expressions.len() != expected_term_count {
         return Ok(Json(ApiResponse::error(format!(
             "Structure type '{}' requires exactly {} instances, got {}",
             payload.definition_type,
             expected_term_count,
-            payload.instances.len()
+            payload.user_expressions.len()
         ))));
     }
 
     // Validate instances are not empty
-    for (i, instance) in payload.instances.iter().enumerate() {
+    for (i, instance) in payload.user_expressions.iter().enumerate() {
         if instance.trim().is_empty() {
             return Ok(Json(ApiResponse::error(format!(
                 "Instance at position {} cannot be empty",
@@ -805,11 +798,10 @@ async fn create_user_instance(
     }
 
     // Store the user instance
-    match state.storage.store_user_instance_direct(
+    match state.storage.save_user_expression(
         &payload.name,
         &payload.definition_type,
-        &payload.grammar_id,
-        payload.instances,
+        payload.user_expressions,
         payload.connectives,
         payload.description,
     ).await {

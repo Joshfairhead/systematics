@@ -6,12 +6,12 @@ use yew::prelude::*;
 
 // Ground: User Instances (concrete personal applications)
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub struct UserInstance {
+pub struct UserExpression {
     pub id: serde_json::Value,
     pub name: String,
     pub definition_type: String,
     pub grammar_id: String, // References either core or community grammar
-    pub instances: Vec<String>, // Concrete user data
+    pub user_expressions: Vec<String>, // Concrete user data
     pub connectives: HashMap<String, String>,
     pub created_at: String,
     pub updated_at: String,
@@ -63,17 +63,17 @@ pub struct SystemDefinition {
 pub struct CreateStructureRequest {
     pub name: String,
     pub definition_type: String,
-    pub user_instance_index: Vec<String>, // Legacy field for backward compatibility
+    pub user_expressions: Vec<String>, // Clean field name
     pub connectives: HashMap<String, String>,
     pub description: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CreateUserInstanceRequest {
+pub struct CreateUserExpressionRequest {
     pub name: String,
     pub definition_type: String,
     pub grammar_id: String,
-    pub instances: Vec<String>,
+    pub user_expressions: Vec<String>,
     pub connectives: HashMap<String, String>,
     pub description: Option<String>,
 }
@@ -138,24 +138,24 @@ impl ApiClient {
 
 
 
-    pub async fn list_user_instances(&self) -> Result<Vec<UserInstance>, anyhow::Error> {
+    pub async fn list_user_expressions(&self) -> Result<Vec<UserExpression>, anyhow::Error> {
         let url = format!("{}/user-instances", self.base_url);
         let response = Request::get(&url).send().await?;
         
         if response.ok() {
-            let api_response: ApiResponse<Vec<UserInstance>> = response.json().await?;
+            let api_response: ApiResponse<Vec<UserExpression>> = response.json().await?;
             api_response.data.ok_or_else(|| anyhow::anyhow!("No data in response"))
         } else {
             Err(anyhow::anyhow!("Failed to list user instances: {}", response.status()))
         }
     }
 
-    pub async fn create_user_instance(&self, name: &str, definition_type: &str, grammar_id: &str, instances: &[String]) -> Result<String, anyhow::Error> {
-        let request = CreateUserInstanceRequest {
+    pub async fn create_user_instance(&self, name: &str, definition_type: &str, grammar_id: &str, user_expressions: &[String]) -> Result<String, anyhow::Error> {
+        let request = CreateUserExpressionRequest {
             name: name.to_string(),
             definition_type: definition_type.to_string(),
             grammar_id: grammar_id.to_string(),
-            instances: instances.to_vec(),
+            user_expressions: user_expressions.to_vec(),
             connectives: std::collections::HashMap::new(),
             description: Some(format!("User-created {} instance", definition_type)),
         };
@@ -222,21 +222,21 @@ impl ApiClient {
 
 
 
-    pub async fn search_user_instances(&self, query: &str) -> Result<Vec<UserInstance>, anyhow::Error> {
+    pub async fn search_user_instances(&self, query: &str) -> Result<Vec<UserExpression>, anyhow::Error> {
         let url = format!("{}/user-instances/search?q={}", self.base_url, query);
         let response = Request::get(&url).send().await?;
         
         if response.ok() {
-            let api_response: ApiResponse<Vec<UserInstance>> = response.json().await?;
+            let api_response: ApiResponse<Vec<UserExpression>> = response.json().await?;
             api_response.data.ok_or_else(|| anyhow::anyhow!("No data in response"))
         } else {
             Err(anyhow::anyhow!("Failed to search user instances: {}", response.status()))
         }
     }
 
-    pub async fn save_user_instance(&self, name: &str, definition_type: &str, user_instances: &[String]) -> Result<String, anyhow::Error> {
+    pub async fn save_user_instance(&self, name: &str, definition_type: &str, user_expressions: &[String]) -> Result<String, anyhow::Error> {
         let grammar_id = "core".to_string(); // Default to core grammar
-        self.create_user_instance(name, definition_type, &grammar_id, user_instances).await
+        self.create_user_instance(name, definition_type, &grammar_id, user_expressions).await
     }
 }
 

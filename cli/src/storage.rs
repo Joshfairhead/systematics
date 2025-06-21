@@ -486,7 +486,7 @@ impl ApiStorage {
         let id = self.api_client.create_definition(
             name,
             definition.definition_type(),
-            definition.user_instance_index().to_vec(),
+            definition.user_expressions().to_vec(),
             connectives,
             description.map(|s| s.to_string()),
         ).await?;
