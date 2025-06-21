@@ -15,7 +15,7 @@ use serde_json;
 pub struct StoredUserInstance {
     pub id: Thing,
     pub name: String,
-    pub structure_type: String,
+    pub definition_type: String,
     pub grammar_id: String,
     pub instances: Vec<String>,
     pub connectives: HashMap<String, String>,
@@ -29,7 +29,7 @@ pub struct StoredUserInstance {
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct StoredCommunityGrammar {
     pub id: Thing,
-    pub structure_type: String,
+    pub definition_type: String,
     pub name: String,
     pub term_characters: Vec<String>,
     pub author: String,
@@ -91,14 +91,14 @@ impl SurrealStorage {
         db.query("
             DEFINE TABLE user_instances SCHEMALESS;
             DEFINE INDEX idx_name ON user_instances COLUMNS name;
-            DEFINE INDEX idx_type ON user_instances COLUMNS structure_type;
+            DEFINE INDEX idx_type ON user_instances COLUMNS definition_type;
             DEFINE INDEX idx_created ON user_instances COLUMNS created_at;
         ").await?;
 
         db.query("
             DEFINE TABLE community_grammars SCHEMALESS;
             DEFINE INDEX idx_grammar_name ON community_grammars COLUMNS name;
-            DEFINE INDEX idx_grammar_type ON community_grammars COLUMNS structure_type;
+            DEFINE INDEX idx_grammar_type ON community_grammars COLUMNS definition_type;
             DEFINE INDEX idx_grammar_author ON community_grammars COLUMNS author;
             DEFINE INDEX idx_grammar_created ON community_grammars COLUMNS created_at;
         ").await?;
@@ -143,6 +143,37 @@ impl SurrealStorage {
                             ";
                             db.query(migration_sql).await?;
                             eprintln!("✅ Database migration from 'user_instance_index' completed");
+                        }
+                        
+                        // Check if we need to migrate structure_type to definition_type
+                        if first_instance.get("structure_type").is_some() && first_instance.get("definition_type").is_none() {
+                            eprintln!("🔄 Migrating database from 'structure_type' to 'definition_type'...");
+                            let migration_sql = "
+                                UPDATE user_instances SET definition_type = structure_type WHERE structure_type IS NOT NULL;
+                                UPDATE user_instances UNSET structure_type;
+                            ";
+                            db.query(migration_sql).await?;
+                            eprintln!("✅ Database migration from 'structure_type' completed");
+                        }
+                    }
+                }
+            }
+        }
+
+        // Check for field migrations in community_grammars table
+        let check_community_sql = "SELECT * FROM community_grammars LIMIT 1";
+        if let Ok(mut result) = db.query(check_community_sql).await {
+            if let Ok(community_grammars) = result.take::<Vec<serde_json::Value>>(0) {
+                if !community_grammars.is_empty() {
+                    if let Some(first_grammar) = community_grammars.first() {
+                        if first_grammar.get("structure_type").is_some() && first_grammar.get("definition_type").is_none() {
+                            eprintln!("🔄 Migrating community_grammars from 'structure_type' to 'definition_type'...");
+                            let migration_sql = "
+                                UPDATE community_grammars SET definition_type = structure_type WHERE structure_type IS NOT NULL;
+                                UPDATE community_grammars UNSET structure_type;
+                            ";
+                            db.query(migration_sql).await?;
+                            eprintln!("✅ Community grammars migration from 'structure_type' completed");
                         }
                     }
                 }
@@ -196,7 +227,7 @@ impl SurrealStorage {
         let stored_user_instance = StoredUserInstance {
             id: Thing::from(("user_instances", id_string.as_str())),
             name: name.to_string(),
-            structure_type: definition.structure_type().to_string(),
+            definition_type: definition.definition_type().to_string(),
             grammar_id: "core".to_string(),
             instances: definition.user_instance_index().to_vec(),
             connectives,
@@ -390,20 +421,20 @@ impl SurrealStorage {
     pub async fn store_definition_direct(
         &self,
         name: &str,
-        structure_type: &str,
+        definition_type: &str,
         user_instance_index: Vec<String>,
         connectives: HashMap<String, String>,
         description: Option<String>,
     ) -> Result<String, SystematicsError> {
         // Delegate to the new method for backward compatibility
-        self.store_user_instance_direct(name, structure_type, "core", user_instance_index, connectives, description).await
+        self.store_user_instance_direct(name, definition_type, "core", user_instance_index, connectives, description).await
     }
 
     /// Store a user instance directly from API request data
     pub async fn store_user_instance_direct(
         &self,
         name: &str,
-        structure_type: &str,
+        definition_type: &str,
         grammar_id: &str,
         instances: Vec<String>,
         connectives: HashMap<String, String>,
@@ -415,7 +446,7 @@ impl SurrealStorage {
         let stored_user_instance = StoredUserInstance {
             id: Thing::from(("user_instances", id_string.as_str())),
             name: name.to_string(),
-            structure_type: structure_type.to_string(),
+            definition_type: definition_type.to_string(),
             grammar_id: grammar_id.to_string(),
             instances: instances.clone(),
             connectives,
@@ -439,15 +470,15 @@ impl SurrealStorage {
     }
 
     // CommunityGrammar storage methods
-    pub async fn list_community_grammars(&self, structure_type: Option<&str>) -> Result<Vec<StoredCommunityGrammar>, SystematicsError> {
-        let sql = if let Some(_st) = structure_type {
-            "SELECT * FROM community_grammars WHERE structure_type = $structure_type ORDER BY created_at DESC"
+    pub async fn list_community_grammars(&self, definition_type: Option<&str>) -> Result<Vec<StoredCommunityGrammar>, SystematicsError> {
+        let sql = if let Some(_st) = definition_type {
+            "SELECT * FROM community_grammars WHERE definition_type = $definition_type ORDER BY created_at DESC"
         } else {
             "SELECT * FROM community_grammars ORDER BY created_at DESC"
         };
         
-        let mut result = if let Some(st) = structure_type {
-            self.db.query(sql).bind(("structure_type", st.to_string())).await?
+        let mut result = if let Some(st) = definition_type {
+            self.db.query(sql).bind(("definition_type", st.to_string())).await?
         } else {
             self.db.query(sql).await?
         };
@@ -463,7 +494,7 @@ impl SurrealStorage {
 
     pub async fn create_community_grammar(
         &self,
-        structure_type: &str,
+        definition_type: &str,
         name: &str,
         term_characters: Vec<String>,
         author: &str,
@@ -475,7 +506,7 @@ impl SurrealStorage {
         
         let stored_community_grammar = StoredCommunityGrammar {
             id: Thing::from(("community_grammars", id_string.as_str())),
-            structure_type: structure_type.to_string(),
+            definition_type: definition_type.to_string(),
             name: name.to_string(),
             term_characters,
             author: author.to_string(),
@@ -497,7 +528,7 @@ impl SurrealStorage {
     pub async fn update_community_grammar(
         &self,
         id: &str,
-        structure_type: &str,
+        definition_type: &str,
         name: &str,
         term_characters: Vec<String>,
         author: &str,
@@ -508,7 +539,7 @@ impl SurrealStorage {
         
         let sql = "
             UPDATE community_grammars SET 
-                structure_type = $structure_type,
+                definition_type = $definition_type,
                 name = $name,
                 term_characters = $term_characters,
                 author = $author,
@@ -521,7 +552,7 @@ impl SurrealStorage {
         let mut result = self.db
             .query(sql)
             .bind(("id", id.to_string()))
-            .bind(("structure_type", structure_type.to_string()))
+            .bind(("definition_type", definition_type.to_string()))
             .bind(("name", name.to_string()))
             .bind(("term_characters", term_characters))
             .bind(("author", author.to_string()))

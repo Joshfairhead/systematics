@@ -209,7 +209,7 @@ impl SystematicStructure for Octad {
         &self.name
     }
     
-    fn structure_type(&self) -> &str {
+    fn definition_type(&self) -> &str {
         "octad"
     }
     

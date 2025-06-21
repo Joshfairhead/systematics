@@ -171,7 +171,7 @@ impl SystematicStructure for Undecad {
         &self.name
     }
     
-    fn structure_type(&self) -> &str {
+    fn definition_type(&self) -> &str {
         "undecad"
     }
     
@@ -243,7 +243,7 @@ impl SystematicStructure for Undecad {
     fn display(&self) {
         println!("=== Undecad: {} ===", self.name);
         println!("ID: {}", self.id);
-        println!("Structure Type: {}", self.structure_type());
+        println!("Structure Type: {}", self.definition_type());
         println!("Coherence Attribute: {}", self.coherence_attribute());
         println!("Term Designation: {}", self.term_designation());
         
@@ -340,7 +340,7 @@ mod tests {
     fn test_undecad_creation() {
         let undecad = Undecad::new("Test Undecad".to_string());
         assert_eq!(undecad.name(), "Test Undecad");
-        assert_eq!(undecad.structure_type(), "undecad");
+        assert_eq!(undecad.definition_type(), "undecad");
         assert_eq!(undecad.position_count(), 11);
         assert_eq!(undecad.coherence_attribute(), "Articulate Symmetry");
         assert_eq!(undecad.term_designation(), "Elements");

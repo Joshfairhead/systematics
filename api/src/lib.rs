@@ -72,7 +72,7 @@ pub trait SystematicStructure {
     fn name(&self) -> &str;
     
     /// Get the structure type name (e.g., "monad", "dyad", "triad")
-    fn structure_type(&self) -> &str;
+    fn definition_type(&self) -> &str;
     
     /// Get the coherence attribute for this structure type
     /// This defines what maintains internal consistency within the structure

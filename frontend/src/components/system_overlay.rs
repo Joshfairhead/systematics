@@ -169,7 +169,7 @@ impl SystemOverlay {
             return;
         }
         
-        let structure_type = match system_num {
+        let definition_type = match system_num {
             1 => "monad",
             2 => "dyad", 
             3 => "triad",
@@ -191,7 +191,7 @@ impl SystemOverlay {
         
         spawn_api_call(
             async move {
-                api_client.get_system_definition(structure_type).await
+                api_client.get_system_definition(definition_type).await
             },
             callback,
         );

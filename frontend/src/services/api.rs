@@ -9,7 +9,7 @@ use yew::prelude::*;
 pub struct UserInstance {
     pub id: serde_json::Value,
     pub name: String,
-    pub structure_type: String,
+    pub definition_type: String,
     pub grammar_id: String, // References either core or community grammar
     pub instances: Vec<String>, // Concrete user data
     pub connectives: HashMap<String, String>,
@@ -22,7 +22,7 @@ pub struct UserInstance {
 // Directive: Core Grammar (Bennett's canonical terms)
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct CoreGrammar {
-    pub structure_type: String,
+    pub definition_type: String,
     pub name: String, // "Bennett's Canonical"
     pub term_characters: Vec<String>, // Bennett's canonical terms
     pub coherence_attribute: String,
@@ -36,7 +36,7 @@ pub struct CoreGrammar {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct CommunityGrammar {
     pub id: serde_json::Value,
-    pub structure_type: String,
+    pub definition_type: String,
     pub name: String, // "Landry's Metaphysics", "Agent Languages"
     pub term_characters: Vec<String>, // Alternative terms mapping to same positions
     pub author: String,
@@ -49,7 +49,7 @@ pub struct CommunityGrammar {
 // Source: System Definitions (pure mathematical structures)
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct SystemDefinition {
-    pub structure_type: String,
+    pub definition_type: String,
     pub term_count: usize,
     pub term_characters: Vec<String>, // Added for compatibility
     pub coherence_attribute: String,
@@ -62,7 +62,7 @@ pub struct SystemDefinition {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateStructureRequest {
     pub name: String,
-    pub structure_type: String,
+    pub definition_type: String,
     pub user_instance_index: Vec<String>, // Legacy field for backward compatibility
     pub connectives: HashMap<String, String>,
     pub description: Option<String>,
@@ -71,7 +71,7 @@ pub struct CreateStructureRequest {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateUserInstanceRequest {
     pub name: String,
-    pub structure_type: String,
+    pub definition_type: String,
     pub grammar_id: String,
     pub instances: Vec<String>,
     pub connectives: HashMap<String, String>,
@@ -80,7 +80,7 @@ pub struct CreateUserInstanceRequest {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateCommunityGrammarRequest {
-    pub structure_type: String,
+    pub definition_type: String,
     pub name: String,
     pub term_characters: Vec<String>,
     pub author: String,
@@ -150,14 +150,14 @@ impl ApiClient {
         }
     }
 
-    pub async fn create_user_instance(&self, name: &str, structure_type: &str, grammar_id: &str, instances: &[String]) -> Result<String, anyhow::Error> {
+    pub async fn create_user_instance(&self, name: &str, definition_type: &str, grammar_id: &str, instances: &[String]) -> Result<String, anyhow::Error> {
         let request = CreateUserInstanceRequest {
             name: name.to_string(),
-            structure_type: structure_type.to_string(),
+            definition_type: definition_type.to_string(),
             grammar_id: grammar_id.to_string(),
             instances: instances.to_vec(),
             connectives: std::collections::HashMap::new(),
-            description: Some(format!("User-created {} instance", structure_type)),
+            description: Some(format!("User-created {} instance", definition_type)),
         };
         
         let url = format!("{}/user-instances", self.base_url);
@@ -179,8 +179,8 @@ impl ApiClient {
         }
     }
 
-    pub async fn get_core_grammar(&self, structure_type: &str) -> Result<CoreGrammar, anyhow::Error> {
-        let url = format!("{}/core-grammar/{}", self.base_url, structure_type);
+    pub async fn get_core_grammar(&self, definition_type: &str) -> Result<CoreGrammar, anyhow::Error> {
+        let url = format!("{}/core-grammar/{}", self.base_url, definition_type);
         let response = Request::get(&url).send().await?;
         
         if response.ok() {
@@ -191,9 +191,9 @@ impl ApiClient {
         }
     }
 
-    pub async fn list_community_grammars(&self, structure_type: Option<&str>) -> Result<Vec<CommunityGrammar>, anyhow::Error> {
-        let url = if let Some(structure_type) = structure_type {
-            format!("{}/community-grammar?structure_type={}", self.base_url, structure_type)
+    pub async fn list_community_grammars(&self, definition_type: Option<&str>) -> Result<Vec<CommunityGrammar>, anyhow::Error> {
+        let url = if let Some(definition_type) = definition_type {
+            format!("{}/community-grammar?definition_type={}", self.base_url, definition_type)
         } else {
             format!("{}/community-grammar", self.base_url)
         };
@@ -208,8 +208,8 @@ impl ApiClient {
         }
     }
 
-    pub async fn get_system_definition(&self, structure_type: &str) -> Result<SystemDefinition, anyhow::Error> {
-        let url = format!("{}/definition/{}", self.base_url, structure_type);
+    pub async fn get_system_definition(&self, definition_type: &str) -> Result<SystemDefinition, anyhow::Error> {
+        let url = format!("{}/definition/{}", self.base_url, definition_type);
         let response = Request::get(&url).send().await?;
         
         if response.ok() {
@@ -234,9 +234,9 @@ impl ApiClient {
         }
     }
 
-    pub async fn save_user_instance(&self, name: &str, structure_type: &str, user_instances: &[String]) -> Result<String, anyhow::Error> {
+    pub async fn save_user_instance(&self, name: &str, definition_type: &str, user_instances: &[String]) -> Result<String, anyhow::Error> {
         let grammar_id = "core".to_string(); // Default to core grammar
-        self.create_user_instance(name, structure_type, &grammar_id, user_instances).await
+        self.create_user_instance(name, definition_type, &grammar_id, user_instances).await
     }
 }
 

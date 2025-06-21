@@ -6,7 +6,7 @@ use systematics_api::SystematicsError;
 #[derive(Debug, Serialize)]
 pub struct CreateStructureRequest {
     pub name: String,
-    pub structure_type: String,
+    pub definition_type: String,
     pub user_instance_index: Vec<String>,
     pub connectives: HashMap<String, String>,
     pub description: Option<String>,
@@ -23,7 +23,7 @@ pub struct ApiResponse<T> {
 pub struct StoredUserInstance {
     pub id: StructureId,
     pub name: String,
-    pub structure_type: String,
+    pub definition_type: String,
     pub grammar_id: String,
     pub instances: Vec<String>,
     pub connectives: HashMap<String, String>,
@@ -164,7 +164,7 @@ impl ApiClient {
     pub async fn create_definition(
         &self,
         name: &str,
-        structure_type: &str,
+        definition_type: &str,
         user_instance_index: Vec<String>,
         connectives: HashMap<String, String>,
         description: Option<String>,
@@ -173,7 +173,7 @@ impl ApiClient {
         
         let request = CreateStructureRequest {
             name: name.to_string(),
-            structure_type: structure_type.to_string(),
+            definition_type: definition_type.to_string(),
             user_instance_index,
             connectives,
             description,

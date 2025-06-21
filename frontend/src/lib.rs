@@ -119,11 +119,11 @@ impl ContentItem {
         }
     }
     
-    pub fn structure_type(&self) -> &str {
+    pub fn definition_type(&self) -> &str {
         match self {
-            ContentItem::CoreGrammar(g) => &g.structure_type,
-            ContentItem::CommunityGrammar(g) => &g.structure_type,
-            ContentItem::UserInstance(i) => &i.structure_type,
+            ContentItem::CoreGrammar(g) => &g.definition_type,
+            ContentItem::CommunityGrammar(g) => &g.definition_type,
+            ContentItem::UserInstance(i) => &i.definition_type,
         }
     }
     
@@ -152,7 +152,7 @@ pub struct App {
     filtered_content: Vec<ContentItem>,         // Currently displayed content
     selected_item: Option<ContentItem>,         // Currently selected item
     current_definition: Option<SystemDefinition>, // Source: Mathematical structure
-    current_structure_type: StructureType, // Track the currently selected structure type
+    current_definition_type: StructureType, // Track the currently selected structure type
     loading: bool,
     error: Option<String>,
     success_message: Option<String>,
@@ -218,7 +218,7 @@ impl Component for App {
             filtered_content: Vec::new(),
             selected_item: None,
             current_definition: None,
-            current_structure_type: StructureType::Monad, // Default to monad
+            current_definition_type: StructureType::Monad, // Default to monad
             loading: false,
             error: None,
             success_message: None,
@@ -243,17 +243,17 @@ impl Component for App {
         match msg {
             Msg::SystemSelected(system_num) => {
                 // Update current system selection with enhanced type safety
-                if let Some(structure_type) = StructureType::from_number(system_num) {
-                    self.current_structure_type = structure_type;
+                if let Some(definition_type) = StructureType::from_number(system_num) {
+                    self.current_definition_type = definition_type;
                 } else {
                     return false;
                 }
                 
-                let structure_type_str = self.current_structure_type.to_string();
+                let definition_type_str = self.current_definition_type.to_string();
                 
                 // Find matching definition from loaded data (don't create placeholders)
                 if let Some(definition) = self.user_instances.iter()
-                    .find(|s| s.structure_type == structure_type_str && !s.id.as_str().map_or(false, |id| id.starts_with("placeholder-")))
+                    .find(|s| s.definition_type == definition_type_str && !s.id.as_str().map_or(false, |id| id.starts_with("placeholder-")))
                     .cloned() 
                 {
                     self.selected_item = Some(ContentItem::UserInstance(definition));
@@ -263,18 +263,18 @@ impl Component for App {
                 }
                 
                 // Always load definition for the selected structure type
-                self.load_definition_for_structure_type(ctx, structure_type_str);
+                self.load_definition_for_definition_type(ctx, definition_type_str);
                 true
             }
             Msg::DefinitionSelected(content_item) => {
-                let structure_type = content_item.structure_type().to_string();
+                let definition_type = content_item.definition_type().to_string();
                 self.selected_item = Some(content_item);
                 self.show_content_browser = false; // Close browser after selection
                 
                 // Load definition for the selected structure type
-                self.load_definition_for_structure_type(ctx, &structure_type);
-                if let Some(struct_type) = StructureType::from_string(&structure_type) {
-                    self.current_structure_type = struct_type;
+                self.load_definition_for_definition_type(ctx, &definition_type);
+                if let Some(struct_type) = StructureType::from_string(&definition_type) {
+                    self.current_definition_type = struct_type;
                 }
                 true
             }
@@ -433,7 +433,7 @@ impl Component for App {
                             self.creation_mode = true;
                             
                             // Initialize user_input with the right number of empty strings based on current system
-                            let term_count = self.current_structure_type.term_count();
+                            let term_count = self.current_definition_type.term_count();
                             self.user_input = vec![String::new(); term_count];
                             
                             return true;
@@ -528,15 +528,15 @@ impl Component for App {
         let on_system_selected = ctx.link().callback(Msg::SystemSelected);
         
         // Determine the structure type and system number from selected definition or current selection
-        let (structure_type, system_num) = if let Some(ref item) = self.selected_item {
-            if let Some(struct_type) = StructureType::from_string(item.structure_type()) {
-                (item.structure_type().to_string(), struct_type.to_number())
+        let (definition_type, system_num) = if let Some(ref item) = self.selected_item {
+            if let Some(struct_type) = StructureType::from_string(item.definition_type()) {
+                (item.definition_type().to_string(), struct_type.to_number())
             } else {
-                (self.current_structure_type.to_string().to_string(), self.current_structure_type.to_number())
+                (self.current_definition_type.to_string().to_string(), self.current_definition_type.to_number())
             }
         } else {
             // Use current structure type selection
-            (self.current_structure_type.to_string().to_string(), self.current_structure_type.to_number())
+            (self.current_definition_type.to_string().to_string(), self.current_definition_type.to_number())
         };
 
         // Create system-specific CSS class
@@ -557,7 +557,7 @@ impl Component for App {
                     {self.render_loading_or_error()}
                     <div class="geometric-container">
                         <GeometricRenderer 
-                            system_type={structure_type} 
+                            system_type={definition_type} 
                             size={400.0}
                             connectives={self.current_definition.as_ref().map(|s| s.connectives.clone())}
                         />
@@ -717,7 +717,7 @@ impl App {
 
     fn render_structure_overlay(&self, ctx: &Context<Self>) -> Html {
         if let Some(ref item) = self.selected_item {
-            let system_num = StructureType::from_string(item.structure_type()).map(|s| s.to_number()).unwrap_or(1);
+            let system_num = StructureType::from_string(item.definition_type()).map(|s| s.to_number()).unwrap_or(1);
             html! {
                 <SystemOverlay 
                     system_num={system_num} 
@@ -731,7 +731,7 @@ impl App {
         } else {
             html! {
                 <SystemOverlay 
-                    system_num={self.current_structure_type.to_number()} 
+                    system_num={self.current_definition_type.to_number()} 
                     definition={None::<ContentItem>}
                     creation_mode={self.creation_mode}
                     structure_name={self.structure_name.clone()}
@@ -797,7 +797,7 @@ impl App {
                                 <div class="content-item" onclick={select_item}>
                                     <div class="content-item-header">
                                         <h4>{&item.name()}</h4>
-                                        <span class="structure-type">{&item.structure_type()}</span>
+                                        <span class="structure-type">{&item.definition_type()}</span>
                                     </div>
                                     <div class="content-item-terms">
                                         {item.instances().join(", ")}
@@ -850,7 +850,7 @@ impl App {
                         .iter()
                         .filter(|item| {
                             item.name.to_lowercase().contains(&query) ||
-                            item.structure_type.to_lowercase().contains(&query) ||
+                            item.definition_type.to_lowercase().contains(&query) ||
                             item.term_characters.iter().any(|instance| instance.to_lowercase().contains(&query))
                         })
                         .map(|item| ContentItem::CoreGrammar(item.clone()))
@@ -861,7 +861,7 @@ impl App {
                         .iter()
                         .filter(|item| {
                             item.name.to_lowercase().contains(&query) ||
-                            item.structure_type.to_lowercase().contains(&query) ||
+                            item.definition_type.to_lowercase().contains(&query) ||
                             item.term_characters.iter().any(|instance| instance.to_lowercase().contains(&query)) ||
                             item.description.as_ref().map_or(false, |desc| desc.to_lowercase().contains(&query))
                         })
@@ -873,7 +873,7 @@ impl App {
                         .iter()
                         .filter(|item| {
                             item.name.to_lowercase().contains(&query) ||
-                            item.structure_type.to_lowercase().contains(&query) ||
+                            item.definition_type.to_lowercase().contains(&query) ||
                             item.instances.iter().any(|instance| instance.to_lowercase().contains(&query)) ||
                             item.description.as_ref().map_or(false, |desc| desc.to_lowercase().contains(&query))
                         })
@@ -886,14 +886,14 @@ impl App {
 
 
 
-    fn load_definition_for_structure_type(&self, ctx: &Context<Self>, structure_type: &str) {
+    fn load_definition_for_definition_type(&self, ctx: &Context<Self>, definition_type: &str) {
         let api_client = self.api_client.clone();
-        let structure_type = structure_type.to_string();
+        let definition_type = definition_type.to_string();
         let callback = ctx.link().callback(Msg::SystemDefinitionLoaded);
         
         spawn_api_call(
             async move {
-                api_client.get_system_definition(&structure_type).await
+                api_client.get_system_definition(&definition_type).await
             },
             callback,
         );
@@ -906,10 +906,10 @@ impl App {
         spawn_api_call(
             async move {
                 let mut core_grammars = Vec::new();
-                let structure_types = ["monad", "dyad", "triad", "tetrad", "pentad", "hexad", "heptad", "octad", "ennead", "decad", "undecad", "dodecad"];
+                let definition_types = ["monad", "dyad", "triad", "tetrad", "pentad", "hexad", "heptad", "octad", "ennead", "decad", "undecad", "dodecad"];
                 
-                for structure_type in structure_types {
-                    if let Ok(core_grammar) = api_client.get_core_grammar(structure_type).await {
+                for definition_type in definition_types {
+                    if let Ok(core_grammar) = api_client.get_core_grammar(definition_type).await {
                         core_grammars.push(core_grammar);
                     }
                 }
@@ -933,7 +933,7 @@ impl App {
     }
 
     fn save_definition(&self, ctx: &Context<Self>) {
-        let structure_type = self.current_structure_type.to_string().to_string();
+        let definition_type = self.current_definition_type.to_string().to_string();
         
         let definition_name = self.structure_name.clone().unwrap_or_else(|| "Unnamed Definition".to_string());
         
@@ -943,7 +943,7 @@ impl App {
         
         spawn_api_call(
             async move {
-                api_client.save_user_instance(&definition_name, &structure_type, &user_instances).await
+                api_client.save_user_instance(&definition_name, &definition_type, &user_instances).await
             },
             callback,
         );

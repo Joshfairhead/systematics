@@ -149,7 +149,7 @@ impl SystematicStructure for Triad {
         &self.name
     }
     
-    fn structure_type(&self) -> &str {
+    fn definition_type(&self) -> &str {
         "triad"
     }
     

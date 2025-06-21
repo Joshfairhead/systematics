@@ -171,7 +171,7 @@ impl SystematicStructure for Decad {
         &self.name
     }
     
-    fn structure_type(&self) -> &str {
+    fn definition_type(&self) -> &str {
         "decad"
     }
     
@@ -243,7 +243,7 @@ impl SystematicStructure for Decad {
     fn display(&self) {
         println!("=== Decad: {} ===", self.name);
         println!("ID: {}", self.id);
-        println!("Structure Type: {}", self.structure_type());
+        println!("Structure Type: {}", self.definition_type());
         println!("Coherence Attribute: {}", self.coherence_attribute());
         println!("Term Designation: {}", self.term_designation());
         
@@ -340,7 +340,7 @@ mod tests {
     fn test_decad_creation() {
         let decad = Decad::new("Test Decad".to_string());
         assert_eq!(decad.name(), "Test Decad");
-        assert_eq!(decad.structure_type(), "decad");
+        assert_eq!(decad.definition_type(), "decad");
         assert_eq!(decad.position_count(), 10);
         assert_eq!(decad.coherence_attribute(), "Intrinsic Harmony");
         assert_eq!(decad.term_designation(), "Elements");

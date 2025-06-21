@@ -1,0 +1,51 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# AI Assistant Behavioral Rules
+
+This file defines behavioral rules and guidelines for AI assistants working on the SysteMaster project.
+
+## 🚨 CRITICAL RULES
+
+### 1. Language and Terminology Changes
+**RULE**: The AI assistant must **ALWAYS** ask for explicit user approval before making any language changes, terminology additions, or conceptual modifications to the SysteMaster codebase.
+
+**Applies to:**
+- Field names, enum variants, method names
+- Documentation terminology and concepts  
+- API endpoint naming and structure
+- Database schema field names
+- Comment language and technical terms
+- Any linguistic elements in code or docs
+- Conceptual framework modifications
+
+**Process:**
+1. **Identify** terminology decision needed
+2. **Present options** to user with clear explanations
+3. **Wait for explicit approval** before proceeding
+4. **Never assume** or invent terms autonomously
+
+**Example**: "I need to rename `structure_type` - should it be `definition_type`, `system_type`, or something else you prefer?"
+
+**Rationale**: Terminology consistency is critical for the SysteMaster project's academic integrity and long-term maintainability. The Language Tetrad architecture requires precise terminology alignment.
+
+## 📋 ADDITIONAL BEHAVIORAL GUIDELINES
+
+### 2. [To be added by user]
+*Space reserved for additional behavioral rules*
+
+### 3. [To be added by user] 
+*Space reserved for additional behavioral rules*
+
+## 🔄 Rule Updates
+
+**How to modify these rules:**
+- Edit this file directly in your editor
+- Rules are version controlled with the project
+- All contributors can see and follow the same guidelines
+- No hidden or inaccessible behavioral constraints
+
+**Rule History:**
+- 2024: Initial language change rule established during Frontend Reference Hardening task

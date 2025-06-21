@@ -170,7 +170,7 @@ impl SystematicStructure for Ennead {
         &self.name
     }
     
-    fn structure_type(&self) -> &str {
+    fn definition_type(&self) -> &str {
         "ennead"
     }
     
@@ -242,7 +242,7 @@ impl SystematicStructure for Ennead {
     fn display(&self) {
         println!("=== Ennead: {} ===", self.name);
         println!("ID: {}", self.id);
-        println!("Structure Type: {}", self.structure_type());
+        println!("Structure Type: {}", self.definition_type());
         println!("Coherence Attribute: {}", self.coherence_attribute());
         println!("Term Designation: {}", self.term_designation());
         
@@ -339,7 +339,7 @@ mod tests {
     fn test_ennead_creation() {
         let ennead = Ennead::new("Test Ennead".to_string());
         assert_eq!(ennead.name(), "Test Ennead");
-        assert_eq!(ennead.structure_type(), "ennead");
+        assert_eq!(ennead.definition_type(), "ennead");
         assert_eq!(ennead.position_count(), 9);
         assert_eq!(ennead.coherence_attribute(), "Transformation");
         assert_eq!(ennead.term_designation(), "Elements");

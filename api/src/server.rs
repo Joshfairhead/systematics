@@ -31,7 +31,7 @@ pub struct SearchQuery {
 #[derive(Deserialize)]
 pub struct CreateStructureRequest {
     pub name: String,
-    pub structure_type: String,
+    pub definition_type: String,
     pub user_instance_index: Vec<String>,
     pub connectives: HashMap<String, String>,
     pub description: Option<String>,
@@ -41,7 +41,7 @@ pub struct CreateStructureRequest {
 #[derive(Deserialize)]
 pub struct CreateUserInstanceRequest {
     pub name: String,
-    pub structure_type: String,
+    pub definition_type: String,
     pub grammar_id: String,
     pub instances: Vec<String>,
     pub connectives: HashMap<String, String>,
@@ -60,7 +60,7 @@ pub struct ConnectiveInfo {
 #[cfg(feature = "server")]
 #[derive(Serialize)]
 pub struct CoreGrammar {
-    pub structure_type: String,
+    pub definition_type: String,
     pub name: String,
     pub term_characters: Vec<String>,
     pub coherence_attribute: String,
@@ -74,7 +74,7 @@ pub struct CoreGrammar {
 #[derive(Serialize)]
 pub struct CommunityGrammar {
     pub id: serde_json::Value,
-    pub structure_type: String,
+    pub definition_type: String,
     pub name: String,
     pub term_characters: Vec<String>,
     pub author: String,
@@ -87,7 +87,7 @@ pub struct CommunityGrammar {
 #[cfg(feature = "server")]
 #[derive(Deserialize)]
 pub struct CreateCommunityGrammarRequest {
-    pub structure_type: String,
+    pub definition_type: String,
     pub name: String,
     pub term_characters: Vec<String>,
     pub author: String,
@@ -98,7 +98,7 @@ pub struct CreateCommunityGrammarRequest {
 #[cfg(feature = "server")]
 #[derive(Serialize)]
 pub struct SystemDefinition {
-    pub structure_type: String,
+    pub definition_type: String,
     pub term_count: usize,
     pub term_characters: Vec<String>,
     pub coherence_attribute: String,
@@ -147,10 +147,10 @@ pub fn create_router(storage: SurrealStorage) -> Router {
         .route("/definitions/:id", get(get_definition))
         .route("/definitions/:id", delete(delete_definition))
         .route("/definitions/:id/related", get(get_related_definitions))
-        .route("/definition/:structure_type", get(get_system_definition))
+        .route("/definition/:definition_type", get(get_system_definition))
         
         // Language Tetrad Architecture endpoints
-        .route("/core-grammar/:structure_type", get(get_core_grammar))
+        .route("/core-grammar/:definition_type", get(get_core_grammar))
         .route("/community-grammar", get(list_community_grammars))
         .route("/community-grammar", post(create_community_grammar))
         .route("/community-grammar/search", get(search_community_grammars))
@@ -221,16 +221,16 @@ async fn create_definition(
 ) -> Result<Json<ApiResponse<String>>, StatusCode> {
     // Validate structure type
     let valid_types = ["monad", "dyad", "triad", "tetrad", "pentad", "hexad", "heptad", "octad", "ennead", "decad", "undecad", "dodecad"];
-    if !valid_types.contains(&payload.structure_type.as_str()) {
+    if !valid_types.contains(&payload.definition_type.as_str()) {
         return Ok(Json(ApiResponse::error(format!(
             "Invalid structure type '{}'. Valid types: {}",
-            payload.structure_type,
+            payload.definition_type,
             valid_types.join(", ")
         ))));
     }
 
     // Validate user instance count matches structure type
-    let expected_term_count = match payload.structure_type.as_str() {
+    let expected_term_count = match payload.definition_type.as_str() {
         "monad" => 1,
         "dyad" => 2,
         "triad" => 3,
@@ -249,7 +249,7 @@ async fn create_definition(
     if payload.user_instance_index.len() != expected_term_count {
         return Ok(Json(ApiResponse::error(format!(
             "Structure type '{}' requires exactly {} user instances, got {}",
-            payload.structure_type,
+            payload.definition_type,
             expected_term_count,
             payload.user_instance_index.len()
         ))));
@@ -268,7 +268,7 @@ async fn create_definition(
     // Store the definition
     match state.storage.store_definition_direct(
         &payload.name,
-        &payload.structure_type,
+        &payload.definition_type,
         payload.user_instance_index,
         payload.connectives,
         payload.description,
@@ -311,15 +311,15 @@ async fn get_related_definitions(
 
 #[cfg(feature = "server")]
 async fn get_system_definition(
-    Path(structure_type): Path<String>,
+    Path(definition_type): Path<String>,
 ) -> Result<Json<ApiResponse<SystemDefinition>>, StatusCode> {
     use systematics_library::System;
     
-    let definition = match structure_type.as_str() {
+    let definition = match definition_type.as_str() {
         "triad" => {
             let system = systematics_library::TriadicSystem;
             SystemDefinition {
-                structure_type: "triad".to_string(),
+                definition_type: "triad".to_string(),
                 term_count: system.term_count(),
                 term_characters: system.term_characters().iter().map(|s| s.to_string()).collect(),
                 coherence_attribute: system.coherence_attribute().to_string(),
@@ -332,7 +332,7 @@ async fn get_system_definition(
         "monad" => {
             let system = systematics_library::MonadicSystem;
             SystemDefinition {
-                structure_type: "monad".to_string(),
+                definition_type: "monad".to_string(),
                 term_count: system.term_count(),
                 term_characters: system.term_characters().iter().map(|s| s.to_string()).collect(),
                 coherence_attribute: system.coherence_attribute().to_string(),
@@ -345,7 +345,7 @@ async fn get_system_definition(
         "dyad" => {
             let system = systematics_library::DyadicSystem;
             SystemDefinition {
-                structure_type: "dyad".to_string(),
+                definition_type: "dyad".to_string(),
                 term_count: system.term_count(),
                 term_characters: system.term_characters().iter().map(|s| s.to_string()).collect(),
                 coherence_attribute: system.coherence_attribute().to_string(),
@@ -364,7 +364,7 @@ async fn get_system_definition(
                 description: c.description,
             }).collect();
             SystemDefinition {
-                structure_type: "tetrad".to_string(),
+                definition_type: "tetrad".to_string(),
                 term_count: system.term_count(),
                 term_characters: system.term_characters().iter().map(|s| s.to_string()).collect(),
                 coherence_attribute: system.coherence_attribute().to_string(),
@@ -383,7 +383,7 @@ async fn get_system_definition(
                 description: c.description,
             }).collect();
             SystemDefinition {
-                structure_type: "pentad".to_string(),
+                definition_type: "pentad".to_string(),
                 term_count: system.term_count(),
                 term_characters: system.term_characters().iter().map(|s| s.to_string()).collect(),
                 coherence_attribute: system.coherence_attribute().to_string(),
@@ -396,7 +396,7 @@ async fn get_system_definition(
         "hexad" => {
             let system = systematics_library::HexadicSystem;
             SystemDefinition {
-                structure_type: "hexad".to_string(),
+                definition_type: "hexad".to_string(),
                 term_count: system.term_count(),
                 term_characters: system.term_characters().iter().map(|s| s.to_string()).collect(),
                 coherence_attribute: system.coherence_attribute().to_string(),
@@ -409,7 +409,7 @@ async fn get_system_definition(
         "heptad" => {
             let system = systematics_library::HeptadicSystem;
             SystemDefinition {
-                structure_type: "heptad".to_string(),
+                definition_type: "heptad".to_string(),
                 term_count: system.term_count(),
                 term_characters: system.term_characters().iter().map(|s| s.to_string()).collect(),
                 coherence_attribute: system.coherence_attribute().to_string(),
@@ -422,7 +422,7 @@ async fn get_system_definition(
         "octad" => {
             let system = systematics_library::OctadicSystem;
             SystemDefinition {
-                structure_type: "octad".to_string(),
+                definition_type: "octad".to_string(),
                 term_count: system.term_count(),
                 term_characters: system.term_characters().iter().map(|s| s.to_string()).collect(),
                 coherence_attribute: system.coherence_attribute().to_string(),
@@ -435,7 +435,7 @@ async fn get_system_definition(
         "ennead" => {
             let system = systematics_library::EnneadicSystem;
             SystemDefinition {
-                structure_type: "ennead".to_string(),
+                definition_type: "ennead".to_string(),
                 term_count: system.term_count(),
                 term_characters: system.term_characters().iter().map(|s| s.to_string()).collect(),
                 coherence_attribute: system.coherence_attribute().to_string(),
@@ -448,7 +448,7 @@ async fn get_system_definition(
         "decad" => {
             let system = systematics_library::DecadicSystem;
             SystemDefinition {
-                structure_type: "decad".to_string(),
+                definition_type: "decad".to_string(),
                 term_count: system.term_count(),
                 term_characters: system.term_characters().iter().map(|s| s.to_string()).collect(),
                 coherence_attribute: system.coherence_attribute().to_string(),
@@ -461,7 +461,7 @@ async fn get_system_definition(
         "undecad" => {
             let system = systematics_library::UndecadicSystem;
             SystemDefinition {
-                structure_type: "undecad".to_string(),
+                definition_type: "undecad".to_string(),
                 term_count: system.term_count(),
                 term_characters: system.term_characters().iter().map(|s| s.to_string()).collect(),
                 coherence_attribute: system.coherence_attribute().to_string(),
@@ -474,7 +474,7 @@ async fn get_system_definition(
         "dodecad" => {
             let system = systematics_library::DodecadicSystem;
             SystemDefinition {
-                structure_type: "dodecad".to_string(),
+                definition_type: "dodecad".to_string(),
                 term_count: system.term_count(),
                 term_characters: system.term_characters().iter().map(|s| s.to_string()).collect(),
                 coherence_attribute: system.coherence_attribute().to_string(),
@@ -487,7 +487,7 @@ async fn get_system_definition(
         _ => {
             return Ok(Json(ApiResponse::error(format!(
                 "Unknown structure type: {}. Valid types: monad, dyad, triad, tetrad, pentad, hexad, heptad, octad, ennead, decad, undecad, dodecad",
-                structure_type
+                definition_type
             ))));
         }
     };
@@ -497,15 +497,15 @@ async fn get_system_definition(
 
 #[cfg(feature = "server")]
 async fn get_core_grammar(
-    Path(structure_type): Path<String>,
+    Path(definition_type): Path<String>,
 ) -> Result<Json<ApiResponse<CoreGrammar>>, StatusCode> {
     use systematics_library::System;
     
-    let grammar = match structure_type.as_str() {
+    let grammar = match definition_type.as_str() {
         "monad" => {
             let system = systematics_library::MonadicSystem;
             CoreGrammar {
-                structure_type: "monad".to_string(),
+                definition_type: "monad".to_string(),
                 name: system.name().to_string(),
                 term_characters: system.term_characters().iter().map(|s| s.to_string()).collect(),
                 coherence_attribute: system.coherence_attribute().to_string(),
@@ -523,7 +523,7 @@ async fn get_core_grammar(
         "dyad" => {
             let system = systematics_library::DyadicSystem;
             CoreGrammar {
-                structure_type: "dyad".to_string(),
+                definition_type: "dyad".to_string(),
                 name: system.name().to_string(),
                 term_characters: system.term_characters().iter().map(|s| s.to_string()).collect(),
                 coherence_attribute: system.coherence_attribute().to_string(),
@@ -541,7 +541,7 @@ async fn get_core_grammar(
         "triad" => {
             let system = systematics_library::TriadicSystem;
             CoreGrammar {
-                structure_type: "triad".to_string(),
+                definition_type: "triad".to_string(),
                 name: system.name().to_string(),
                 term_characters: system.term_characters().iter().map(|s| s.to_string()).collect(),
                 coherence_attribute: system.coherence_attribute().to_string(),
@@ -559,7 +559,7 @@ async fn get_core_grammar(
         "tetrad" => {
             let system = systematics_library::TetradicSystem;
             CoreGrammar {
-                structure_type: "tetrad".to_string(),
+                definition_type: "tetrad".to_string(),
                 name: system.name().to_string(),
                 term_characters: system.term_characters().iter().map(|s| s.to_string()).collect(),
                 coherence_attribute: system.coherence_attribute().to_string(),
@@ -577,7 +577,7 @@ async fn get_core_grammar(
         "pentad" => {
             let system = systematics_library::PentadicSystem;
             CoreGrammar {
-                structure_type: "pentad".to_string(),
+                definition_type: "pentad".to_string(),
                 name: system.name().to_string(),
                 term_characters: system.term_characters().iter().map(|s| s.to_string()).collect(),
                 coherence_attribute: system.coherence_attribute().to_string(),
@@ -595,7 +595,7 @@ async fn get_core_grammar(
         "hexad" => {
             let system = systematics_library::HexadicSystem;
             CoreGrammar {
-                structure_type: "hexad".to_string(),
+                definition_type: "hexad".to_string(),
                 name: system.name().to_string(),
                 term_characters: system.term_characters().iter().map(|s| s.to_string()).collect(),
                 coherence_attribute: system.coherence_attribute().to_string(),
@@ -613,7 +613,7 @@ async fn get_core_grammar(
         "heptad" => {
             let system = systematics_library::HeptadicSystem;
             CoreGrammar {
-                structure_type: "heptad".to_string(),
+                definition_type: "heptad".to_string(),
                 name: system.name().to_string(),
                 term_characters: system.term_characters().iter().map(|s| s.to_string()).collect(),
                 coherence_attribute: system.coherence_attribute().to_string(),
@@ -631,7 +631,7 @@ async fn get_core_grammar(
         "octad" => {
             let system = systematics_library::OctadicSystem;
             CoreGrammar {
-                structure_type: "octad".to_string(),
+                definition_type: "octad".to_string(),
                 name: system.name().to_string(),
                 term_characters: system.term_characters().iter().map(|s| s.to_string()).collect(),
                 coherence_attribute: system.coherence_attribute().to_string(),
@@ -649,7 +649,7 @@ async fn get_core_grammar(
         "ennead" => {
             let system = systematics_library::EnneadicSystem;
             CoreGrammar {
-                structure_type: "ennead".to_string(),
+                definition_type: "ennead".to_string(),
                 name: system.name().to_string(),
                 term_characters: system.term_characters().iter().map(|s| s.to_string()).collect(),
                 coherence_attribute: system.coherence_attribute().to_string(),
@@ -667,7 +667,7 @@ async fn get_core_grammar(
         "decad" => {
             let system = systematics_library::DecadicSystem;
             CoreGrammar {
-                structure_type: "decad".to_string(),
+                definition_type: "decad".to_string(),
                 name: system.name().to_string(),
                 term_characters: system.term_characters().iter().map(|s| s.to_string()).collect(),
                 coherence_attribute: system.coherence_attribute().to_string(),
@@ -685,7 +685,7 @@ async fn get_core_grammar(
         "undecad" => {
             let system = systematics_library::UndecadicSystem;
             CoreGrammar {
-                structure_type: "undecad".to_string(),
+                definition_type: "undecad".to_string(),
                 name: system.name().to_string(),
                 term_characters: system.term_characters().iter().map(|s| s.to_string()).collect(),
                 coherence_attribute: system.coherence_attribute().to_string(),
@@ -703,7 +703,7 @@ async fn get_core_grammar(
         "dodecad" => {
             let system = systematics_library::DodecadicSystem;
             CoreGrammar {
-                structure_type: "dodecad".to_string(),
+                definition_type: "dodecad".to_string(),
                 name: system.name().to_string(),
                 term_characters: system.term_characters().iter().map(|s| s.to_string()).collect(),
                 coherence_attribute: system.coherence_attribute().to_string(),
@@ -760,16 +760,16 @@ async fn create_user_instance(
 ) -> Result<Json<ApiResponse<String>>, StatusCode> {
     // Validate structure type
     let valid_types = ["monad", "dyad", "triad", "tetrad", "pentad", "hexad", "heptad", "octad", "ennead", "decad", "undecad", "dodecad"];
-    if !valid_types.contains(&payload.structure_type.as_str()) {
+    if !valid_types.contains(&payload.definition_type.as_str()) {
         return Ok(Json(ApiResponse::error(format!(
             "Invalid structure type '{}'. Valid types: {}",
-            payload.structure_type,
+            payload.definition_type,
             valid_types.join(", ")
         ))));
     }
 
     // Validate user instance count matches structure type
-    let expected_term_count = match payload.structure_type.as_str() {
+    let expected_term_count = match payload.definition_type.as_str() {
         "monad" => 1,
         "dyad" => 2,
         "triad" => 3,
@@ -788,7 +788,7 @@ async fn create_user_instance(
     if payload.instances.len() != expected_term_count {
         return Ok(Json(ApiResponse::error(format!(
             "Structure type '{}' requires exactly {} instances, got {}",
-            payload.structure_type,
+            payload.definition_type,
             expected_term_count,
             payload.instances.len()
         ))));
@@ -807,7 +807,7 @@ async fn create_user_instance(
     // Store the user instance
     match state.storage.store_user_instance_direct(
         &payload.name,
-        &payload.structure_type,
+        &payload.definition_type,
         &payload.grammar_id,
         payload.instances,
         payload.connectives,
@@ -827,15 +827,15 @@ async fn list_community_grammars(
     Query(params): Query<HashMap<String, String>>,
     State(state): State<AppState>,
 ) -> Result<Json<ApiResponse<Vec<CommunityGrammar>>>, StatusCode> {
-    let structure_type = params.get("structure_type").map(|s| s.as_str());
+    let definition_type = params.get("definition_type").map(|s| s.as_str());
     
-    match state.storage.list_community_grammars(structure_type).await {
+    match state.storage.list_community_grammars(definition_type).await {
         Ok(stored_grammars) => {
             let community_grammars: Vec<CommunityGrammar> = stored_grammars
                 .into_iter()
                 .map(|stored| CommunityGrammar {
                     id: serde_json::to_value(&stored.id).unwrap_or(serde_json::Value::Null),
-                    structure_type: stored.structure_type,
+                    definition_type: stored.definition_type,
                     name: stored.name,
                     term_characters: stored.term_characters,
                     author: stored.author,
@@ -864,7 +864,7 @@ async fn get_community_grammar(
         Ok(Some(stored)) => {
             let community_grammar = CommunityGrammar {
                 id: serde_json::to_value(&stored.id).unwrap_or(serde_json::Value::Null),
-                structure_type: stored.structure_type,
+                definition_type: stored.definition_type,
                 name: stored.name,
                 term_characters: stored.term_characters,
                 author: stored.author,
@@ -890,16 +890,16 @@ async fn create_community_grammar(
 ) -> Result<Json<ApiResponse<String>>, StatusCode> {
     // Validate structure type
     let valid_types = ["monad", "dyad", "triad", "tetrad", "pentad", "hexad", "heptad", "octad", "ennead", "decad", "undecad", "dodecad"];
-    if !valid_types.contains(&payload.structure_type.as_str()) {
+    if !valid_types.contains(&payload.definition_type.as_str()) {
         return Ok(Json(ApiResponse::error(format!(
             "Invalid structure type '{}'. Valid types: {}",
-            payload.structure_type,
+            payload.definition_type,
             valid_types.join(", ")
         ))));
     }
 
     // Validate term characters count matches structure type
-    let expected_term_count = match payload.structure_type.as_str() {
+    let expected_term_count = match payload.definition_type.as_str() {
         "monad" => 1,
         "dyad" => 2,
         "triad" => 3,
@@ -918,7 +918,7 @@ async fn create_community_grammar(
     if payload.term_characters.len() != expected_term_count {
         return Ok(Json(ApiResponse::error(format!(
             "Structure type '{}' requires exactly {} term characters, got {}",
-            payload.structure_type,
+            payload.definition_type,
             expected_term_count,
             payload.term_characters.len()
         ))));
@@ -944,7 +944,7 @@ async fn create_community_grammar(
 
     // Store the community grammar
     match state.storage.create_community_grammar(
-        &payload.structure_type,
+        &payload.definition_type,
         &payload.name,
         payload.term_characters,
         &payload.author,
@@ -972,7 +972,7 @@ async fn search_community_grammars(
                 .into_iter()
                 .map(|stored| CommunityGrammar {
                     id: serde_json::to_value(&stored.id).unwrap_or(serde_json::Value::Null),
-                    structure_type: stored.structure_type,
+                    definition_type: stored.definition_type,
                     name: stored.name,
                     term_characters: stored.term_characters,
                     author: stored.author,

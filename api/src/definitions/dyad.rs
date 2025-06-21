@@ -171,7 +171,7 @@ impl SystematicStructure for Dyad {
         &self.name
     }
     
-    fn structure_type(&self) -> &str {
+    fn definition_type(&self) -> &str {
         "dyad"
     }
     

@@ -184,7 +184,7 @@ impl ApiStorage {
         println!("{}", "─".repeat(80));
         
         for definition in definitions {
-            println!("🔹 {} ({})", definition.name, definition.structure_type);
+            println!("🔹 {} ({})", definition.name, definition.definition_type);
             println!("  Instances: {}", definition.instances.join(" → "));
             
             // Show connectives if they exist
@@ -213,7 +213,7 @@ impl ApiStorage {
         println!("{}", "─".repeat(80));
         
         for definition in definitions {
-            println!("🔹 {} ({})", definition.name, definition.structure_type);
+            println!("🔹 {} ({})", definition.name, definition.definition_type);
             println!("  Instances: {}", definition.instances.join(" → "));
             
             // Show connectives if they exist
@@ -238,7 +238,7 @@ impl ApiStorage {
                 println!("📋 Definition Details");
                 println!("{}", "═".repeat(60));
                 println!("Name: {}", s.name);
-                println!("Type: {}", s.structure_type);
+                println!("Type: {}", s.definition_type);
                 println!("ID: {}", get_definition_id_string(&s.id));
                 println!("Created: {}", s.created_at);
                 println!("Updated: {}", s.updated_at);
@@ -327,7 +327,7 @@ impl ApiStorage {
         println!("{}", "─".repeat(80));
         
         for definition in related {
-            println!("🔹 {} ({})", definition.name, definition.structure_type);
+            println!("🔹 {} ({})", definition.name, definition.definition_type);
             println!("  Instances: {}", definition.instances.join(" → "));
             
             // Show connectives if they exist
@@ -354,7 +354,7 @@ impl ApiStorage {
         println!("{}", "─".repeat(80));
         
         for definition in definitions {
-            println!("🔹 {} ({})", definition.name, definition.structure_type);
+            println!("🔹 {} ({})", definition.name, definition.definition_type);
             println!("  Instances: {}", definition.instances.join(" → "));
             
             // Show connectives if they exist
@@ -422,14 +422,14 @@ impl ApiStorage {
         let mut total_terms = 0;
         
         for definition in &definitions {
-            *type_counts.entry(definition.structure_type.clone()).or_insert(0) += 1;
+            *type_counts.entry(definition.definition_type.clone()).or_insert(0) += 1;
             total_terms += definition.instances.len();
         }
         
         println!("Total terms: {}", total_terms);
         println!("\nBy structure type:");
-        for (structure_type, count) in type_counts {
-            println!("  {}: {}", structure_type, count);
+        for (definition_type, count) in type_counts {
+            println!("  {}: {}", definition_type, count);
         }
         
         if !definitions.is_empty() {
@@ -485,7 +485,7 @@ impl ApiStorage {
         
         let id = self.api_client.create_definition(
             name,
-            definition.structure_type(),
+            definition.definition_type(),
             definition.user_instance_index().to_vec(),
             connectives,
             description.map(|s| s.to_string()),
