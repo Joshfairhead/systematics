@@ -16,7 +16,7 @@ pub struct Hexad {
     name: String,
     
     // User's terms for each index position (hexad has 6 term indices)
-    user_instance_index: [String; 6],
+    instances: [String; 6],
     
 
     
@@ -35,7 +35,7 @@ impl Hexad {
         Self {
             id: Uuid::new_v4().to_string(),
             name,
-            user_instance_index: [String::new(), String::new(), String::new(), String::new(), String::new(), String::new()],
+            instances: [String::new(), String::new(), String::new(), String::new(), String::new(), String::new()],
             connectives,
             system: HexadicSystem,
         }
@@ -53,43 +53,43 @@ impl Hexad {
     /// * `Some(&str)` - The user instance at the given position
     /// * `None` - If the index is out of bounds
     pub fn get_user_instance(&self, index: usize) -> Option<&str> {
-        self.user_instance_index.get(index).map(|s| s.as_str())
+        self.instances.get(index).map(|s| s.as_str())
     }
     
     /// Get the first user instance (maps to "Resources")
     pub fn first_user_instance(&self) -> &str {
-        &self.user_instance_index[0]
+        &self.instances[0]
     }
     
     /// Get the second user instance (maps to "Values")
     pub fn second_user_instance(&self) -> &str {
-        &self.user_instance_index[1]
+        &self.instances[1]
     }
     
     /// Get the third user instance (maps to "Options")
     pub fn third_user_instance(&self) -> &str {
-        &self.user_instance_index[2]
+        &self.instances[2]
     }
     
     /// Get the fourth user instance (maps to "Criteria")
     pub fn fourth_user_instance(&self) -> &str {
-        &self.user_instance_index[3]
+        &self.instances[3]
     }
     
     /// Get the fifth user instance (maps to "Facts")
     pub fn fifth_user_instance(&self) -> &str {
-        &self.user_instance_index[4]
+        &self.instances[4]
     }
     
     /// Get the sixth user instance (maps to "Priorities")
     pub fn sixth_user_instance(&self) -> &str {
-        &self.user_instance_index[5]
+        &self.instances[5]
     }
 
     /// Get all user instances as a tuple
     pub fn instances_tuple(&self) -> (&str, &str, &str, &str, &str, &str) {
-        (&self.user_instance_index[0], &self.user_instance_index[1], &self.user_instance_index[2], 
-         &self.user_instance_index[3], &self.user_instance_index[4], &self.user_instance_index[5])
+        (&self.instances[0], &self.instances[1], &self.instances[2], 
+         &self.instances[3], &self.instances[4], &self.instances[5])
     }
     
 
@@ -133,13 +133,13 @@ impl Hexad {
     /// Map a user instance to its positional coordinate
     /// Returns the 0-based index for the given user instance
     pub fn instance_to_position(&self, instance: &str) -> Option<usize> {
-        self.user_instance_index.iter().position(|inst| inst == instance)
+        self.instances.iter().position(|inst| inst == instance)
     }
     
     /// Map a positional coordinate to its user instance
     /// Returns the user instance for the given 0-based position index
     pub fn instance_from_position(&self, position: usize) -> Option<&str> {
-        self.user_instance_index.get(position).map(|s| s.as_str())
+        self.instances.get(position).map(|s| s.as_str())
     }
     
         /// Map a position to its term character (alias for term_character_from_position)
@@ -199,7 +199,7 @@ impl SystematicStructure for Hexad {
     }
     
     fn user_instance_index(&self) -> &[String] {
-        &self.user_instance_index
+        &self.instances
     }
     
     fn first_order_connectives_type(&self) -> &str {
@@ -224,7 +224,7 @@ impl SystematicStructure for Hexad {
         
         // Validate all six terms are not empty
         let term_names = ["Resources", "Values", "Options", "Criteria", "Facts", "Priorities"];
-        for (i, term) in self.user_instance_index.iter().enumerate() {
+        for (i, term) in self.instances.iter().enumerate() {
             if term.trim().is_empty() {
                 return Err(SystematicsError::StructureValidation {
                     reason: format!("Term {} ({}) cannot be empty", i + 1, term_names[i]),
@@ -233,7 +233,7 @@ impl SystematicStructure for Hexad {
         }
         
         // Validate term lengths
-        for (i, term) in self.user_instance_index.iter().enumerate() {
+        for (i, term) in self.instances.iter().enumerate() {
             if term.len() > 100 {
                 return Err(SystematicsError::StructureValidation {
                     reason: format!("Term {} is too long (max 100 characters)", i + 1),
@@ -242,7 +242,7 @@ impl SystematicStructure for Hexad {
         }
         
         // Validate terms contain only allowed characters
-        for (i, term) in self.user_instance_index.iter().enumerate() {
+        for (i, term) in self.instances.iter().enumerate() {
             if !term.chars().all(|c| c.is_alphanumeric() || c.is_whitespace() || ".,!?'-()".contains(c)) {
                 return Err(SystematicsError::StructureValidation {
                     reason: format!("Term {} contains invalid characters", i + 1),
@@ -253,7 +253,7 @@ impl SystematicStructure for Hexad {
         // Validate terms are all different
         for i in 0..6 {
             for j in (i + 1)..6 {
-                if self.user_instance_index[i].trim().to_lowercase() == self.user_instance_index[j].trim().to_lowercase() {
+                if self.instances[i].trim().to_lowercase() == self.instances[j].trim().to_lowercase() {
                     return Err(SystematicsError::StructureValidation {
                         reason: format!("Terms {} and {} should be different to represent distinct aspects", i + 1, j + 1),
                     });
@@ -269,12 +269,12 @@ impl SystematicStructure for Hexad {
         println!("\n{}", header);
         println!("Name: {}", self.name());
         println!("{}:", self.term_designation());
-        println!("  - {}", self.user_instance_index[0]);
-        println!("  - {}", self.user_instance_index[1]);
-        println!("  - {}", self.user_instance_index[2]);
-        println!("  - {}", self.user_instance_index[3]);
-        println!("  - {}", self.user_instance_index[4]);
-        println!("  - {}", self.user_instance_index[5]);
+        println!("  - {}", self.instances[0]);
+        println!("  - {}", self.instances[1]);
+        println!("  - {}", self.instances[2]);
+        println!("  - {}", self.instances[3]);
+        println!("  - {}", self.instances[4]);
+        println!("  - {}", self.instances[5]);
         
         // Note: Connectives not displayed in CLI for systems beyond pentad due to complexity
         if !self.connectives.is_empty() {
@@ -331,7 +331,7 @@ impl HexadBuilder {
         let hexad = Hexad {
             id: Uuid::new_v4().to_string(),
             name,
-            user_instance_index: terms,
+            instances: terms,
             connectives: self.connectives.unwrap_or_else(HashMap::new),
             system: HexadicSystem,
         };

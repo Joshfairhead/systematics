@@ -16,7 +16,7 @@ pub struct Dodecad {
     name: String,
     
     // User's terms for each index position (dodecad has 12 term indices)
-    user_instance_index: [String; 12],
+    instances: [String; 12],
     
     // User-defined attributes
     attributes: Vec<String>,
@@ -36,7 +36,7 @@ impl Dodecad {
         Self {
             id: Uuid::new_v4().to_string(),
             name,
-            user_instance_index: [
+            instances: [
                 String::new(), String::new(), String::new(), String::new(),
                 String::new(), String::new(), String::new(), String::new(),
                 String::new(), String::new(), String::new(), String::new()
@@ -59,75 +59,75 @@ impl Dodecad {
     /// * `Some(&str)` - The user instance at the given position
     /// * `None` - If the index is out of bounds
     pub fn get_user_instance(&self, index: usize) -> Option<&str> {
-        self.user_instance_index.get(index).map(|s| s.as_str())
+        self.instances.get(index).map(|s| s.as_str())
     }
     
     /// Get the first user instance (maps to "Autocracy")
     pub fn first_user_instance(&self) -> &str {
-        &self.user_instance_index[0]
+        &self.instances[0]
     }
     
     /// Get the second user instance (maps to "Domination")
     pub fn second_user_instance(&self) -> &str {
-        &self.user_instance_index[1]
+        &self.instances[1]
     }
     
     /// Get the third user instance (maps to "Creativity")
     pub fn third_user_instance(&self) -> &str {
-        &self.user_instance_index[2]
+        &self.instances[2]
     }
     
     /// Get the fourth user instance (maps to "Pattern")
     pub fn fourth_user_instance(&self) -> &str {
-        &self.user_instance_index[3]
+        &self.instances[3]
     }
     
     /// Get the fifth user instance (maps to "Individuality")
     pub fn fifth_user_instance(&self) -> &str {
-        &self.user_instance_index[4]
+        &self.instances[4]
     }
     
     /// Get the sixth user instance (maps to "Structure")
     pub fn sixth_user_instance(&self) -> &str {
-        &self.user_instance_index[5]
+        &self.instances[5]
     }
     
     /// Get the seventh user instance (maps to "Repetition")
     pub fn seventh_user_instance(&self) -> &str {
-        &self.user_instance_index[6]
+        &self.instances[6]
     }
     
     /// Get the eighth user instance (maps to "Potentiality")
     pub fn eighth_user_instance(&self) -> &str {
-        &self.user_instance_index[7]
+        &self.instances[7]
     }
     
     /// Get the ninth user instance (maps to "Subsistence")
     pub fn ninth_user_instance(&self) -> &str {
-        &self.user_instance_index[8]
+        &self.instances[8]
     }
     
     /// Get the tenth user instance (maps to "Relatedness")
     pub fn tenth_user_instance(&self) -> &str {
-        &self.user_instance_index[9]
+        &self.instances[9]
     }
     
     /// Get the eleventh user instance (maps to "Polarity")
     pub fn eleventh_user_instance(&self) -> &str {
-        &self.user_instance_index[10]
+        &self.instances[10]
     }
     
     /// Get the twelfth user instance (maps to "Wholeness")
     pub fn twelfth_user_instance(&self) -> &str {
-        &self.user_instance_index[11]
+        &self.instances[11]
     }
 
     /// Get all user instances as a tuple
     pub fn instances_tuple(&self) -> (&str, &str, &str, &str, &str, &str, &str, &str, &str, &str, &str, &str) {
-        (&self.user_instance_index[0], &self.user_instance_index[1], &self.user_instance_index[2], 
-         &self.user_instance_index[3], &self.user_instance_index[4], &self.user_instance_index[5], 
-         &self.user_instance_index[6], &self.user_instance_index[7], &self.user_instance_index[8], 
-         &self.user_instance_index[9], &self.user_instance_index[10], &self.user_instance_index[11])
+        (&self.instances[0], &self.instances[1], &self.instances[2], 
+         &self.instances[3], &self.instances[4], &self.instances[5], 
+         &self.instances[6], &self.instances[7], &self.instances[8], 
+         &self.instances[9], &self.instances[10], &self.instances[11])
     }
     
     /// Add an attribute to the dodecad
@@ -186,13 +186,13 @@ impl Dodecad {
     /// Map a user instance to its positional coordinate
     /// Returns the 0-based index for the given user instance
     pub fn instance_to_position(&self, instance: &str) -> Option<usize> {
-        self.user_instance_index.iter().position(|inst| inst == instance)
+        self.instances.iter().position(|inst| inst == instance)
     }
     
     /// Map a positional coordinate to its user instance
     /// Returns the user instance for the given 0-based position index
     pub fn instance_from_position(&self, position: usize) -> Option<&str> {
-        self.user_instance_index.get(position).map(|s| s.as_str())
+        self.instances.get(position).map(|s| s.as_str())
     }
     
         /// Map a position to its term character (alias for term_character_from_position)
@@ -252,7 +252,7 @@ impl SystematicStructure for Dodecad {
     }
     
     fn user_instance_index(&self) -> &[String] {
-        &self.user_instance_index
+        &self.instances
     }
     
     fn first_order_connectives_type(&self) -> &str {
@@ -276,7 +276,7 @@ impl SystematicStructure for Dodecad {
         }
         
         // Validate all twelve terms are not empty
-        for (i, term) in self.user_instance_index.iter().enumerate() {
+        for (i, term) in self.instances.iter().enumerate() {
             if term.trim().is_empty() {
                 return Err(SystematicsError::StructureValidation {
                     reason: format!("Term {} cannot be empty", i + 1),
@@ -285,7 +285,7 @@ impl SystematicStructure for Dodecad {
         }
         
         // Validate term lengths and characters
-        for (i, term) in self.user_instance_index.iter().enumerate() {
+        for (i, term) in self.instances.iter().enumerate() {
             if term.len() > 100 {
                 return Err(SystematicsError::StructureValidation {
                     reason: format!("Term {} is too long (max 100 characters)", i + 1),
@@ -302,7 +302,7 @@ impl SystematicStructure for Dodecad {
         // Validate terms are all different
         for i in 0..12 {
             for j in (i + 1)..12 {
-                if self.user_instance_index[i].trim().to_lowercase() == self.user_instance_index[j].trim().to_lowercase() {
+                if self.instances[i].trim().to_lowercase() == self.instances[j].trim().to_lowercase() {
                     return Err(SystematicsError::StructureValidation {
                         reason: format!("Terms {} and {} should be different to represent distinct aspects", i + 1, j + 1),
                     });
@@ -318,18 +318,18 @@ impl SystematicStructure for Dodecad {
         println!("\n{}", header);
         println!("Name: {}", self.name());
         println!("{}:", self.term_designation());
-        println!("  - {}", self.user_instance_index[0]);
-        println!("  - {}", self.user_instance_index[1]);
-        println!("  - {}", self.user_instance_index[2]);
-        println!("  - {}", self.user_instance_index[3]);
-        println!("  - {}", self.user_instance_index[4]);
-        println!("  - {}", self.user_instance_index[5]);
-        println!("  - {}", self.user_instance_index[6]);
-        println!("  - {}", self.user_instance_index[7]);
-        println!("  - {}", self.user_instance_index[8]);
-        println!("  - {}", self.user_instance_index[9]);
-        println!("  - {}", self.user_instance_index[10]);
-        println!("  - {}", self.user_instance_index[11]);
+        println!("  - {}", self.instances[0]);
+        println!("  - {}", self.instances[1]);
+        println!("  - {}", self.instances[2]);
+        println!("  - {}", self.instances[3]);
+        println!("  - {}", self.instances[4]);
+        println!("  - {}", self.instances[5]);
+        println!("  - {}", self.instances[6]);
+        println!("  - {}", self.instances[7]);
+        println!("  - {}", self.instances[8]);
+        println!("  - {}", self.instances[9]);
+        println!("  - {}", self.instances[10]);
+        println!("  - {}", self.instances[11]);
         
         if !self.attributes.is_empty() {
             println!("Attributes: {}", self.attributes.join(", "));
@@ -342,8 +342,8 @@ impl SystematicStructure for Dodecad {
             for ((from, to), relationship) in &self.connectives {
                 if count < 5 {
                     println!("  {} → {}: {}", 
-                        self.user_instance_index[*from], 
-                        self.user_instance_index[*to], 
+                        self.instances[*from], 
+                        self.instances[*to], 
                         relationship);
                     count += 1;
                 } else {
@@ -406,7 +406,7 @@ impl DodecadBuilder {
         let dodecad = Dodecad {
             id: Uuid::new_v4().to_string(),
             name: self.name,
-            user_instance_index: self.terms,
+            instances: self.terms,
             attributes: self.attributes,
             connectives: self.connectives.unwrap_or_else(HashMap::new),
             system: DodecadicSystem,

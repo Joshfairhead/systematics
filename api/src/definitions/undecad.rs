@@ -16,7 +16,7 @@ pub struct Undecad {
     name: String,
     
     // User's terms for each index position (undecad has 11 term indices)
-    user_instance_index: [String; 11],
+    instances: [String; 11],
     
     // User-defined attributes
     attributes: Vec<String>,
@@ -36,7 +36,7 @@ impl Undecad {
         Self {
             id: Uuid::new_v4().to_string(),
             name,
-            user_instance_index: [
+            instances: [
                 String::new(), String::new(), String::new(), String::new(),
                 String::new(), String::new(), String::new(), String::new(),
                 String::new(), String::new(), String::new()
@@ -59,15 +59,15 @@ impl Undecad {
     /// * `Some(&str)` - The user instance at the given position
     /// * `None` - If the index is out of bounds
     pub fn get_user_instance(&self, index: usize) -> Option<&str> {
-        self.user_instance_index.get(index).map(|s| s.as_str())
+        self.instances.get(index).map(|s| s.as_str())
     }
     
     /// Get all user instances as a tuple
     pub fn instances_tuple(&self) -> (&str, &str, &str, &str, &str, &str, &str, &str, &str, &str, &str) {
-        (&self.user_instance_index[0], &self.user_instance_index[1], &self.user_instance_index[2], 
-         &self.user_instance_index[3], &self.user_instance_index[4], &self.user_instance_index[5], 
-         &self.user_instance_index[6], &self.user_instance_index[7], &self.user_instance_index[8], 
-         &self.user_instance_index[9], &self.user_instance_index[10])
+        (&self.instances[0], &self.instances[1], &self.instances[2], 
+         &self.instances[3], &self.instances[4], &self.instances[5], 
+         &self.instances[6], &self.instances[7], &self.instances[8], 
+         &self.instances[9], &self.instances[10])
     }
     
     /// Add an attribute to the undecad
@@ -126,13 +126,13 @@ impl Undecad {
     /// Map a user instance to its positional coordinate
     /// Returns the 0-based index for the given user instance
     pub fn instance_to_position(&self, instance: &str) -> Option<usize> {
-        self.user_instance_index.iter().position(|inst| inst == instance)
+        self.instances.iter().position(|inst| inst == instance)
     }
     
     /// Map a positional coordinate to its user instance
     /// Returns the user instance for the given 0-based position index
     pub fn instance_from_position(&self, position: usize) -> Option<&str> {
-        self.user_instance_index.get(position).map(|s| s.as_str())
+        self.instances.get(position).map(|s| s.as_str())
     }
     
     /// Map a position to its term character (alias for term_character_from_position)
@@ -192,7 +192,7 @@ impl SystematicStructure for Undecad {
     }
     
     fn user_instance_index(&self) -> &[String] {
-        &self.user_instance_index
+        &self.instances
     }
     
     fn first_order_connectives_type(&self) -> &str {
@@ -216,7 +216,7 @@ impl SystematicStructure for Undecad {
         }
         
         // Validate all eleven terms are not empty
-        for (i, term) in self.user_instance_index.iter().enumerate() {
+        for (i, term) in self.instances.iter().enumerate() {
             if term.trim().is_empty() {
                 return Err(SystematicsError::StructureValidation {
                     reason: format!("Term at position {} cannot be empty", i + 1),
@@ -227,11 +227,11 @@ impl SystematicStructure for Undecad {
         // Check for duplicate terms
         for i in 0..11 {
             for j in (i + 1)..11 {
-                if !self.user_instance_index[i].trim().is_empty() && 
-                   self.user_instance_index[i].trim() == self.user_instance_index[j].trim() {
+                if !self.instances[i].trim().is_empty() && 
+                   self.instances[i].trim() == self.instances[j].trim() {
                     return Err(SystematicsError::StructureValidation {
                         reason: format!("Duplicate term '{}' found at positions {} and {}", 
-                                       self.user_instance_index[i].trim(), i + 1, j + 1),
+                                       self.instances[i].trim(), i + 1, j + 1),
                     });
                 }
             }
@@ -253,7 +253,7 @@ impl SystematicStructure for Undecad {
         }
         
         println!("\n--- User Terms ---");
-        for (i, user_term) in self.user_instance_index.iter().enumerate() {
+        for (i, user_term) in self.instances.iter().enumerate() {
             if !user_term.is_empty() {
                 println!("Position {}: {}", i + 1, user_term);
             }
@@ -321,7 +321,7 @@ impl UndecadBuilder {
         let mut undecad = Undecad {
             id: Uuid::new_v4().to_string(),
             name: self.name,
-            user_instance_index: self.terms,
+            instances: self.terms,
             attributes: self.attributes,
             connectives: self.connectives.unwrap_or_default(),
             system: UndecadicSystem,

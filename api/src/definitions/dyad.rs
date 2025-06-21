@@ -24,7 +24,7 @@ pub struct Dyad {
     name: String,
     
     // User's instances for each positional coordinate (dyad has 2 positions)  
-    user_instance_index: [String; 2],
+    instances: [String; 2],
     
 
     
@@ -49,7 +49,7 @@ impl Dyad {
         Self {
             id: Uuid::new_v4().to_string(),
             name,
-            user_instance_index: [first_instance, second_instance],
+            instances: [first_instance, second_instance],
             connectives,
             system: DyadicSystem,
         }
@@ -61,17 +61,17 @@ impl Dyad {
     
     /// Get the first user instance (maps to "Essence")
     pub fn first_instance(&self) -> &str {
-        &self.user_instance_index[0]
+        &self.instances[0]
     }
     
     /// Get the second user instance (maps to "Existence")
     pub fn second_instance(&self) -> &str {
-        &self.user_instance_index[1]
+        &self.instances[1]
     }
     
     /// Get both user instances as a tuple
     pub fn instances_tuple(&self) -> (&str, &str) {
-        (&self.user_instance_index[0], &self.user_instance_index[1])
+        (&self.instances[0], &self.instances[1])
     }
     
     /// Get the number of positional coordinates in this structure
@@ -96,13 +96,13 @@ impl Dyad {
     /// Map a user instance to its positional coordinate
     /// Returns the 0-based index for the given user instance
     pub fn instance_to_position(&self, instance: &str) -> Option<usize> {
-        self.user_instance_index.iter().position(|inst| inst == instance)
+        self.instances.iter().position(|inst| inst == instance)
     }
     
     /// Map a positional coordinate to its user instance
     /// Returns the user instance for the given 0-based position index
     pub fn instance_from_position(&self, position: usize) -> Option<&str> {
-        self.user_instance_index.get(position).map(|s| s.as_str())
+        self.instances.get(position).map(|s| s.as_str())
     }
     
     /// Map a position to its term character (alias for term_character_from_position)
@@ -196,7 +196,7 @@ impl SystematicStructure for Dyad {
     }
     
     fn user_instance_index(&self) -> &[String] {
-        &self.user_instance_index
+        &self.instances
     }
     
     fn first_order_connectives_type(&self) -> &str {
@@ -228,21 +228,21 @@ impl SystematicStructure for Dyad {
         }
         
         // Validate first instance is not empty
-        if self.user_instance_index[0].trim().is_empty() {
+        if self.instances[0].trim().is_empty() {
             return Err(SystematicsError::StructureValidation {
                 reason: "First instance (Essence) cannot be empty".to_string(),
             });
         }
         
         // Validate second instance is not empty
-        if self.user_instance_index[1].trim().is_empty() {
+        if self.instances[1].trim().is_empty() {
             return Err(SystematicsError::StructureValidation {
                 reason: "Second instance (Existence) cannot be empty".to_string(),
             });
         }
         
         // Validate instance lengths
-        for (i, instance) in self.user_instance_index.iter().enumerate() {
+        for (i, instance) in self.instances.iter().enumerate() {
             if instance.len() > 100 {
                 return Err(SystematicsError::StructureValidation {
                     reason: format!("Instance {} is too long (max 100 characters)", i + 1),
@@ -251,7 +251,7 @@ impl SystematicStructure for Dyad {
         }
         
         // Validate instances contain only allowed characters
-        for (i, instance) in self.user_instance_index.iter().enumerate() {
+        for (i, instance) in self.instances.iter().enumerate() {
             if !instance.chars().all(|c| c.is_alphanumeric() || c.is_whitespace() || ".,!?'-()".contains(c)) {
                 return Err(SystematicsError::StructureValidation {
                     reason: format!("Instance {} contains invalid characters", i + 1),
@@ -260,7 +260,7 @@ impl SystematicStructure for Dyad {
         }
         
         // Validate instances are different (dyad should represent duality)
-        if self.user_instance_index[0].trim().to_lowercase() == self.user_instance_index[1].trim().to_lowercase() {
+        if self.instances[0].trim().to_lowercase() == self.instances[1].trim().to_lowercase() {
             return Err(SystematicsError::StructureValidation {
                 reason: "Dyad instances should be different to represent duality".to_string(),
             });
@@ -290,8 +290,8 @@ impl SystematicStructure for Dyad {
                 let pair = if from < to { (*from, *to) } else { (*to, *from) };
                 if !shown_pairs.contains(&pair) {
                     shown_pairs.insert(pair);
-                    let left_term = &self.user_instance_index[pair.0];
-                    let right_term = &self.user_instance_index[pair.1];
+                    let left_term = &self.instances[pair.0];
+                    let right_term = &self.instances[pair.1];
                     display_items.push((left_term, relationship, right_term));
                 }
             }

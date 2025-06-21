@@ -16,7 +16,7 @@ pub struct Tetrad {
     name: String,
     
     // User's instances for each positional coordinate (tetrad has 4 positions)
-    user_instance_index: [String; 4],
+    instances: [String; 4],
     
     // Connective relationships between terms (from_index, to_index) -> relationship
     connectives: HashMap<(usize, usize), String>,
@@ -35,7 +35,7 @@ impl Tetrad {
         Self {
             id: Uuid::new_v4().to_string(),
             name,
-            user_instance_index: [ground, ideal, instrumental, directive],
+            instances: [ground, ideal, instrumental, directive],
             connectives,
             system: TetradicSystem,
         }
@@ -43,27 +43,27 @@ impl Tetrad {
     
     /// Get user instance at position 0 (maps to term character "Ideal")
     pub fn first_user_instance(&self) -> &str {
-        &self.user_instance_index[0]
+        &self.instances[0]
     }
     
     /// Get user instance at position 1 (maps to term character "Directive") 
     pub fn second_user_instance(&self) -> &str {
-        &self.user_instance_index[1]
+        &self.instances[1]
     }
     
     /// Get user instance at position 2 (maps to term character "Instrumental")
     pub fn third_user_instance(&self) -> &str {
-        &self.user_instance_index[2]
+        &self.instances[2]
     }
     
     /// Get user instance at position 3 (maps to term character "Ground")
     pub fn fourth_user_instance(&self) -> &str {
-        &self.user_instance_index[3]
+        &self.instances[3]
     }
     
     /// Get all terms as a tuple
     pub fn terms_tuple(&self) -> (&str, &str, &str, &str) {
-        (&self.user_instance_index[0], &self.user_instance_index[1], &self.user_instance_index[2], &self.user_instance_index[3])
+        (&self.instances[0], &self.instances[1], &self.instances[2], &self.instances[3])
     }
     
     /// Get connective relationship between two terms
@@ -105,13 +105,13 @@ impl Tetrad {
     /// Map a user instance to its positional coordinate
     /// Returns the 0-based index for the given user instance
     pub fn instance_to_position(&self, instance: &str) -> Option<usize> {
-        self.user_instance_index.iter().position(|inst| inst == instance)
+        self.instances.iter().position(|inst| inst == instance)
     }
     
     /// Map a positional coordinate to its user instance
     /// Returns the user instance for the given 0-based position index
     pub fn instance_from_position(&self, position: usize) -> Option<&str> {
-        self.user_instance_index.get(position).map(|s| s.as_str())
+        self.instances.get(position).map(|s| s.as_str())
     }
     
         /// Map a position to its term character (alias for term_character_from_position)
@@ -171,7 +171,7 @@ impl SystematicStructure for Tetrad {
     }
     
     fn user_instance_index(&self) -> &[String] {
-        &self.user_instance_index
+        &self.instances
     }
     
     fn first_order_connectives_type(&self) -> &str {
@@ -195,32 +195,32 @@ impl SystematicStructure for Tetrad {
         }
         
         // Validate all four terms are not empty
-        if self.user_instance_index[0].trim().is_empty() {
+        if self.instances[0].trim().is_empty() {
             return Err(SystematicsError::StructureValidation {
                 reason: "First term (Ground) cannot be empty".to_string(),
             });
         }
         
-        if self.user_instance_index[1].trim().is_empty() {
+        if self.instances[1].trim().is_empty() {
             return Err(SystematicsError::StructureValidation {
                 reason: "Second term (Ideal) cannot be empty".to_string(),
             });
         }
         
-        if self.user_instance_index[2].trim().is_empty() {
+        if self.instances[2].trim().is_empty() {
             return Err(SystematicsError::StructureValidation {
                 reason: "Third term (Instrumental) cannot be empty".to_string(),
             });
         }
         
-        if self.user_instance_index[3].trim().is_empty() {
+        if self.instances[3].trim().is_empty() {
             return Err(SystematicsError::StructureValidation {
                 reason: "Fourth term (Directive) cannot be empty".to_string(),
             });
         }
         
         // Validate term lengths
-        for (i, term) in self.user_instance_index.iter().enumerate() {
+        for (i, term) in self.instances.iter().enumerate() {
             if term.len() > 100 {
                 return Err(SystematicsError::StructureValidation {
                     reason: format!("Term {} is too long (max 100 characters)", i + 1),
@@ -229,7 +229,7 @@ impl SystematicStructure for Tetrad {
         }
         
         // Validate terms contain only allowed characters
-        for (i, term) in self.user_instance_index.iter().enumerate() {
+        for (i, term) in self.instances.iter().enumerate() {
             if !term.chars().all(|c| c.is_alphanumeric() || c.is_whitespace() || ".,!?'-()".contains(c)) {
                 return Err(SystematicsError::StructureValidation {
                     reason: format!("Term {} contains invalid characters", i + 1),
@@ -240,7 +240,7 @@ impl SystematicStructure for Tetrad {
         // Validate terms are all different (tetrad should represent distinct aspects)
         for i in 0..4 {
             for j in (i + 1)..4 {
-                if self.user_instance_index[i].trim().to_lowercase() == self.user_instance_index[j].trim().to_lowercase() {
+                if self.instances[i].trim().to_lowercase() == self.instances[j].trim().to_lowercase() {
                     return Err(SystematicsError::StructureValidation {
                         reason: format!("Terms {} and {} should be different to represent distinct aspects", i + 1, j + 1),
                     });
@@ -256,10 +256,10 @@ impl SystematicStructure for Tetrad {
         println!("\n{}", header);
         println!("Name: {}", self.name());
         println!("{}:", self.term_designation());
-        println!("  - {}", self.user_instance_index[0]);
-        println!("  - {}", self.user_instance_index[1]);
-        println!("  - {}", self.user_instance_index[2]);
-        println!("  - {}", self.user_instance_index[3]);
+        println!("  - {}", self.instances[0]);
+        println!("  - {}", self.instances[1]);
+        println!("  - {}", self.instances[2]);
+        println!("  - {}", self.instances[3]);
         
         // Show connectives if they exist
         if !self.connectives.is_empty() {
@@ -272,8 +272,8 @@ impl SystematicStructure for Tetrad {
                 let pair = if from < to { (*from, *to) } else { (*to, *from) };
                 if !shown_pairs.contains(&pair) {
                     shown_pairs.insert(pair);
-                    let left_term = &self.user_instance_index[pair.0];
-                    let right_term = &self.user_instance_index[pair.1];
+                    let left_term = &self.instances[pair.0];
+                    let right_term = &self.instances[pair.1];
                     display_items.push((left_term, relationship, right_term));
                 }
             }
