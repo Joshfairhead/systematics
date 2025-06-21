@@ -7,7 +7,7 @@ use systematics_api::SystematicsError;
 pub struct CreateStructureRequest {
     pub name: String,
     pub structure_type: String,
-    pub terms: Vec<String>,
+    pub user_instance_index: Vec<String>,
     pub connectives: HashMap<String, String>,
     pub description: Option<String>,
 }
@@ -20,11 +20,11 @@ pub struct ApiResponse<T> {
 }
 
 #[derive(Debug, Deserialize, Serialize)]
-pub struct StoredStructure {
+pub struct StoredUserDefinition {
     pub id: StructureId,
     pub name: String,
     pub structure_type: String,
-    pub terms: Vec<String>,
+    pub user_instance_index: Vec<String>,
     pub connectives: HashMap<String, String>,
     pub created_at: String,
     pub updated_at: String,
@@ -66,8 +66,8 @@ impl ApiClient {
         }
     }
 
-    pub async fn list_structures(&self) -> Result<Vec<StoredStructure>, SystematicsError> {
-        let url = format!("{}/structures", self.base_url);
+    pub async fn list_definitions(&self) -> Result<Vec<StoredUserDefinition>, SystematicsError> {
+        let url = format!("{}/definitions", self.base_url);
         
         let response = self.client
             .get(&url)
@@ -82,7 +82,7 @@ impl ApiClient {
             )));
         }
 
-        let api_response: ApiResponse<Vec<StoredStructure>> = response
+        let api_response: ApiResponse<Vec<StoredUserDefinition>> = response
             .json()
             .await
             .map_err(|e| SystematicsError::Storage(format!("Failed to parse response: {}", e)))?;
@@ -96,8 +96,8 @@ impl ApiClient {
         }
     }
 
-    pub async fn search_structures(&self, query: &str) -> Result<Vec<StoredStructure>, SystematicsError> {
-        let url = format!("{}/structures/search?q={}", self.base_url, urlencoding::encode(query));
+    pub async fn search_definitions(&self, query: &str) -> Result<Vec<StoredUserDefinition>, SystematicsError> {
+        let url = format!("{}/definitions/search?q={}", self.base_url, urlencoding::encode(query));
         
         let response = self.client
             .get(&url)
@@ -112,7 +112,7 @@ impl ApiClient {
             )));
         }
 
-        let api_response: ApiResponse<Vec<StoredStructure>> = response
+        let api_response: ApiResponse<Vec<StoredUserDefinition>> = response
             .json()
             .await
             .map_err(|e| SystematicsError::Storage(format!("Failed to parse response: {}", e)))?;
@@ -126,8 +126,8 @@ impl ApiClient {
         }
     }
 
-    pub async fn get_structure(&self, id: &str) -> Result<Option<StoredStructure>, SystematicsError> {
-        let url = format!("{}/structures/{}", self.base_url, id);
+    pub async fn get_definition(&self, id: &str) -> Result<Option<StoredUserDefinition>, SystematicsError> {
+        let url = format!("{}/definitions/{}", self.base_url, id);
         
         let response = self.client
             .get(&url)
@@ -146,7 +146,7 @@ impl ApiClient {
             )));
         }
 
-        let api_response: ApiResponse<StoredStructure> = response
+        let api_response: ApiResponse<StoredUserDefinition> = response
             .json()
             .await
             .map_err(|e| SystematicsError::Storage(format!("Failed to parse response: {}", e)))?;
@@ -160,20 +160,20 @@ impl ApiClient {
         }
     }
 
-    pub async fn create_structure(
+    pub async fn create_definition(
         &self,
         name: &str,
         structure_type: &str,
-        terms: Vec<String>,
+        user_instance_index: Vec<String>,
         connectives: HashMap<String, String>,
         description: Option<String>,
     ) -> Result<String, SystematicsError> {
-        let url = format!("{}/structures", self.base_url);
+        let url = format!("{}/definitions", self.base_url);
         
         let request = CreateStructureRequest {
             name: name.to_string(),
             structure_type: structure_type.to_string(),
-            terms,
+            user_instance_index,
             connectives,
             description,
         };
@@ -206,8 +206,8 @@ impl ApiClient {
         }
     }
 
-    pub async fn delete_structure(&self, id: &str) -> Result<bool, SystematicsError> {
-        let url = format!("{}/structures/{}", self.base_url, id);
+    pub async fn delete_definition(&self, id: &str) -> Result<bool, SystematicsError> {
+        let url = format!("{}/definitions/{}", self.base_url, id);
         
         let response = self.client
             .delete(&url)
@@ -236,8 +236,8 @@ impl ApiClient {
         }
     }
 
-    pub async fn get_related_structures(&self, id: &str) -> Result<Vec<StoredStructure>, SystematicsError> {
-        let url = format!("{}/structures/{}/related", self.base_url, id);
+    pub async fn get_related_definitions(&self, id: &str) -> Result<Vec<StoredUserDefinition>, SystematicsError> {
+        let url = format!("{}/definitions/{}/related", self.base_url, id);
         
         let response = self.client
             .get(&url)
@@ -252,7 +252,7 @@ impl ApiClient {
             )));
         }
 
-        let api_response: ApiResponse<Vec<StoredStructure>> = response
+        let api_response: ApiResponse<Vec<StoredUserDefinition>> = response
             .json()
             .await
             .map_err(|e| SystematicsError::Storage(format!("Failed to parse response: {}", e)))?;

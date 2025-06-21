@@ -1,37 +1,5 @@
 # Frontend Refactoring TODO
 
-## ✅ COMPLETED - Terminology Consistency
-
-### ✅ **StoredStructure Field Rename**
-- ✅ Renamed `StoredStructure.terms` → `StoredStructure.user_instance_index` 
-- ✅ Updated all references in frontend code
-- ✅ Updated API integration to match backend field names
-- ✅ Ensures clear separation: `user_instance_index` = user data, `term_characters` = schema data
-
-### ✅ **SystemOverlay Parameter Clarity**
-- ✅ Renamed `term_index` → `position_index` in method signatures
-- ✅ This parameter represents positional mapping, not term-specific data
-- ✅ Updated all method signatures and usage in `system_overlay.rs`
-
-### ✅ **Method Parameter Consistency**
-- ✅ Reviewed all method parameters for terminology clarity
-- ✅ Ensured consistent use of:
-  - `user_instances` for user-provided data
-  - `term_characters` for schema/Bennett definitions  
-  - `display_values` for what's currently shown
-  - `position_index` for array/layout positions
-
-### ✅ **API Integration Consistency**
-- ✅ Updated `CreateStructureRequest.terms` → `CreateStructureRequest.user_instance_index`
-- ✅ Updated all placeholder structure creation methods
-- ✅ Updated search functionality to use `user_instance_index`
-- ✅ Updated display logic to use correct field names
-
-### ✅ **Frontend Cursor Rules**
-- ✅ Created `.cursor/rules/frontend-terminology.mdc` with comprehensive guidelines
-- ✅ Established enforcement patterns for terminology consistency
-- ✅ Documented correct vs incorrect patterns with examples
-
 ## Medium Priority - Architecture Hardening
 
 ### 4. **Frontend Reference Hardening**

@@ -7,7 +7,7 @@
 // Priority: High - affects core systematic structure display
 
 use yew::{html, Component, Context, Html, Properties, TargetCast};
-use crate::services::api::{StoredStructure, ApiClient, SystemDefinition, spawn_api_call};
+use crate::services::api::{StoredUserDefinition, ApiClient, SystemDefinition, spawn_api_call};
 use crate::core::geometry::GeometryCalculator;
 use std::f64::consts::PI;
 use web_sys;
@@ -16,7 +16,7 @@ use web_sys;
 pub struct Props {
     pub system_num: i32,
     #[prop_or_default]
-    pub structure: Option<StoredStructure>,
+    pub definition: Option<StoredUserDefinition>,
     #[prop_or_default]
     pub creation_mode: bool,
     #[prop_or_default]
@@ -28,13 +28,13 @@ pub struct Props {
 }
 
 pub enum Msg {
-    SchemaLoaded(Result<SystemDefinition, anyhow::Error>),
+    DefinitionLoaded(Result<SystemDefinition, anyhow::Error>),
 }
 
 pub struct SystemOverlay {
-    schema: Option<SystemDefinition>,
+    definition: Option<SystemDefinition>,
     api_client: ApiClient,
-    loading_schema: bool,
+    loading_definition: bool,
 }
 
 impl Component for SystemOverlay {
@@ -42,29 +42,29 @@ impl Component for SystemOverlay {
     type Properties = Props;
 
     fn create(ctx: &Context<Self>) -> Self {
-        let mut component = Self {
-            schema: None,
+        let mut component =         Self {
+            definition: None,
             api_client: ApiClient::new(),
-            loading_schema: false,
+            loading_definition: false,
         };
         
-        // Load schema for the current system
-        component.load_schema_for_system(ctx, ctx.props().system_num);
+        // Load definition for the current system
+        component.load_definition_for_system(ctx, ctx.props().system_num);
         
         component
     }
 
     fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
-            Msg::SchemaLoaded(result) => {
-                self.loading_schema = false;
+            Msg::DefinitionLoaded(result) => {
+                self.loading_definition = false;
                 match result {
-                    Ok(schema) => {
-                        self.schema = Some(schema);
+                    Ok(definition) => {
+                        self.definition = Some(definition);
                         true
                     }
                     Err(err) => {
-                        web_sys::console::error_1(&format!("Failed to load schema: {}", err).into());
+                        web_sys::console::error_1(&format!("Failed to load definition: {}", err).into());
                         true
                     }
                 }
@@ -78,7 +78,7 @@ impl Component for SystemOverlay {
         
         // Check if system_num changed
         if new_props.system_num != old_props.system_num {
-            self.load_schema_for_system(ctx, new_props.system_num);
+            self.load_definition_for_system(ctx, new_props.system_num);
             should_update = true;
         }
         
@@ -93,7 +93,7 @@ impl Component for SystemOverlay {
         }
         
         // Check if structure changed
-        if new_props.structure != old_props.structure {
+        if new_props.definition != old_props.definition {
             should_update = true;
         }
         
@@ -107,28 +107,28 @@ impl Component for SystemOverlay {
 
     fn view(&self, ctx: &Context<Self>) -> Html {
         let system_num = ctx.props().system_num;
-        let structure = &ctx.props().structure;
+        let definition = &ctx.props().definition;
         let creation_mode = ctx.props().creation_mode;
         
 
         
-        // Show loading state while schema is being fetched
-        if self.loading_schema {
+        // Show loading state while definition is being fetched
+        if self.loading_definition {
             return html! {
                 <div class="system-overlay loading">
                     <div class="loading-message">
-                        <p>{"Loading structure schema..."}</p>
+                        <p>{"Loading system definition..."}</p>
                     </div>
                 </div>
             };
         }
         
-        // Show error state if schema failed to load
-        if self.schema.is_none() {
+        // Show error state if definition failed to load
+        if self.definition.is_none() {
             return html! {
                 <div class="system-overlay error">
                     <div class="error-message">
-                        <p>{"Unable to load structure schema"}</p>
+                        <p>{"Unable to load system definition"}</p>
                         <p><small>{"Please check your connection and try again"}</small></p>
                     </div>
                 </div>
@@ -138,7 +138,7 @@ impl Component for SystemOverlay {
         html! {
             <>
                 {self.render_control_buttons(ctx)}
-                {self.render_structure_content(ctx, system_num, structure)}
+                {self.render_structure_content(ctx, system_num, definition)}
             </>
         }
     }
@@ -150,26 +150,26 @@ impl SystemOverlay {
         html! {}
     }
     
-    fn render_structure_content(&self, ctx: &Context<Self>, system_num: i32, structure: &Option<StoredStructure>) -> Html {
+    fn render_structure_content(&self, ctx: &Context<Self>, system_num: i32, definition: &Option<StoredUserDefinition>) -> Html {
         match system_num {
-            1 => self.render_monad(ctx, structure),
-            2 => self.render_dyad(ctx, structure),
-            3 => self.render_triad(ctx, structure),
-            4 => self.render_tetrad(ctx, structure),
-            5 => self.render_pentad(ctx, structure),
-            6 => self.render_hexad(ctx, structure),
-            7 => self.render_heptad(ctx, structure),
-            8 => self.render_octad(ctx, structure),
-            9 => self.render_ennead(ctx, structure),
-            10 => self.render_decad(ctx, structure),
-            11 => self.render_undecad(ctx, structure),
-            12 => self.render_dodecad(ctx, structure),
+            1 => self.render_monad(ctx, definition),
+            2 => self.render_dyad(ctx, definition),
+            3 => self.render_triad(ctx, definition),
+            4 => self.render_tetrad(ctx, definition),
+            5 => self.render_pentad(ctx, definition),
+            6 => self.render_hexad(ctx, definition),
+            7 => self.render_heptad(ctx, definition),
+            8 => self.render_octad(ctx, definition),
+            9 => self.render_ennead(ctx, definition),
+            10 => self.render_decad(ctx, definition),
+            11 => self.render_undecad(ctx, definition),
+            12 => self.render_dodecad(ctx, definition),
             _ => html! { <div class="system-overlay">{"Unsupported system"}</div> },
         }
     }
 
-    fn load_schema_for_system(&mut self, ctx: &Context<Self>, system_num: i32) {
-        if self.loading_schema {
+    fn load_definition_for_system(&mut self, ctx: &Context<Self>, system_num: i32) {
+        if self.loading_definition {
             return;
         }
         
@@ -189,9 +189,9 @@ impl SystemOverlay {
             _ => return,
         };
         
-        self.loading_schema = true;
+        self.loading_definition = true;
         let api_client = self.api_client.clone();
-        let callback = ctx.link().callback(Msg::SchemaLoaded);
+        let callback = ctx.link().callback(Msg::DefinitionLoaded);
         
         spawn_api_call(
             async move {
@@ -202,7 +202,7 @@ impl SystemOverlay {
     }
 
     fn get_term_character(&self, position: usize) -> Option<String> {
-        self.schema
+        self.definition
             .as_ref()
             .and_then(|s| s.term_characters.get(position))
             .cloned()
@@ -219,26 +219,26 @@ impl SystemOverlay {
             if user_instances.len() == expected_count {
                 user_instances.clone()
             } else {
-                // Fallback to schema term characters for creation mode
+                // Fallback to definition term characters for creation mode
                 (0..expected_count)
                     .map(|i| self.get_term_character(i).unwrap_or_else(|| format!("Position {}", i + 1)))
                     .collect()
             }
-        } else if let Some(ref structure) = ctx.props().structure {
-            // Check if this is a real structure (not a placeholder) by checking if it has API data
-            let is_placeholder = structure.id.as_str().map_or(false, |id| id.starts_with("placeholder-"));
+        } else if let Some(ref definition) = ctx.props().definition {
+            // Check if this is a real definition (not a placeholder) by checking if it has API data
+            let is_placeholder = definition.id.as_str().map_or(false, |id| id.starts_with("placeholder-"));
             
-            if !is_placeholder && structure.user_instance_index.len() == expected_count {
-                // Real structure with correct number of user instances
-                structure.user_instance_index.clone()
+            if !is_placeholder && definition.user_instance_index.len() == expected_count {
+                // Real definition with correct number of user instances
+                definition.user_instance_index.clone()
             } else {
-                // Always use schema term characters from API
+                // Always use definition term characters from API
                 (0..expected_count)
                     .map(|i| self.get_term_character(i).unwrap_or_else(|| format!("Position {}", i + 1)))
                     .collect()
             }
         } else {
-            // No structure loaded - always use schema term characters from API
+            // No definition loaded - always use definition term characters from API
             (0..expected_count)
                 .map(|i| self.get_term_character(i).unwrap_or_else(|| format!("Position {}", i + 1)))
                 .collect()
@@ -473,51 +473,51 @@ impl SystemOverlay {
         }
     }
 
-    fn render_monad(&self, ctx: &Context<Self>, _structure: &Option<StoredStructure>) -> Html {
+    fn render_monad(&self, ctx: &Context<Self>, _definition: &Option<StoredUserDefinition>) -> Html {
         self.render_system_with_definition(ctx, "monad", 1)
     }
 
-    fn render_dyad(&self, ctx: &Context<Self>, _structure: &Option<StoredStructure>) -> Html {
+    fn render_dyad(&self, ctx: &Context<Self>, _definition: &Option<StoredUserDefinition>) -> Html {
         self.render_system_with_definition(ctx, "dyad", 2)
     }
 
-    fn render_triad(&self, ctx: &Context<Self>, _structure: &Option<StoredStructure>) -> Html {
+    fn render_triad(&self, ctx: &Context<Self>, _definition: &Option<StoredUserDefinition>) -> Html {
         self.render_system_with_definition(ctx, "triad", 3)
     }
 
-    fn render_tetrad(&self, ctx: &Context<Self>, _structure: &Option<StoredStructure>) -> Html {
+    fn render_tetrad(&self, ctx: &Context<Self>, _definition: &Option<StoredUserDefinition>) -> Html {
         self.render_system_with_definition(ctx, "tetrad", 4)
     }
 
-    fn render_pentad(&self, ctx: &Context<Self>, _structure: &Option<StoredStructure>) -> Html {
+    fn render_pentad(&self, ctx: &Context<Self>, _definition: &Option<StoredUserDefinition>) -> Html {
         self.render_system_with_definition(ctx, "pentad", 5)
     }
 
-    fn render_hexad(&self, ctx: &Context<Self>, _structure: &Option<StoredStructure>) -> Html {
+    fn render_hexad(&self, ctx: &Context<Self>, _definition: &Option<StoredUserDefinition>) -> Html {
         self.render_system_with_definition(ctx, "hexad", 6)
     }
 
-    fn render_heptad(&self, ctx: &Context<Self>, _structure: &Option<StoredStructure>) -> Html {
+    fn render_heptad(&self, ctx: &Context<Self>, _definition: &Option<StoredUserDefinition>) -> Html {
         self.render_system_with_definition(ctx, "heptad", 7)
     }
 
-    fn render_octad(&self, ctx: &Context<Self>, _structure: &Option<StoredStructure>) -> Html {
+    fn render_octad(&self, ctx: &Context<Self>, _definition: &Option<StoredUserDefinition>) -> Html {
         self.render_system_with_definition(ctx, "octad", 8)
     }
 
-    fn render_ennead(&self, ctx: &Context<Self>, _structure: &Option<StoredStructure>) -> Html {
+    fn render_ennead(&self, ctx: &Context<Self>, _definition: &Option<StoredUserDefinition>) -> Html {
         self.render_system_with_definition(ctx, "ennead", 9)
     }
 
-    fn render_decad(&self, ctx: &Context<Self>, _structure: &Option<StoredStructure>) -> Html {
+    fn render_decad(&self, ctx: &Context<Self>, _definition: &Option<StoredUserDefinition>) -> Html {
         self.render_system_with_definition(ctx, "decad", 10)
     }
 
-    fn render_undecad(&self, ctx: &Context<Self>, _structure: &Option<StoredStructure>) -> Html {
+    fn render_undecad(&self, ctx: &Context<Self>, _definition: &Option<StoredUserDefinition>) -> Html {
         self.render_system_with_definition(ctx, "undecad", 11)
     }
 
-    fn render_dodecad(&self, ctx: &Context<Self>, _structure: &Option<StoredStructure>) -> Html {
+    fn render_dodecad(&self, ctx: &Context<Self>, _definition: &Option<StoredUserDefinition>) -> Html {
         self.render_system_with_definition(ctx, "dodecad", 12)
     }
 } 

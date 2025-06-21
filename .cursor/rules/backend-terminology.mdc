@@ -12,15 +12,17 @@ The backend has established proven terminology patterns that MUST be maintained 
 ### IMPORTANT: Current vs Deprecated Terminology
 
 **CURRENT ESTABLISHED STANDARDS** (DO NOT CHANGE):
-- `term_characters` - Bennett's canonical term characters from schema (e.g., "Will", "Being", "Function")
+- `term_characters` - Bennett's canonical term characters from definition (e.g., "Will", "Being", "Function")
 - `user_instance_index` - User-provided data that maps to term character positions
 - `first_order_connectives_type()` - Method returning connective type name
 - `connectives_traits()` - Method returning relationship data
+
 
 **DEPRECATED/INCORRECT** (DO NOT USE):
 - `canonical_terms` - Old field name, replaced by `term_characters`
 - `terms` - Ambiguous field name, unclear if user data or schema data
 - `connectives()` - Ambiguous method name, replaced by `connectives_traits()`
+- structures should be definitions
 
 ### Core Terminology Standards
 
@@ -96,7 +98,7 @@ impl SystematicStructure for Triad {
 ### API Endpoint Consistency
 
 #### Schema Endpoints
-- ✅ `GET /schema/{structure_type}` returns `SchemaDefinition` with `term_characters` field (ESTABLISHED)
+- ✅ `GET /schema/{structure_type}` returns `StructureDefinition` with `term_characters` field (ESTABLISHED)
 - ✅ Field name `term_characters` (CURRENT STANDARD - not deprecated `canonical_terms`)
 - ✅ Consistent structure type naming (monad, dyad, triad, etc.)
 
@@ -112,9 +114,9 @@ pub struct CreateStructureRequest {
     pub description: Option<String>,
 }
 
-// ✅ CORRECT - SchemaDefinition for Bennett's structure definitions
+// ✅ CORRECT - StructureDefinition for Bennett's structure definitions
 #[derive(Serialize)]
-pub struct SchemaDefinition {
+pub struct StructureDefinition {
     pub structure_type: String,
     pub term_characters: Vec<String>, // Bennett's canonical terms
     pub coherence_attribute: String,

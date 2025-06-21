@@ -12,6 +12,10 @@ alwaysApply: false
   - ❌ `fn first_term()` - Misleading (suggests term character)
   - ✅ `fn get_user_instance_at(position: usize)` - Clear intent
   - ✅ `/// Get user instance at position 0 (maps to canonical "Will")`
+  
+**See Also**: 
+- [Backend Terminology Rules](mdc:.cursor/rules/backend-terminology.mdc) for comprehensive backend patterns
+- [Frontend Terminology Rules](mdc:.cursor/rules/frontend-terminology.mdc) for frontend consistency
 
 ### Documentation Standards
 Method comments must distinguish between:

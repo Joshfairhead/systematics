@@ -14,41 +14,41 @@ pub struct StorageArgs {
 
 #[derive(Debug, Subcommand)]
 pub enum StorageCommand {
-    /// List all stored structures
+    /// List all stored definitions
     List,
-    /// Search structures by term or name
+    /// Search definitions by term or name
     Search {
         /// Search query
         query: String,
     },
-    /// View structure details
+    /// View definition details
     View {
-        /// Structure ID
+        /// Definition ID
         id: String,
     },
-    /// Delete a structure
+    /// Delete a definition
     Delete {
-        /// Structure ID
+        /// Definition ID
         id: String,
     },
-    /// Show related structures
+    /// Show related definitions
     Related {
-        /// Structure ID
+        /// Definition ID
         id: String,
     },
-    /// Find structures containing a specific term
-    FindTerm {
-        /// Term to search for
-        term: String,
+    /// Find definitions containing a specific user instance
+    FindUserInstance {
+        /// User instance to search for
+        user_instance: String,
     },
-    /// Show structure graph
+    /// Show definition graph
     Graph {
-        /// Structure ID
+        /// Definition ID
         id: String,
     },
-    /// Update structure metadata
+    /// Update definition metadata
     Metadata {
-        /// Structure ID
+        /// Definition ID
         id: String,
         /// Key-value pairs (key=value)
         #[arg(short, long, value_parser = parse_key_val)]
@@ -155,13 +155,13 @@ impl ApiStorage {
 
     pub async fn handle_command(&self, args: &StorageArgs) -> Result<(), SystematicsError> {
         match &args.command {
-            StorageCommand::List => self.list_structures().await,
-            StorageCommand::Search { query } => self.search_structures(query).await,
-            StorageCommand::View { id } => self.view_structure(id).await,
-            StorageCommand::Delete { id } => self.delete_structure(id).await,
-            StorageCommand::Related { id } => self.show_related_structures(id).await,
-            StorageCommand::FindTerm { term } => self.find_term_usage(term).await,
-            StorageCommand::Graph { id } => self.show_structure_graph(id).await,
+            StorageCommand::List => self.list_definitions().await,
+            StorageCommand::Search { query } => self.search_definitions(query).await,
+            StorageCommand::View { id } => self.view_definition(id).await,
+            StorageCommand::Delete { id } => self.delete_definition(id).await,
+            StorageCommand::Related { id } => self.show_related_definitions(id).await,
+            StorageCommand::FindUserInstance { user_instance } => self.find_user_instance_usage(user_instance).await,
+            StorageCommand::Graph { id } => self.show_definition_graph(id).await,
             StorageCommand::Metadata { id, pairs } => {
                 let metadata: HashMap<String, String> = pairs.iter().cloned().collect();
                 self.update_metadata(id, metadata).await
@@ -172,74 +172,74 @@ impl ApiStorage {
         }
     }
 
-    async fn list_structures(&self) -> Result<(), SystematicsError> {
-        let structures = self.api_client.list_structures().await?;
+    async fn list_definitions(&self) -> Result<(), SystematicsError> {
+        let definitions = self.api_client.list_definitions().await?;
         
-        if structures.is_empty() {
-            println!("📭 No structures found in the database.");
+        if definitions.is_empty() {
+            println!("📭 No definitions found in the database.");
             return Ok(());
         }
 
-        println!("📚 Stored Structures ({} total):", structures.len());
+        println!("📚 Stored Definitions ({} total):", definitions.len());
         println!("{}", "─".repeat(80));
         
-        for structure in structures {
-            println!("🔹 {} ({})", structure.name, structure.structure_type);
-            println!("  Terms: {}", structure.terms.join(" → "));
+        for definition in definitions {
+            println!("🔹 {} ({})", definition.name, definition.structure_type);
+            println!("  Terms: {}", definition.user_instance_index.join(" → "));
             
             // Show connectives if they exist
-            display_connectives(&structure.connectives, &structure.terms);
+            display_connectives(&definition.connectives, &definition.user_instance_index);
             
-            if let Some(desc) = &structure.description {
+            if let Some(desc) = &definition.description {
                 println!("  Description: {}", desc);
             }
             println!("  ─────────────────────────────────────────");
-            println!("  ID: {} | Created: {}", get_structure_id_string(&structure.id), structure.created_at);
+            println!("  ID: {} | Created: {}", get_definition_id_string(&definition.id), definition.created_at);
             println!();
         }
         
         Ok(())
     }
 
-    async fn search_structures(&self, query: &str) -> Result<(), SystematicsError> {
-        let structures = self.api_client.search_structures(query).await?;
+    async fn search_definitions(&self, query: &str) -> Result<(), SystematicsError> {
+        let definitions = self.api_client.search_definitions(query).await?;
         
-        if structures.is_empty() {
-            println!("🔍 No structures found matching '{}'", query);
+        if definitions.is_empty() {
+            println!("🔍 No definitions found matching '{}'", query);
             return Ok(());
         }
 
-        println!("🔍 Search Results for '{}' ({} found):", query, structures.len());
+        println!("🔍 Search Results for '{}' ({} found):", query, definitions.len());
         println!("{}", "─".repeat(80));
         
-        for structure in structures {
-            println!("🔹 {} ({})", structure.name, structure.structure_type);
-            println!("  Terms: {}", structure.terms.join(" → "));
+        for definition in definitions {
+            println!("🔹 {} ({})", definition.name, definition.structure_type);
+            println!("  Terms: {}", definition.user_instance_index.join(" → "));
             
             // Show connectives if they exist
-            display_connectives(&structure.connectives, &structure.terms);
+            display_connectives(&definition.connectives, &definition.user_instance_index);
             
-            if let Some(desc) = &structure.description {
+            if let Some(desc) = &definition.description {
                 println!("  Description: {}", desc);
             }
             println!("  ─────────────────────────────────────────");
-            println!("  ID: {} | Created: {}", get_structure_id_string(&structure.id), structure.created_at);
+            println!("  ID: {} | Created: {}", get_definition_id_string(&definition.id), definition.created_at);
             println!();
         }
         
         Ok(())
     }
 
-    async fn view_structure(&self, id: &str) -> Result<(), SystematicsError> {
-        let structure = self.api_client.get_structure(id).await?;
+    async fn view_definition(&self, id: &str) -> Result<(), SystematicsError> {
+        let definition = self.api_client.get_definition(id).await?;
         
-        match structure {
+        match definition {
             Some(s) => {
-                println!("📋 Structure Details");
+                println!("📋 Definition Details");
                 println!("{}", "═".repeat(60));
                 println!("Name: {}", s.name);
                 println!("Type: {}", s.structure_type);
-                println!("ID: {}", get_structure_id_string(&s.id));
+                println!("ID: {}", get_definition_id_string(&s.id));
                 println!("Created: {}", s.created_at);
                 println!("Updated: {}", s.updated_at);
                 
@@ -247,8 +247,8 @@ impl ApiStorage {
                     println!("Description: {}", desc);
                 }
                 
-                println!("\nTerms ({}):", s.terms.len());
-                for (i, term) in s.terms.iter().enumerate() {
+                println!("\nTerms ({}):", s.user_instance_index.len());
+                for (i, term) in s.user_instance_index.iter().enumerate() {
                     println!("  {}: {}", i + 1, term);
                 }
                 
@@ -265,8 +265,8 @@ impl ApiStorage {
                     for (key, relationship) in &s.connectives {
                         if let Some((from_str, to_str)) = key.split_once(':') {
                             if let (Ok(from), Ok(to)) = (from_str.parse::<usize>(), to_str.parse::<usize>()) {
-                                let from_term = get_term_name(&s.terms, from);
-                                let to_term = get_term_name(&s.terms, to);
+                                                    let from_term = get_user_instance_name(&s.user_instance_index, from);
+                    let to_term = get_user_instance_name(&s.user_instance_index, to);
                                 
                                 max_left_width = max_left_width.max(from_term.len());
                                 max_middle_width = max_middle_width.max(relationship.len());
@@ -296,75 +296,75 @@ impl ApiStorage {
                 }
             }
             None => {
-                println!("❌ Structure with ID '{}' not found", id);
+                println!("❌ Definition with ID '{}' not found", id);
             }
         }
         // Graph functionality not yet implemented in API
         Ok(())
     }
 
-    async fn delete_structure(&self, id: &str) -> Result<(), SystematicsError> {
-        let deleted = self.api_client.delete_structure(id).await?;
+    async fn delete_definition(&self, id: &str) -> Result<(), SystematicsError> {
+        let deleted = self.api_client.delete_definition(id).await?;
         
         if deleted {
-            println!("✅ Structure '{}' deleted successfully", id);
+            println!("✅ Definition '{}' deleted successfully", id);
         } else {
-            println!("❌ Structure '{}' not found", id);
+            println!("❌ Definition '{}' not found", id);
         }
         
         Ok(())
     }
 
-    async fn show_related_structures(&self, id: &str) -> Result<(), SystematicsError> {
-        let related = self.api_client.get_related_structures(id).await?;
+    async fn show_related_definitions(&self, id: &str) -> Result<(), SystematicsError> {
+        let related = self.api_client.get_related_definitions(id).await?;
         
         if related.is_empty() {
-            println!("🔗 No related structures found for '{}'", id);
+            println!("🔗 No related definitions found for '{}'", id);
             return Ok(());
         }
 
-        println!("🔗 Related Structures for '{}' ({} found):", id, related.len());
+        println!("🔗 Related Definitions for '{}' ({} found):", id, related.len());
         println!("{}", "─".repeat(80));
         
-        for structure in related {
-            println!("🔹 {} ({})", structure.name, structure.structure_type);
-            println!("  Terms: {}", structure.terms.join(" → "));
+        for definition in related {
+            println!("🔹 {} ({})", definition.name, definition.structure_type);
+            println!("  Terms: {}", definition.user_instance_index.join(" → "));
             
             // Show connectives if they exist
-            display_connectives(&structure.connectives, &structure.terms);
+            display_connectives(&definition.connectives, &definition.user_instance_index);
             
             println!("  ─────────────────────────────────────────");
-            println!("  ID: {}", get_structure_id_string(&structure.id));
+            println!("  ID: {}", get_definition_id_string(&definition.id));
             println!();
         }
         
         Ok(())
     }
 
-    async fn find_term_usage(&self, term: &str) -> Result<(), SystematicsError> {
-        // For now, use search functionality to find term usage
-        let structures = self.api_client.search_structures(term).await?;
+    async fn find_user_instance_usage(&self, user_instance: &str) -> Result<(), SystematicsError> {
+        // For now, use search functionality to find user instance usage
+        let definitions = self.api_client.search_definitions(user_instance).await?;
         
-        if structures.is_empty() {
-            println!("🔍 No structures found containing term '{}'", term);
+        if definitions.is_empty() {
+            println!("🔍 No definitions found containing user instance '{}'", user_instance);
             return Ok(());
         }
 
-        println!("🔍 Structures containing '{}' ({} found):", term, structures.len());
+        println!("🔍 Definitions containing '{}' ({} found):", user_instance, definitions.len());
         println!("{}", "─".repeat(80));
         
-        for structure in structures {
-            println!("🔹 {} ({})", structure.name, structure.structure_type);
-            println!("  Terms: {}", structure.terms.join(" → "));
+        for definition in definitions {
+            println!("🔹 {} ({})", definition.name, definition.structure_type);
+            println!("  Terms: {}", definition.user_instance_index.join(" → "));
             
             // Show connectives if they exist
-            display_connectives(&structure.connectives, &structure.terms);
+            display_connectives(&definition.connectives, &definition.user_instance_index);
             
-            // Highlight the matching term
-            let positions: Vec<usize> = structure.terms
+            // Highlight the matching user instance
+            let positions: Vec<usize> = definition.user_instance_index
                 .iter()
                 .enumerate()
-                .filter(|(_, t)| t.contains(term))
+                .filter(|(_, t)| t.contains(user_instance))
                 .map(|(i, _)| i + 1)
                 .collect();
             
@@ -377,18 +377,18 @@ impl ApiStorage {
                 );
             }
             println!("  ─────────────────────────────────────────");
-            println!("  ID: {}", get_structure_id_string(&structure.id));
+            println!("  ID: {}", get_definition_id_string(&definition.id));
             println!();
         }
         
         Ok(())
     }
 
-    async fn show_structure_graph(&self, id: &str) -> Result<(), SystematicsError> {
+    async fn show_definition_graph(&self, id: &str) -> Result<(), SystematicsError> {
         // Graph functionality not yet implemented in API
         println!("⚠️  Graph functionality not yet available via API");
         println!("   This feature will be added in a future update");
-        println!("   Structure ID: {}", id);
+        println!("   Definition ID: {}", id);
         Ok(())
     }
 
@@ -396,7 +396,7 @@ impl ApiStorage {
         // Metadata update functionality not yet implemented in API
         println!("⚠️  Metadata update functionality not yet available via API");
         println!("   This feature will be added in a future update");
-        println!("   Structure ID: {}", id);
+        println!("   Definition ID: {}", id);
         for (key, value) in metadata {
             println!("   Requested: {} = {}", key, value);
         }
@@ -411,19 +411,19 @@ impl ApiStorage {
     }
 
     async fn show_stats(&self) -> Result<(), SystematicsError> {
-        let structures = self.api_client.list_structures().await?;
+        let definitions = self.api_client.list_definitions().await?;
         
         println!("📊 Database Statistics");
         println!("{}", "═".repeat(40));
-        println!("Total structures: {}", structures.len());
+        println!("Total definitions: {}", definitions.len());
         
         // Count by type
         let mut type_counts: HashMap<String, usize> = HashMap::new();
         let mut total_terms = 0;
         
-        for structure in &structures {
-            *type_counts.entry(structure.structure_type.clone()).or_insert(0) += 1;
-            total_terms += structure.terms.len();
+        for definition in &definitions {
+            *type_counts.entry(definition.structure_type.clone()).or_insert(0) += 1;
+            total_terms += definition.user_instance_index.len();
         }
         
         println!("Total terms: {}", total_terms);
@@ -432,9 +432,9 @@ impl ApiStorage {
             println!("  {}: {}", structure_type, count);
         }
         
-        if !structures.is_empty() {
-            let oldest = structures.iter().min_by_key(|s| &s.created_at).unwrap();
-            let newest = structures.iter().max_by_key(|s| &s.created_at).unwrap();
+        if !definitions.is_empty() {
+            let oldest = definitions.iter().min_by_key(|s| &s.created_at).unwrap();
+            let newest = definitions.iter().max_by_key(|s| &s.created_at).unwrap();
             
             println!("\nOldest: {} ({})", oldest.name, oldest.created_at);
             println!("Newest: {} ({})", newest.name, newest.created_at);
@@ -444,16 +444,16 @@ impl ApiStorage {
     }
 
     async fn export_database(&self, output_path: &str) -> Result<(), SystematicsError> {
-        let structures = self.api_client.list_structures().await?;
+        let definitions = self.api_client.list_definitions().await?;
         
         // Create export data structure
         let export_data = serde_json::json!({
             "export_info": {
                 "timestamp": chrono::Utc::now().to_rfc3339(),
                 "version": "1.0",
-                "total_structures": structures.len()
+                "total_definitions": definitions.len()
             },
-            "structures": structures
+            "definitions": definitions
         });
         
         // Write to file
@@ -463,35 +463,35 @@ impl ApiStorage {
         
         println!("📤 Database exported successfully!");
         println!("   File: {}", output_path);
-        println!("   Structures: {}", structures.len());
+        println!("   Definitions: {}", definitions.len());
         println!("   Size: {} bytes", std::fs::metadata(output_path)?.len());
         
         Ok(())
     }
 
-    pub async fn auto_save_structure<T: SystematicStructure>(
+    pub async fn auto_save_definition<T: SystematicStructure>(
         &self,
-        structure: &T,
+        definition: &T,
         name: &str,
         description: Option<&str>,
     ) -> Result<String, SystematicsError> {
         // Convert connectives from (usize, usize) keys to string keys for API
-        let connectives: HashMap<String, String> = structure.connectives_traits()
+        let connectives: HashMap<String, String> = definition.connectives_traits()
             .iter()
             .map(|((from, to), relationship)| {
                 (format!("{}:{}", from, to), relationship.clone())
             })
             .collect();
         
-        let id = self.api_client.create_structure(
+        let id = self.api_client.create_definition(
             name,
-            structure.structure_type(),
-            structure.user_instance_index().to_vec(),
+            definition.structure_type(),
+            definition.user_instance_index().to_vec(),
             connectives,
             description.map(|s| s.to_string()),
         ).await?;
         
-        println!("💾 Structure '{}' saved with ID: {}", name, id);
+        println!("💾 Definition '{}' saved with ID: {}", name, id);
         Ok(id)
     }
 }
@@ -503,19 +503,19 @@ fn parse_key_val(s: &str) -> Result<(String, String), Box<dyn std::error::Error 
     Ok((s[..pos].to_string(), s[pos + 1..].to_string()))
 }
 
-fn get_term_name(terms: &[String], index: usize) -> String {
-    terms.get(index)
+fn get_user_instance_name(user_instances: &[String], index: usize) -> String {
+    user_instances.get(index)
         .map(|s| s.clone())
-        .unwrap_or_else(|| format!("Term{}", index))
+        .unwrap_or_else(|| format!("UserInstance{}", index))
 }
 
-fn get_structure_id_string(id: &crate::api_client::StructureId) -> &str {
+fn get_definition_id_string(id: &crate::api_client::StructureId) -> &str {
     match &id.id {
         StructureIdValue::String(s) => s,
     }
 }
 
-fn display_connectives(connectives: &HashMap<String, String>, terms: &[String]) {
+fn display_connectives(connectives: &HashMap<String, String>, user_instances: &[String]) {
     if !connectives.is_empty() {
         println!("  Connectives:");
         
@@ -528,8 +528,8 @@ fn display_connectives(connectives: &HashMap<String, String>, terms: &[String]) 
         for (key, relationship) in connectives {
             if let Some((from_str, to_str)) = key.split_once(':') {
                 if let (Ok(from), Ok(to)) = (from_str.parse::<usize>(), to_str.parse::<usize>()) {
-                    let from_term = get_term_name(terms, from);
-                    let to_term = get_term_name(terms, to);
+                    let from_term = get_user_instance_name(user_instances, from);
+                    let to_term = get_user_instance_name(user_instances, to);
                     
                     max_left_width = max_left_width.max(from_term.len());
                     max_middle_width = max_middle_width.max(relationship.len());

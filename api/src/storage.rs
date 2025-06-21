@@ -12,7 +12,7 @@ use serde_json;
 
 #[derive(Debug, Clone)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-pub struct StoredStructure {
+pub struct StoredUserDefinition {
     pub id: Thing,
     pub name: String,
     pub structure_type: String,
@@ -56,7 +56,7 @@ impl SurrealStorage {
         let db = Surreal::new::<RocksDb>(db_path).await?;
         
         // Use a namespace and database
-        db.use_ns("systematics").use_db("structures").await?;
+        db.use_ns("systematics").use_db("definitions").await?;
         
         // Initialize schema
         Self::init_schema(&db).await?;
@@ -74,25 +74,25 @@ impl SurrealStorage {
     async fn init_schema(db: &Surreal<Db>) -> Result<(), SystematicsError> {
         // Create tables and indexes - using SCHEMALESS to avoid type conflicts
         db.query("
-            DEFINE TABLE structures SCHEMALESS;
-            DEFINE INDEX idx_name ON structures COLUMNS name;
-            DEFINE INDEX idx_type ON structures COLUMNS structure_type;
-            DEFINE INDEX idx_created ON structures COLUMNS created_at;
+            DEFINE TABLE definitions SCHEMALESS;
+            DEFINE INDEX idx_name ON definitions COLUMNS name;
+            DEFINE INDEX idx_type ON definitions COLUMNS structure_type;
+            DEFINE INDEX idx_created ON definitions COLUMNS created_at;
         ").await?;
 
         // Migrate existing records from 'terms' to 'user_instance_index' field
         // First, check if migration is needed
-        let check_sql = "SELECT * FROM structures LIMIT 1";
+        let check_sql = "SELECT * FROM definitions LIMIT 1";
         if let Ok(mut result) = db.query(check_sql).await {
-            if let Ok(structures) = result.take::<Vec<serde_json::Value>>(0) {
-                if !structures.is_empty() {
+            if let Ok(definitions) = result.take::<Vec<serde_json::Value>>(0) {
+                if !definitions.is_empty() {
                     // Check if first record has old 'terms' field
-                    if let Some(first_structure) = structures.first() {
-                        if first_structure.get("terms").is_some() && first_structure.get("user_instance_index").is_none() {
+                    if let Some(first_definition) = definitions.first() {
+                        if first_definition.get("terms").is_some() && first_definition.get("user_instance_index").is_none() {
                             eprintln!("🔄 Migrating database from 'terms' to 'user_instance_index'...");
                             let migration_sql = "
-                                UPDATE structures SET user_instance_index = terms WHERE terms IS NOT NULL;
-                                UPDATE structures UNSET terms;
+                                UPDATE definitions SET user_instance_index = terms WHERE terms IS NOT NULL;
+                                UPDATE definitions UNSET terms;
                             ";
                             db.query(migration_sql).await?;
                             eprintln!("✅ Database migration completed");
@@ -129,9 +129,9 @@ impl SurrealStorage {
         Ok(())
     }
 
-    pub async fn store_structure<T: SystematicStructure>(
+    pub async fn store_definition<T: SystematicStructure>(
         &self,
-        structure: &T,
+        definition: &T,
         name: &str,
         description: Option<&str>,
     ) -> Result<String, SystematicsError> {
@@ -139,18 +139,18 @@ impl SurrealStorage {
         let now = Datetime::default();
         
         // Convert connectives from (usize, usize) keys to string keys for storage
-        let connectives: HashMap<String, String> = structure.connectives_traits()
+        let connectives: HashMap<String, String> = definition.connectives_traits()
             .iter()
             .map(|((from, to), relationship)| {
                 (format!("{}:{}", from, to), relationship.clone())
             })
             .collect();
         
-        let stored_structure = StoredStructure {
-            id: Thing::from(("structures", id_string.as_str())),
+        let stored_definition = StoredUserDefinition {
+            id: Thing::from(("definitions", id_string.as_str())),
             name: name.to_string(),
-            structure_type: structure.structure_type().to_string(),
-            user_instance_index: structure.user_instance_index().to_vec(),
+            structure_type: definition.structure_type().to_string(),
+            user_instance_index: definition.user_instance_index().to_vec(),
             connectives,
             created_at: now.clone(),
             updated_at: now,
@@ -158,14 +158,14 @@ impl SurrealStorage {
             metadata: HashMap::new(),
         };
 
-        // Store the structure
-        let _: Option<StoredStructure> = self.db
-            .create(("structures", id_string.as_str()))
-            .content(stored_structure)
+        // Store the definition
+        let _: Option<StoredUserDefinition> = self.db
+            .create(("definitions", id_string.as_str()))
+            .content(stored_definition)
             .await?;
 
         // Store nodes and create graph representation
-        let nodes = self.create_nodes(&id_string, structure.user_instance_index()).await?;
+        let nodes = self.create_nodes(&id_string, definition.user_instance_index()).await?;
         let _edges = self.create_edges(&nodes).await?;
 
         Ok(id_string)
@@ -227,19 +227,19 @@ impl SurrealStorage {
         Ok(edges)
     }
 
-    pub async fn get_structure(&self, id: &str) -> Result<Option<StoredStructure>, SystematicsError> {
-        let structure: Option<StoredStructure> = self.db.select(("structures", id)).await?;
-        Ok(structure)
+    pub async fn get_definition(&self, id: &str) -> Result<Option<StoredUserDefinition>, SystematicsError> {
+        let definition: Option<StoredUserDefinition> = self.db.select(("definitions", id)).await?;
+        Ok(definition)
     }
 
-    pub async fn list_structures(&self) -> Result<Vec<StoredStructure>, SystematicsError> {
-        let structures: Vec<StoredStructure> = self.db.select("structures").await?;
-        Ok(structures)
+    pub async fn list_definitions(&self) -> Result<Vec<StoredUserDefinition>, SystematicsError> {
+        let definitions: Vec<StoredUserDefinition> = self.db.select("definitions").await?;
+        Ok(definitions)
     }
 
-    pub async fn search_structures(&self, query: &str) -> Result<Vec<StoredStructure>, SystematicsError> {
+    pub async fn search_definitions(&self, query: &str) -> Result<Vec<StoredUserDefinition>, SystematicsError> {
         let sql = "
-            SELECT * FROM structures 
+            SELECT * FROM definitions 
             WHERE name CONTAINS $query 
             OR description CONTAINS $query 
             OR array::some(user_instance_index, |$user_instance| $user_instance CONTAINS $query)
@@ -248,15 +248,15 @@ impl SurrealStorage {
         
         let query_string = query.to_string();
         let mut result = self.db.query(sql).bind(("query", query_string)).await?;
-        let structures: Vec<StoredStructure> = result.take(0)?;
+        let definitions: Vec<StoredUserDefinition> = result.take(0)?;
         
-        Ok(structures)
+        Ok(definitions)
     }
 
-    pub async fn get_related_structures(&self, id: &str) -> Result<Vec<StoredStructure>, SystematicsError> {
-        // Find structures that share user instances with the given structure
+    pub async fn get_related_definitions(&self, id: &str) -> Result<Vec<StoredUserDefinition>, SystematicsError> {
+        // Find definitions that share user instances with the given definition
         let sql = "
-            SELECT DISTINCT s2.* FROM structures s1, structures s2
+            SELECT DISTINCT s2.* FROM definitions s1, definitions s2
             WHERE s1.id = $id 
             AND s2.id != $id
             AND array::intersect(s1.user_instance_index, s2.user_instance_index) != []
@@ -265,13 +265,13 @@ impl SurrealStorage {
         
         let id_string = id.to_string();
         let mut result = self.db.query(sql).bind(("id", id_string)).await?;
-        let structures: Vec<StoredStructure> = result.take(0)?;
+        let definitions: Vec<StoredUserDefinition> = result.take(0)?;
         
-        Ok(structures)
+        Ok(definitions)
     }
 
-    pub async fn get_structure_graph(&self, id: &str) -> Result<(Vec<GraphNode>, Vec<GraphEdge>), SystematicsError> {
-        // Get nodes for this structure
+    pub async fn get_definition_graph(&self, id: &str) -> Result<(Vec<GraphNode>, Vec<GraphEdge>), SystematicsError> {
+        // Get nodes for this definition
         let nodes_sql = "SELECT * FROM nodes WHERE structure_id = $id ORDER BY position";
         let id_string = id.to_string();
         let mut nodes_result = self.db.query(nodes_sql).bind(("id", id_string.clone())).await?;
@@ -286,7 +286,7 @@ impl SurrealStorage {
         Ok((nodes, edges))
     }
 
-    pub async fn delete_structure(&self, id: &str) -> Result<bool, SystematicsError> {
+    pub async fn delete_definition(&self, id: &str) -> Result<bool, SystematicsError> {
         // Delete associated nodes and edges first
         let nodes_sql = "DELETE FROM nodes WHERE structure_id = $id";
         let id_string = id.to_string();
@@ -297,18 +297,18 @@ impl SurrealStorage {
         let pattern = format!("{}_%", id);
         self.db.query(edges_sql).bind(("pattern", pattern)).await?;
 
-        // Delete the structure itself
-        let deleted: Option<StoredStructure> = self.db.delete(("structures", id)).await?;
+        // Delete the definition itself
+        let deleted: Option<StoredUserDefinition> = self.db.delete(("definitions", id)).await?;
         
         Ok(deleted.is_some())
     }
 
-    pub async fn update_structure_metadata(
+    pub async fn update_definition_metadata(
         &self,
         id: &str,
         metadata: HashMap<String, String>,
     ) -> Result<bool, SystematicsError> {
-        let sql = "UPDATE structures SET metadata = $metadata, updated_at = $now WHERE id = $id";
+        let sql = "UPDATE definitions SET metadata = $metadata, updated_at = $now WHERE id = $id";
         let now = Datetime::default();
         let id_string = id.to_string();
         
@@ -319,27 +319,27 @@ impl SurrealStorage {
             .bind(("now", now))
             .await?;
             
-        let updated: Option<Vec<StoredStructure>> = result.take(0)?;
+        let updated: Option<Vec<StoredUserDefinition>> = result.take(0)?;
         
         Ok(updated.is_some() && !updated.unwrap().is_empty())
     }
 
-    pub async fn get_user_instance_usage(&self, user_instance: &str) -> Result<Vec<StoredStructure>, SystematicsError> {
+    pub async fn get_user_instance_usage(&self, user_instance: &str) -> Result<Vec<StoredUserDefinition>, SystematicsError> {
         let sql = "
-            SELECT * FROM structures 
+            SELECT * FROM definitions 
             WHERE array::some(user_instance_index, |$ui| $ui = $user_instance)
             ORDER BY created_at DESC
         ";
         
         let user_instance_string = user_instance.to_string();
         let mut result = self.db.query(sql).bind(("user_instance", user_instance_string)).await?;
-        let structures: Vec<StoredStructure> = result.take(0)?;
+        let definitions: Vec<StoredUserDefinition> = result.take(0)?;
         
-        Ok(structures)
+        Ok(definitions)
     }
 
-    /// Store a structure directly from API request data
-    pub async fn store_structure_direct(
+    /// Store a definition directly from API request data
+    pub async fn store_definition_direct(
         &self,
         name: &str,
         structure_type: &str,
@@ -350,8 +350,8 @@ impl SurrealStorage {
         let id_string = Uuid::new_v4().to_string();
         let now = Datetime::default();
         
-        let stored_structure = StoredStructure {
-            id: Thing::from(("structures", id_string.as_str())),
+        let stored_definition = StoredUserDefinition {
+            id: Thing::from(("definitions", id_string.as_str())),
             name: name.to_string(),
             structure_type: structure_type.to_string(),
             user_instance_index: user_instance_index.clone(),
@@ -362,10 +362,10 @@ impl SurrealStorage {
             metadata: HashMap::new(),
         };
 
-        // Store the structure
-        let _: Option<StoredStructure> = self.db
-            .create(("structures", id_string.as_str()))
-            .content(stored_structure)
+        // Store the definition
+        let _: Option<StoredUserDefinition> = self.db
+            .create(("definitions", id_string.as_str()))
+            .content(stored_definition)
             .await?;
 
         // Store nodes and create graph representation

@@ -105,7 +105,7 @@ The system has a functional architecture with core components operational and a 
 - ✅ **Relationship Analysis**: Graph-based connections
 - ✅ **JSON Export**: Complete database export capability
 - ✅ **Six Permutations**: Named pattern generation
-- ✅ **Bennett Schema Integration**: Authentic term characters
+- ✅ **Bennett Definition Integration**: Authentic term characters
 
 #### **Frontend Prototype**
 - ✅ **Yew Framework**: WebAssembly-based web interface
@@ -230,8 +230,8 @@ The following trait methods were renamed for clarity and consistency:
 - `api/src/lib.rs` - SystematicStructure trait definition updated
 
 #### **All Structure Implementations (12 files)**
-- `api/src/structures/monad.rs` ✅ (reference implementation)
-- `api/src/structures/dyad.rs` → `api/src/structures/dodecad.rs` ✅
+- `api/src/definitions/monad.rs` ✅ (reference implementation)
+- `api/src/definitions/dyad.rs` → `api/src/definitions/dodecad.rs` ✅
 
 #### **API & Frontend Integration**  
 - `api/src/server.rs` - Schema field renamed to `first_order_connectives_type`

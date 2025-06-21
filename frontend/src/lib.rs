@@ -10,14 +10,14 @@ mod core;       // Declare the core module (framework-agnostic)
 use components::system_selector::SystemSelector; // Import the SystemSelector
 use components::system_overlay::SystemOverlay;
 use components::geometric_renderer::GeometricRenderer;
-use services::api::{ApiClient, StoredStructure, SystemDefinition, spawn_api_call};
+use services::api::{ApiClient, StoredUserDefinition, SystemDefinition, spawn_api_call};
 
 pub struct App {
     // Replace hardcoded system selection with dynamic data
-    structures: Vec<StoredStructure>,
-    filtered_structures: Vec<StoredStructure>,
-    selected_structure: Option<StoredStructure>,
-    current_schema: Option<SystemDefinition>,
+    definitions: Vec<StoredUserDefinition>,
+    filtered_definitions: Vec<StoredUserDefinition>,
+    selected_definition: Option<StoredUserDefinition>,
+    current_definition: Option<SystemDefinition>,
     current_system_num: i32, // Track the currently selected system
     loading: bool,
     error: Option<String>,
@@ -36,22 +36,22 @@ pub enum Msg {
     // Keep the old message for backward compatibility during transition
     SystemSelected(i32),
     // New messages for API integration
-    StructureSelected(StoredStructure),
-    LoadStructures,
-    StructuresLoaded(Result<Vec<StoredStructure>, anyhow::Error>),
+    DefinitionSelected(StoredUserDefinition),
+    LoadDefinitions,
+    DefinitionsLoaded(Result<Vec<StoredUserDefinition>, anyhow::Error>),
     ApiError(String),
     // Search and browse functionality
     SearchQueryChanged(String),
     ToggleStructureBrowser,
-    SearchStructures,
-    SearchResultsLoaded(Result<Vec<StoredStructure>, anyhow::Error>),
-    // Schema loading
-    SchemaLoaded(Result<SystemDefinition, anyhow::Error>),
+    SearchDefinitions,
+    SearchResultsLoaded(Result<Vec<StoredUserDefinition>, anyhow::Error>),
+    // System definition loading
+    DefinitionLoaded(Result<SystemDefinition, anyhow::Error>),
     // Creation functionality
-    CreateStructure,
+    CreateDefinition,
     CancelCreate,
-    SaveStructure,
-    StructureSaved(Result<String, anyhow::Error>),
+    SaveDefinition,
+    DefinitionSaved(Result<String, anyhow::Error>),
     UserInstanceChanged(usize, String),
     ClearNotifications,
 }
@@ -62,10 +62,10 @@ impl Component for App {
 
     fn create(ctx: &Context<Self>) -> Self {
         let app = Self {
-            structures: Vec::new(), // Start with empty structures, load from API
-            filtered_structures: Vec::new(),
-            selected_structure: None, // No initial selection, let user choose
-            current_schema: None,
+            definitions: Vec::new(), // Start with empty definitions, load from API
+            filtered_definitions: Vec::new(),
+            selected_definition: None, // No initial selection, let user choose
+            current_definition: None,
             current_system_num: 1, // Default to monad
             loading: true,
             error: None,
@@ -79,10 +79,10 @@ impl Component for App {
             saving: false,
         };
         
-        // Load structures on component creation
-        ctx.link().send_message(Msg::LoadStructures);
+        // Load definitions on component creation
+        ctx.link().send_message(Msg::LoadDefinitions);
         
-        // Load schema for the initially selected system (monad)
+                    // Load definition for the initially selected system (monad)
         ctx.link().send_message(Msg::SystemSelected(1));
         
         app
@@ -110,72 +110,72 @@ impl Component for App {
                     _ => return false,
                 };
                 
-                // Find matching structure from loaded data (don't create placeholders)
-                if let Some(structure) = self.structures.iter()
+                // Find matching definition from loaded data (don't create placeholders)
+                if let Some(definition) = self.definitions.iter()
                     .find(|s| s.structure_type == structure_type && !s.id.as_str().map_or(false, |id| id.starts_with("placeholder-")))
                     .cloned() 
                 {
-                    self.selected_structure = Some(structure);
+                    self.selected_definition = Some(definition);
                 } else {
-                    // No real structure found - clear selection to show schema data
-                    self.selected_structure = None;
+                    // No real definition found - clear selection to show definition data
+                    self.selected_definition = None;
                 }
                 
-                // Always load schema for the selected structure type
-                self.load_schema_for_structure_type(ctx, structure_type);
+                // Always load definition for the selected structure type
+                self.load_definition_for_structure_type(ctx, structure_type);
                 true
             }
-            Msg::StructureSelected(structure) => {
-                let structure_type = structure.structure_type.clone();
-                self.selected_structure = Some(structure);
+            Msg::DefinitionSelected(definition) => {
+                let structure_type = definition.structure_type.clone();
+                self.selected_definition = Some(definition);
                 self.show_structure_browser = false; // Close browser after selection
                 
-                // Load schema for the selected structure type
-                self.load_schema_for_structure_type(ctx, &structure_type);
+                // Load definition for the selected structure type
+                self.load_definition_for_structure_type(ctx, &structure_type);
                 self.current_system_num = self.structure_type_to_number(&structure_type);
                 true
             }
-            Msg::LoadStructures => {
+            Msg::LoadDefinitions => {
                 self.loading = true;
                 self.error = None;
                 let api_client = self.api_client.clone();
-                let callback = ctx.link().callback(Msg::StructuresLoaded);
+                let callback = ctx.link().callback(Msg::DefinitionsLoaded);
                 
                 spawn_api_call(
-                    async move { api_client.list_structures().await },
+                    async move { api_client.list_definitions().await },
                     callback
                 );
                 true
             }
-            Msg::StructuresLoaded(result) => {
+            Msg::DefinitionsLoaded(result) => {
                 self.loading = false;
                 match result {
-                    Ok(structures) => {
-                        self.structures = structures;
-                        self.filtered_structures = self.structures.clone();
+                    Ok(definitions) => {
+                        self.definitions = definitions;
+                        self.filtered_definitions = self.definitions.clone();
                         self.error = None;
                     }
                     Err(e) => {
-                        self.error = Some(format!("Failed to load structures: {}", e));
-                        // Don't create placeholder data - let the system work with empty structures and schema data
-                        self.structures = Vec::new();
-                        self.filtered_structures = Vec::new();
+                        self.error = Some(format!("Failed to load definitions: {}", e));
+                        // Don't create placeholder data - let the system work with empty definitions and definition data
+                        self.definitions = Vec::new();
+                        self.filtered_definitions = Vec::new();
                     }
                 }
                 true
             }
             Msg::SearchQueryChanged(query) => {
                 self.search_query = query;
-                self.filter_structures();
+                self.filter_definitions();
                 true
             }
             Msg::ToggleStructureBrowser => {
                 self.show_structure_browser = !self.show_structure_browser;
                 true
             }
-            Msg::SearchStructures => {
+            Msg::SearchDefinitions => {
                 if self.search_query.trim().is_empty() {
-                    self.filtered_structures = self.structures.clone();
+                    self.filtered_definitions = self.definitions.clone();
                     return true;
                 }
                 
@@ -185,7 +185,7 @@ impl Component for App {
                 let callback = ctx.link().callback(Msg::SearchResultsLoaded);
                 
                 spawn_api_call(
-                    async move { api_client.search_structures(&query).await },
+                    async move { api_client.search_definitions(&query).await },
                     callback
                 );
                 true
@@ -193,13 +193,13 @@ impl Component for App {
             Msg::SearchResultsLoaded(result) => {
                 self.loading = false;
                 match result {
-                    Ok(structures) => {
-                        self.filtered_structures = structures;
+                    Ok(definitions) => {
+                        self.filtered_definitions = definitions;
                         self.error = None;
                     }
                     Err(e) => {
                         self.error = Some(format!("Search failed: {}", e));
-                        self.filter_structures(); // Fallback to local filtering
+                        self.filter_definitions(); // Fallback to local filtering
                     }
                 }
                 true
@@ -208,11 +208,11 @@ impl Component for App {
                 self.error = Some(error);
                 true
             }
-            Msg::SchemaLoaded(result) => {
+            Msg::DefinitionLoaded(result) => {
                 self.loading = false;
                 match result {
-                    Ok(schema) => {
-                        self.current_schema = Some(schema);
+                    Ok(definition) => {
+                        self.current_definition = Some(definition);
                         self.error = None;
                     }
                     Err(e) => {
@@ -221,16 +221,16 @@ impl Component for App {
                 }
                 true
             }
-            Msg::CreateStructure => {
+            Msg::CreateDefinition => {
                 if let Some(window) = window() {
-                    if let Ok(Some(name)) = window.prompt_with_message("Enter a name for your structure:") {
+                    if let Ok(Some(name)) = window.prompt_with_message("Enter a name for your definition:") {
                         if !name.trim().is_empty() {
                             self.structure_name = Some(name.trim().to_string());
                             self.creation_mode = true;
                             
                             // Initialize user_instance_index with the right number of empty strings
-                            let term_count = if let Some(ref structure) = self.selected_structure {
-                                self.structure_type_to_number(&structure.structure_type) as usize
+                            let term_count = if let Some(ref definition) = self.selected_definition {
+                                self.structure_type_to_number(&definition.structure_type) as usize
                             } else {
                                 1 // Default to monad
                             };
@@ -248,23 +248,23 @@ impl Component for App {
                 self.user_instance_index.clear();
                 true
             }
-            Msg::SaveStructure => {
+            Msg::SaveDefinition => {
                 self.saving = true;
-                self.save_structure(ctx);
+                self.save_definition(ctx);
                 true
             }
-            Msg::StructureSaved(result) => {
+            Msg::DefinitionSaved(result) => {
                 self.saving = false;
                 match result {
-                    Ok(structure_id) => {
+                    Ok(definition_id) => {
                         self.error = None;
-                        self.success_message = Some(format!("✅ Structure saved successfully!"));
+                        self.success_message = Some(format!("✅ Definition saved successfully!"));
                         // Exit creation mode after successful save
                         self.creation_mode = false;
                         self.structure_name = None;
                         self.user_instance_index.clear();
-                        // Reload structures to show the new one
-                        self.load_structures(ctx);
+                        // Reload definitions to show the new one
+                        self.load_definitions(ctx);
                         // Auto-dismiss notification after 3 seconds
                         let link = ctx.link().clone();
                         gloo_timers::callback::Timeout::new(3000, move || {
@@ -273,7 +273,7 @@ impl Component for App {
                     }
                     Err(e) => {
                         self.success_message = None;
-                        self.error = Some(format!("Failed to save structure: {}", e));
+                        self.error = Some(format!("Failed to save definition: {}", e));
                         // Auto-dismiss error notification after 5 seconds
                         let link = ctx.link().clone();
                         gloo_timers::callback::Timeout::new(5000, move || {
@@ -298,10 +298,10 @@ impl Component for App {
     fn view(&self, ctx: &Context<Self>) -> Html {
         let on_system_selected = ctx.link().callback(Msg::SystemSelected);
         
-        // Determine the structure type and system number from selected structure or current selection
-        let (structure_type, system_num) = if let Some(ref structure) = self.selected_structure {
-            let num = self.structure_type_to_number(&structure.structure_type);
-            (structure.structure_type.clone(), num)
+        // Determine the structure type and system number from selected definition or current selection
+        let (structure_type, system_num) = if let Some(ref definition) = self.selected_definition {
+            let num = self.structure_type_to_number(&definition.structure_type);
+            (definition.structure_type.clone(), num)
         } else {
             // Use current system selection instead of defaulting to monad
             let structure_type = match self.current_system_num {
@@ -338,7 +338,7 @@ impl Component for App {
                         <GeometricRenderer 
                             system_type={structure_type} 
                             size={400.0}
-                            connectives={self.current_schema.as_ref().map(|s| s.connectives.clone())}
+                            connectives={self.current_definition.as_ref().map(|s| s.connectives.clone())}
                         />
                         {self.render_structure_overlay(ctx)}
                     </div>
@@ -370,8 +370,8 @@ impl App {
             Msg::SearchQueryChanged(input.value())
         });
         
-        let search_submit = ctx.link().callback(|_| Msg::SearchStructures);
-        let create_callback = ctx.link().callback(|_| Msg::CreateStructure);
+        let search_submit = ctx.link().callback(|_| Msg::SearchDefinitions);
+        let create_callback = ctx.link().callback(|_| Msg::CreateDefinition);
         let cancel_callback = ctx.link().callback(|_| Msg::CancelCreate);
         
         html! {
@@ -390,7 +390,7 @@ impl App {
                         } else {
                             html! {
                                 <>
-                                    <button class="save-button" onclick={ctx.link().callback(|_| Msg::SaveStructure)} disabled={self.saving}>
+                                    <button class="save-button" onclick={ctx.link().callback(|_| Msg::SaveDefinition)} disabled={self.saving}>
                                         {if self.saving { "Saving..." } else { "Save" }}
                                     </button>
                                     <button class="cancel-button" onclick={cancel_callback}>
@@ -402,7 +402,7 @@ impl App {
                     </div>
                     <input 
                         type="text" 
-                        placeholder="Search structures by name, type, or user instances..." 
+                        placeholder="Search definitions by name, type, or user instances..." 
                         value={self.search_query.clone()}
                         oninput={search_input}
                         class="search-input"
@@ -419,7 +419,7 @@ impl App {
         if self.loading {
             html! {
                 <div class="loading">
-                    {"Loading structures..."}
+                    {"Loading definitions..."}
                 </div>
             }
         } else {
@@ -454,12 +454,12 @@ impl App {
     }
 
     fn render_structure_overlay(&self, ctx: &Context<Self>) -> Html {
-        if let Some(ref structure) = self.selected_structure {
-            let system_num = self.structure_type_to_number(&structure.structure_type);
+        if let Some(ref definition) = self.selected_definition {
+            let system_num = self.structure_type_to_number(&definition.structure_type);
             html! {
                 <SystemOverlay 
                     system_num={system_num} 
-                    structure={structure.clone()} 
+                    definition={definition.clone()} 
                     creation_mode={self.creation_mode}
                     structure_name={self.structure_name.clone()}
                     user_instance_index={self.user_instance_index.clone()}
@@ -484,17 +484,17 @@ impl App {
             return html! {};
         }
         
-        let structures_to_show = if self.search_query.trim().is_empty() {
-            &self.structures
+        let definitions_to_show = if self.search_query.trim().is_empty() {
+            &self.definitions
         } else {
-            &self.filtered_structures
+            &self.filtered_definitions
         };
         
         html! {
             <div class="structure-browser-overlay">
                 <div class="structure-browser">
                     <div class="browser-header">
-                        <h3>{"Available Structures"}</h3>
+                        <h3>{"Available Definitions"}</h3>
                         <button 
                             class="close-browser" 
                             onclick={ctx.link().callback(|_| Msg::ToggleStructureBrowser)}
@@ -503,22 +503,22 @@ impl App {
                         </button>
                     </div>
                     <div class="structure-list">
-                        {for structures_to_show.iter().map(|structure| {
-                            let structure_clone = structure.clone();
-                            let select_structure = ctx.link().callback(move |_| {
-                                Msg::StructureSelected(structure_clone.clone())
+                        {for definitions_to_show.iter().map(|definition| {
+                            let definition_clone = definition.clone();
+                            let select_definition = ctx.link().callback(move |_| {
+                                Msg::DefinitionSelected(definition_clone.clone())
                             });
                             
                             html! {
-                                <div class="structure-item" onclick={select_structure}>
+                                <div class="structure-item" onclick={select_definition}>
                                     <div class="structure-item-header">
-                                        <h4>{&structure.name}</h4>
-                                        <span class="structure-type">{&structure.structure_type}</span>
+                                        <h4>{&definition.name}</h4>
+                                        <span class="structure-type">{&definition.structure_type}</span>
                                     </div>
                                                         <div class="structure-item-terms">
-                        {structure.user_instance_index.join(", ")}
+                        {definition.user_instance_index.join(", ")}
                     </div>
-                                    {if let Some(ref desc) = structure.description {
+                                    {if let Some(ref desc) = definition.description {
                                         html! { 
                                             <div class="structure-item-description">
                                                 {desc}
@@ -531,10 +531,10 @@ impl App {
                             }
                         })}
                     </div>
-                    {if structures_to_show.is_empty() {
+                    {if definitions_to_show.is_empty() {
                         html! {
                             <div class="no-results">
-                                {"No structures found"}
+                                {"No definitions found"}
                             </div>
                         }
                     } else {
@@ -545,18 +545,18 @@ impl App {
         }
     }
     
-    fn filter_structures(&mut self) {
+    fn filter_definitions(&mut self) {
         if self.search_query.trim().is_empty() {
-            self.filtered_structures = self.structures.clone();
+            self.filtered_definitions = self.definitions.clone();
         } else {
             let query = self.search_query.to_lowercase();
-            self.filtered_structures = self.structures
+            self.filtered_definitions = self.definitions
                 .iter()
-                .filter(|structure| {
-                    structure.name.to_lowercase().contains(&query) ||
-                    structure.structure_type.to_lowercase().contains(&query) ||
-                    structure.user_instance_index.iter().any(|instance| instance.to_lowercase().contains(&query)) ||
-                    structure.description.as_ref().map_or(false, |desc| desc.to_lowercase().contains(&query))
+                .filter(|definition| {
+                    definition.name.to_lowercase().contains(&query) ||
+                    definition.structure_type.to_lowercase().contains(&query) ||
+                    definition.user_instance_index.iter().any(|instance| instance.to_lowercase().contains(&query)) ||
+                    definition.description.as_ref().map_or(false, |desc| desc.to_lowercase().contains(&query))
                 })
                 .cloned()
                 .collect();
@@ -581,7 +581,7 @@ impl App {
         }
     }
 
-    fn create_placeholder_structure(&self, structure_type: &str, system_num: i32) -> StoredStructure {
+    fn create_placeholder_definition(&self, structure_type: &str, system_num: i32) -> StoredUserDefinition {
         let user_instance_index = match system_num {
             1 => vec!["Unity".to_string()],
             2 => vec!["Essence".to_string(), "Existence".to_string()],
@@ -594,7 +594,7 @@ impl App {
             _ => (1..=system_num).map(|i| format!("Term {}", i)).collect(),
         };
 
-        StoredStructure {
+        StoredUserDefinition {
             id: serde_json::Value::String(format!("placeholder-{}", structure_type)),
             name: format!("Default {}", structure_type.to_uppercase()),
             structure_type: structure_type.to_string(),
@@ -602,12 +602,12 @@ impl App {
             connectives: HashMap::new(),
             created_at: "placeholder".to_string(),
             updated_at: "placeholder".to_string(),
-            description: Some(format!("Default {} structure", structure_type)),
+            description: Some(format!("Default {} definition", structure_type)),
             metadata: HashMap::new(),
         }
     }
 
-    fn create_placeholder_structures(&self) -> Vec<StoredStructure> {
+    fn create_placeholder_definitions(&self) -> Vec<StoredUserDefinition> {
         (1..=8).map(|i| {
             let structure_type = match i {
                 1 => "monad",
@@ -620,12 +620,12 @@ impl App {
                 8 => "octad",
                 _ => "unknown",
             };
-            self.create_placeholder_structure(structure_type, i)
+            self.create_placeholder_definition(structure_type, i)
         }).collect()
     }
 
     // Static method for initial creation
-    fn create_initial_placeholder_structures() -> Vec<StoredStructure> {
+    fn create_initial_placeholder_definitions() -> Vec<StoredUserDefinition> {
         (1..=8).map(|i| {
             let structure_type = match i {
                 1 => "monad",
@@ -638,11 +638,11 @@ impl App {
                 8 => "octad",
                 _ => "unknown",
             };
-            Self::create_static_placeholder_structure(structure_type, i)
+            Self::create_static_placeholder_definition(structure_type, i)
         }).collect()
     }
 
-    fn create_static_placeholder_structure(structure_type: &str, system_num: i32) -> StoredStructure {
+    fn create_static_placeholder_definition(structure_type: &str, system_num: i32) -> StoredUserDefinition {
         let user_instance_index = match system_num {
             1 => vec!["Unity".to_string()],
             2 => vec!["Essence".to_string(), "Existence".to_string()],
@@ -655,7 +655,7 @@ impl App {
             _ => (1..=system_num).map(|i| format!("Term {}", i)).collect(),
         };
 
-        StoredStructure {
+        StoredUserDefinition {
             id: serde_json::Value::String(format!("placeholder-{}", structure_type)),
             name: format!("Default {}", structure_type.to_uppercase()),
             structure_type: structure_type.to_string(),
@@ -663,15 +663,15 @@ impl App {
             connectives: HashMap::new(),
             created_at: "placeholder".to_string(),
             updated_at: "placeholder".to_string(),
-            description: Some(format!("Default {} structure", structure_type)),
+            description: Some(format!("Default {} definition", structure_type)),
             metadata: HashMap::new(),
         }
     }
 
-    fn load_schema_for_structure_type(&self, ctx: &Context<Self>, structure_type: &str) {
+    fn load_definition_for_structure_type(&self, ctx: &Context<Self>, structure_type: &str) {
         let api_client = self.api_client.clone();
         let structure_type = structure_type.to_string();
-        let callback = ctx.link().callback(Msg::SchemaLoaded);
+        let callback = ctx.link().callback(Msg::DefinitionLoaded);
         
         spawn_api_call(
             async move {
@@ -681,35 +681,35 @@ impl App {
         );
     }
 
-    fn load_structures(&self, ctx: &Context<Self>) {
+    fn load_definitions(&self, ctx: &Context<Self>) {
         let api_client = self.api_client.clone();
-        let callback = ctx.link().callback(Msg::StructuresLoaded);
+        let callback = ctx.link().callback(Msg::DefinitionsLoaded);
         
         spawn_api_call(
             async move {
-                api_client.list_structures().await
+                api_client.list_definitions().await
             },
             callback,
         );
     }
 
-    fn save_structure(&self, ctx: &Context<Self>) {
-        let structure_type = if let Some(structure) = &self.selected_structure {
-            structure.structure_type.clone()
+    fn save_definition(&self, ctx: &Context<Self>) {
+        let structure_type = if let Some(definition) = &self.selected_definition {
+            definition.structure_type.clone()
         } else {
-            // Default to monad if no structure is selected
+            // Default to monad if no definition is selected
             "monad".to_string()
         };
         
-        let structure_name = self.structure_name.clone().unwrap_or_else(|| "Unnamed Structure".to_string());
+        let definition_name = self.structure_name.clone().unwrap_or_else(|| "Unnamed Definition".to_string());
         
         let api_client = self.api_client.clone();
         let user_instances = self.user_instance_index.clone();
-        let callback = ctx.link().callback(Msg::StructureSaved);
+        let callback = ctx.link().callback(Msg::DefinitionSaved);
         
         spawn_api_call(
             async move {
-                api_client.save_structure(&structure_name, &structure_type, &user_instances).await
+                api_client.save_definition(&definition_name, &structure_type, &user_instances).await
             },
             callback,
         );

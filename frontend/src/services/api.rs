@@ -6,7 +6,7 @@ use yew::prelude::*;
 
 // Mirror the API types from the server
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub struct StoredStructure {
+pub struct StoredUserDefinition {
     pub id: serde_json::Value, // Thing type from SurrealDB
     pub name: String,
     pub structure_type: String,
@@ -101,32 +101,32 @@ impl ApiClient {
         }
     }
 
-    pub async fn list_structures(&self) -> Result<Vec<StoredStructure>, anyhow::Error> {
-        let url = format!("{}/structures", self.base_url);
+    pub async fn list_definitions(&self) -> Result<Vec<StoredUserDefinition>, anyhow::Error> {
+        let url = format!("{}/definitions", self.base_url);
         let response = Request::get(&url).send().await?;
         
         if response.ok() {
-            let api_response: ApiResponse<Vec<StoredStructure>> = response.json().await?;
+            let api_response: ApiResponse<Vec<StoredUserDefinition>> = response.json().await?;
             api_response.data.ok_or_else(|| anyhow::anyhow!("No data in response"))
         } else {
-            Err(anyhow::anyhow!("Failed to list structures: {}", response.status()))
+            Err(anyhow::anyhow!("Failed to list definitions: {}", response.status()))
         }
     }
 
-    pub async fn get_structure(&self, id: &str) -> Result<StoredStructure, anyhow::Error> {
-        let url = format!("{}/structures/{}", self.base_url, id);
+    pub async fn get_definition(&self, id: &str) -> Result<StoredUserDefinition, anyhow::Error> {
+        let url = format!("{}/definitions/{}", self.base_url, id);
         let response = Request::get(&url).send().await?;
         
         if response.ok() {
-            let api_response: ApiResponse<StoredStructure> = response.json().await?;
+            let api_response: ApiResponse<StoredUserDefinition> = response.json().await?;
             api_response.data.ok_or_else(|| anyhow::anyhow!("No data in response"))
         } else {
-            Err(anyhow::anyhow!("Failed to get structure: {}", response.status()))
+            Err(anyhow::anyhow!("Failed to get definition: {}", response.status()))
         }
     }
 
-    pub async fn create_structure(&self, request: CreateStructureRequest) -> Result<String, anyhow::Error> {
-        let url = format!("{}/structures", self.base_url);
+    pub async fn create_definition(&self, request: CreateStructureRequest) -> Result<String, anyhow::Error> {
+        let url = format!("{}/definitions", self.base_url);
         let response = Request::post(&url)
             .json(&request)?
             .send()
@@ -137,67 +137,67 @@ impl ApiClient {
             api_response.data.ok_or_else(|| anyhow::anyhow!("No data in response"))
         } else {
             let error_text = response.text().await.unwrap_or_else(|_| "Unknown error".to_string());
-            Err(anyhow::anyhow!("Failed to create structure: {}", error_text))
+            Err(anyhow::anyhow!("Failed to create definition: {}", error_text))
         }
     }
 
-    pub async fn save_structure(&self, name: &str, structure_type: &str, user_instances: &[String]) -> Result<String, anyhow::Error> {
+    pub async fn save_definition(&self, name: &str, structure_type: &str, user_instances: &[String]) -> Result<String, anyhow::Error> {
         let request = CreateStructureRequest {
             name: name.to_string(),
             structure_type: structure_type.to_string(),
             user_instance_index: user_instances.to_vec(), // Consistent terminology
             connectives: std::collections::HashMap::new(), // Empty for now
-            description: Some(format!("User-created {} structure", structure_type)),
+            description: Some(format!("User-created {} definition", structure_type)),
         };
         
-        self.create_structure(request).await
+        self.create_definition(request).await
     }
 
-    pub async fn search_structures(&self, query: &str) -> Result<Vec<StoredStructure>, anyhow::Error> {
-        let url = format!("{}/structures/search?q={}", self.base_url, query);
+    pub async fn search_definitions(&self, query: &str) -> Result<Vec<StoredUserDefinition>, anyhow::Error> {
+        let url = format!("{}/definitions/search?q={}", self.base_url, query);
         let response = Request::get(&url).send().await?;
         
         if response.ok() {
-            let api_response: ApiResponse<Vec<StoredStructure>> = response.json().await?;
+            let api_response: ApiResponse<Vec<StoredUserDefinition>> = response.json().await?;
             api_response.data.ok_or_else(|| anyhow::anyhow!("No data in response"))
         } else {
-            Err(anyhow::anyhow!("Failed to search structures: {}", response.status()))
+            Err(anyhow::anyhow!("Failed to search definitions: {}", response.status()))
         }
     }
 
     pub async fn get_system_definition(&self, structure_type: &str) -> Result<SystemDefinition, anyhow::Error> {
-        let url = format!("{}/schema/{}", self.base_url, structure_type);
+        let url = format!("{}/definition/{}", self.base_url, structure_type);
         let response = Request::get(&url).send().await?;
         
         if response.ok() {
             let api_response: ApiResponse<SystemDefinition> = response.json().await?;
             api_response.data.ok_or_else(|| anyhow::anyhow!("No data in response"))
         } else {
-            Err(anyhow::anyhow!("Failed to get structure schema: {}", response.status()))
+            Err(anyhow::anyhow!("Failed to get system definition: {}", response.status()))
         }
     }
 
-    pub async fn delete_structure(&self, id: &str) -> Result<bool, anyhow::Error> {
-        let url = format!("{}/structures/{}", self.base_url, id);
+    pub async fn delete_definition(&self, id: &str) -> Result<bool, anyhow::Error> {
+        let url = format!("{}/definitions/{}", self.base_url, id);
         let response = Request::delete(&url).send().await?;
         
         if response.ok() {
             let api_response: ApiResponse<bool> = response.json().await?;
             api_response.data.ok_or_else(|| anyhow::anyhow!("No data in response"))
         } else {
-            Err(anyhow::anyhow!("Failed to delete structure: {}", response.status()))
+            Err(anyhow::anyhow!("Failed to delete definition: {}", response.status()))
         }
     }
 
-    pub async fn get_related_structures(&self, id: &str) -> Result<Vec<StoredStructure>, anyhow::Error> {
-        let url = format!("{}/structures/{}/related", self.base_url, id);
+    pub async fn get_related_definitions(&self, id: &str) -> Result<Vec<StoredUserDefinition>, anyhow::Error> {
+        let url = format!("{}/definitions/{}/related", self.base_url, id);
         let response = Request::get(&url).send().await?;
         
         if response.ok() {
-            let api_response: ApiResponse<Vec<StoredStructure>> = response.json().await?;
+            let api_response: ApiResponse<Vec<StoredUserDefinition>> = response.json().await?;
             api_response.data.ok_or_else(|| anyhow::anyhow!("No data in response"))
         } else {
-            Err(anyhow::anyhow!("Failed to get related structures: {}", response.status()))
+            Err(anyhow::anyhow!("Failed to get related definitions: {}", response.status()))
         }
     }
 }

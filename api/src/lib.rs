@@ -28,7 +28,7 @@
 // =============================================================================
 
 pub mod error;
-pub mod structures;
+pub mod definitions;
 pub mod permutations;
 pub mod storage;
 
@@ -40,10 +40,10 @@ pub mod server;
 // =============================================================================
 
 pub use error::{SystematicsError, Result};
-pub use structures::*;
+pub use definitions::*;
 pub use systematics_library::{System, LibraryProvider, BennettLibrary};
 pub use permutations::{Permutation, PermutationSet};
-pub use storage::{SurrealStorage, StoredStructure, GraphNode, GraphEdge};
+pub use storage::{SurrealStorage, StoredUserDefinition, GraphNode, GraphEdge};
 
 #[cfg(feature = "server")]
 pub use server::{start_server, create_router, AppState, ApiResponse};
@@ -175,63 +175,63 @@ impl SystematicsApi {
     // -------------------------------------------------------------------------
     
     /// Create a new monad structure
-    pub fn create_monad(&self) -> structures::monad::MonadBuilder {
-        structures::monad::MonadBuilder::new()
+    pub fn create_monad(&self) -> definitions::monad::MonadBuilder {
+        definitions::monad::MonadBuilder::new()
     }
     
     /// Create a new dyad structure  
-    pub fn create_dyad(&self) -> structures::dyad::DyadBuilder {
-        structures::dyad::DyadBuilder::new()
+    pub fn create_dyad(&self) -> definitions::dyad::DyadBuilder {
+        definitions::dyad::DyadBuilder::new()
     }
     
     /// Create a new triad structure
-    pub fn create_triad(&self) -> structures::triad::TriadBuilder {
-        structures::triad::TriadBuilder::new()
+    pub fn create_triad(&self) -> definitions::triad::TriadBuilder {
+        definitions::triad::TriadBuilder::new()
     }
     
     /// Create a new tetrad structure
-    pub fn create_tetrad(&self) -> structures::tetrad::TetradBuilder {
-        structures::tetrad::TetradBuilder::new()
+    pub fn create_tetrad(&self) -> definitions::tetrad::TetradBuilder {
+        definitions::tetrad::TetradBuilder::new()
     }
     
     /// Create a new pentad structure
-    pub fn create_pentad(&self) -> structures::pentad::PentadBuilder {
-        structures::pentad::PentadBuilder::new()
+    pub fn create_pentad(&self) -> definitions::pentad::PentadBuilder {
+        definitions::pentad::PentadBuilder::new()
     }
     
     /// Create a new hexad structure
-    pub fn create_hexad(&self) -> structures::hexad::HexadBuilder {
-        structures::hexad::HexadBuilder::new()
+    pub fn create_hexad(&self) -> definitions::hexad::HexadBuilder {
+        definitions::hexad::HexadBuilder::new()
     }
     
     /// Create a new heptad structure
-    pub fn create_heptad(&self) -> structures::heptad::HeptadBuilder {
-        structures::heptad::HeptadBuilder::new()
+    pub fn create_heptad(&self) -> definitions::heptad::HeptadBuilder {
+        definitions::heptad::HeptadBuilder::new()
     }
     
     /// Create a new octad structure
-    pub fn create_octad(&self) -> structures::octad::OctadBuilder {
-        structures::octad::OctadBuilder::new()
+    pub fn create_octad(&self) -> definitions::octad::OctadBuilder {
+        definitions::octad::OctadBuilder::new()
     }
     
     /// Create a new ennead structure
-    pub fn create_ennead(&self) -> structures::ennead::EnneadBuilder {
-        structures::ennead::EnneadBuilder::new()
+    pub fn create_ennead(&self) -> definitions::ennead::EnneadBuilder {
+        definitions::ennead::EnneadBuilder::new()
     }
     
     /// Create a new decad structure
-    pub fn create_decad(&self) -> structures::decad::DecadBuilder {
-        structures::decad::DecadBuilder::new()
+    pub fn create_decad(&self) -> definitions::decad::DecadBuilder {
+        definitions::decad::DecadBuilder::new()
     }
     
     /// Create a new undecad structure
-    pub fn create_undecad(&self) -> structures::undecad::UndecadBuilder {
-        structures::undecad::UndecadBuilder::new()
+    pub fn create_undecad(&self) -> definitions::undecad::UndecadBuilder {
+        definitions::undecad::UndecadBuilder::new()
     }
     
     /// Create a new dodecad structure
-    pub fn create_dodecad(&self) -> structures::dodecad::DodecadBuilder {
-        structures::dodecad::DodecadBuilder::new()
+    pub fn create_dodecad(&self) -> definitions::dodecad::DodecadBuilder {
+        definitions::dodecad::DodecadBuilder::new()
     }
     
     // -------------------------------------------------------------------------

@@ -13,7 +13,7 @@ use std::collections::HashMap;
 #[cfg(feature = "server")]
 use tower_http::cors::CorsLayer;
 
-use crate::{SurrealStorage, StoredStructure, SystematicsError};
+use crate::{SurrealStorage, StoredUserDefinition, SystematicsError};
 
 #[cfg(feature = "server")]
 #[derive(Clone)]
@@ -91,13 +91,13 @@ pub fn create_router(storage: SurrealStorage) -> Router {
     let state = AppState { storage };
 
     Router::new()
-        .route("/structures", get(list_structures))
-        .route("/structures", post(create_structure))
-        .route("/structures/search", get(search_structures))
-        .route("/structures/:id", get(get_structure))
-        .route("/structures/:id", delete(delete_structure))
-        .route("/structures/:id/related", get(get_related_structures))
-        .route("/schema/:structure_type", get(get_system_definition))
+        .route("/definitions", get(list_definitions))
+        .route("/definitions", post(create_definition))
+        .route("/definitions/search", get(search_definitions))
+        .route("/definitions/:id", get(get_definition))
+        .route("/definitions/:id", delete(delete_definition))
+        .route("/definitions/:id/related", get(get_related_definitions))
+        .route("/definition/:structure_type", get(get_system_definition))
         .route("/health", get(health_check))
         .layer(CorsLayer::permissive())
         .with_state(state)
@@ -109,51 +109,51 @@ async fn health_check() -> Json<ApiResponse<&'static str>> {
 }
 
 #[cfg(feature = "server")]
-async fn list_structures(
+async fn list_definitions(
     State(state): State<AppState>,
-) -> Result<Json<ApiResponse<Vec<StoredStructure>>>, StatusCode> {
-    match state.storage.list_structures().await {
-        Ok(structures) => Ok(Json(ApiResponse::success(structures))),
+) -> Result<Json<ApiResponse<Vec<StoredUserDefinition>>>, StatusCode> {
+    match state.storage.list_definitions().await {
+        Ok(definitions) => Ok(Json(ApiResponse::success(definitions))),
         Err(e) => {
-            eprintln!("Error listing structures: {}", e);
+            eprintln!("Error listing definitions: {}", e);
             Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
 }
 
 #[cfg(feature = "server")]
-async fn search_structures(
+async fn search_definitions(
     Query(params): Query<SearchQuery>,
     State(state): State<AppState>,
-) -> Result<Json<ApiResponse<Vec<StoredStructure>>>, StatusCode> {
+) -> Result<Json<ApiResponse<Vec<StoredUserDefinition>>>, StatusCode> {
     let query = params.q.unwrap_or_default();
     
-    match state.storage.search_structures(&query).await {
-        Ok(structures) => Ok(Json(ApiResponse::success(structures))),
+    match state.storage.search_definitions(&query).await {
+        Ok(definitions) => Ok(Json(ApiResponse::success(definitions))),
         Err(e) => {
-            eprintln!("Error searching structures: {}", e);
+            eprintln!("Error searching definitions: {}", e);
             Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
 }
 
 #[cfg(feature = "server")]
-async fn get_structure(
+async fn get_definition(
     Path(id): Path<String>,
     State(state): State<AppState>,
-) -> Result<Json<ApiResponse<StoredStructure>>, StatusCode> {
-    match state.storage.get_structure(&id).await {
-        Ok(Some(structure)) => Ok(Json(ApiResponse::success(structure))),
+) -> Result<Json<ApiResponse<StoredUserDefinition>>, StatusCode> {
+    match state.storage.get_definition(&id).await {
+        Ok(Some(definition)) => Ok(Json(ApiResponse::success(definition))),
         Ok(None) => Err(StatusCode::NOT_FOUND),
         Err(e) => {
-            eprintln!("Error getting structure: {}", e);
+            eprintln!("Error getting definition: {}", e);
             Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
 }
 
 #[cfg(feature = "server")]
-async fn create_structure(
+async fn create_definition(
     State(state): State<AppState>,
     Json(payload): Json<CreateStructureRequest>,
 ) -> Result<Json<ApiResponse<String>>, StatusCode> {
@@ -203,8 +203,8 @@ async fn create_structure(
         }
     }
 
-    // Store the structure
-    match state.storage.store_structure_direct(
+    // Store the definition
+    match state.storage.store_definition_direct(
         &payload.name,
         &payload.structure_type,
         payload.user_instance_index,
@@ -213,35 +213,35 @@ async fn create_structure(
     ).await {
         Ok(id) => Ok(Json(ApiResponse::success(id))),
         Err(e) => {
-            eprintln!("Error creating structure: {}", e);
+            eprintln!("Error creating definition: {}", e);
             Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
 }
 
 #[cfg(feature = "server")]
-async fn delete_structure(
+async fn delete_definition(
     Path(id): Path<String>,
     State(state): State<AppState>,
 ) -> Result<Json<ApiResponse<bool>>, StatusCode> {
-    match state.storage.delete_structure(&id).await {
+    match state.storage.delete_definition(&id).await {
         Ok(deleted) => Ok(Json(ApiResponse::success(deleted))),
         Err(e) => {
-            eprintln!("Error deleting structure: {}", e);
+            eprintln!("Error deleting definition: {}", e);
             Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
 }
 
 #[cfg(feature = "server")]
-async fn get_related_structures(
+async fn get_related_definitions(
     Path(id): Path<String>,
     State(state): State<AppState>,
-) -> Result<Json<ApiResponse<Vec<StoredStructure>>>, StatusCode> {
-    match state.storage.get_related_structures(&id).await {
-        Ok(structures) => Ok(Json(ApiResponse::success(structures))),
+) -> Result<Json<ApiResponse<Vec<StoredUserDefinition>>>, StatusCode> {
+    match state.storage.get_related_definitions(&id).await {
+        Ok(definitions) => Ok(Json(ApiResponse::success(definitions))),
         Err(e) => {
-            eprintln!("Error getting related structures: {}", e);
+            eprintln!("Error getting related definitions: {}", e);
             Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
@@ -258,7 +258,7 @@ async fn get_system_definition(
 ) -> Result<Json<ApiResponse<SystemDefinition>>, StatusCode> {
     use systematics_library::System;
     
-    let schema = match structure_type.as_str() {
+    let definition = match structure_type.as_str() {
         "triad" => {
             let system = systematics_library::TriadicSystem;
             SystemDefinition {
@@ -435,7 +435,7 @@ async fn get_system_definition(
         }
     };
     
-    Ok(Json(ApiResponse::success(schema)))
+    Ok(Json(ApiResponse::success(definition)))
 }
 
 #[cfg(feature = "server")]

@@ -56,7 +56,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         Ok(storage) => Some(storage),
                         Err(e) => {
                             eprintln!("⚠️  Warning: Could not initialize storage: {}", e);
-                            eprintln!("   Structures will not be auto-saved.");
+                            eprintln!("   Definitions will not be auto-saved.");
                             None
                         }
                     };
@@ -98,7 +98,7 @@ async fn run_interactive_menu() -> Result<(), Box<dyn std::error::Error>> {
         }
         Err(e) => {
             println!("⚠️  Database unavailable: {}", e);
-            println!("   Structures will not be saved between operations");
+            println!("   Definitions will not be saved between operations");
             None
         }
     };
@@ -419,7 +419,7 @@ async fn create_monad_interactive(api: &SystematicsApi, api_storage: Option<&Api
     monad.validate()?;
     
     if let Some(api_storage) = api_storage {
-        let _ = api_storage.auto_save_structure(&monad, &name, None).await?;
+        let _ = api_storage.auto_save_definition(&monad, &name, None).await?;
     }
     
     Ok(())
@@ -463,7 +463,7 @@ async fn create_dyad_interactive(api: &SystematicsApi, api_storage: Option<&ApiS
     dyad.validate()?;
     
     if let Some(api_storage) = api_storage {
-        let _ = api_storage.auto_save_structure(&dyad, &name, None).await?;
+        let _ = api_storage.auto_save_definition(&dyad, &name, None).await?;
     }
     
     Ok(())
@@ -508,7 +508,7 @@ async fn create_triad_interactive(api: &SystematicsApi, api_storage: Option<&Api
     triad.validate()?;
     
     if let Some(api_storage) = api_storage {
-        let _ = api_storage.auto_save_structure(&triad, &name, None).await?;
+        let _ = api_storage.auto_save_definition(&triad, &name, None).await?;
     }
     
     Ok(())
@@ -599,7 +599,7 @@ async fn create_tetrad_interactive(api: &SystematicsApi, api_storage: Option<&Ap
     tetrad.validate()?;
     
     if let Some(api_storage) = api_storage {
-        let _ = api_storage.auto_save_structure(&tetrad, &name, None).await?;
+        let _ = api_storage.auto_save_definition(&tetrad, &name, None).await?;
     }
     
     Ok(())
@@ -689,7 +689,7 @@ async fn create_pentad_interactive(api: &SystematicsApi, api_storage: Option<&Ap
     pentad.validate()?;
     
     if let Some(api_storage) = api_storage {
-        let _ = api_storage.auto_save_structure(&pentad, &name, None).await?;
+        let _ = api_storage.auto_save_definition(&pentad, &name, None).await?;
     }
     
     Ok(())
@@ -731,7 +731,7 @@ async fn create_hexad_interactive(api: &SystematicsApi, api_storage: Option<&Api
     hexad.validate()?;
     
     if let Some(api_storage) = api_storage {
-        let _ = api_storage.auto_save_structure(&hexad, &name, None).await?;
+        let _ = api_storage.auto_save_definition(&hexad, &name, None).await?;
     }
     
     Ok(())
@@ -774,7 +774,7 @@ async fn create_heptad_interactive(api: &SystematicsApi, api_storage: Option<&Ap
     heptad.validate()?;
     
     if let Some(api_storage) = api_storage {
-        let _ = api_storage.auto_save_structure(&heptad, &name, None).await?;
+        let _ = api_storage.auto_save_definition(&heptad, &name, None).await?;
     }
     
     Ok(())
@@ -817,7 +817,7 @@ async fn create_octad_interactive(api: &SystematicsApi, api_storage: Option<&Api
     octad.validate()?;
     
     if let Some(api_storage) = api_storage {
-        let _ = api_storage.auto_save_structure(&octad, &name, None).await?;
+        let _ = api_storage.auto_save_definition(&octad, &name, None).await?;
     }
     
     Ok(())
@@ -868,7 +868,7 @@ async fn create_dodecad_interactive(api: &SystematicsApi, api_storage: Option<&A
     dodecad.validate()?;
     
     if let Some(api_storage) = api_storage {
-        let _ = api_storage.auto_save_structure(&dodecad, &name, None).await?;
+        let _ = api_storage.auto_save_definition(&dodecad, &name, None).await?;
     }
     
     Ok(())
@@ -911,7 +911,7 @@ async fn create_ennead_interactive(api: &SystematicsApi, api_storage: Option<&Ap
     ennead.validate()?;
     
     if let Some(api_storage) = api_storage {
-        let _ = api_storage.auto_save_structure(&ennead, &name, None).await?;
+        let _ = api_storage.auto_save_definition(&ennead, &name, None).await?;
     }
     
     Ok(())
@@ -962,7 +962,7 @@ async fn create_decad_interactive(api: &SystematicsApi, api_storage: Option<&Api
     decad.validate()?;
     
     if let Some(api_storage) = api_storage {
-        let _ = api_storage.auto_save_structure(&decad, &name, None).await?;
+        let _ = api_storage.auto_save_definition(&decad, &name, None).await?;
     }
     
     Ok(())
@@ -1013,7 +1013,7 @@ async fn create_undecad_interactive(api: &SystematicsApi, api_storage: Option<&A
     undecad.validate()?;
     
     if let Some(api_storage) = api_storage {
-        let _ = api_storage.auto_save_structure(&undecad, &name, None).await?;
+        let _ = api_storage.auto_save_definition(&undecad, &name, None).await?;
     }
     
     Ok(())

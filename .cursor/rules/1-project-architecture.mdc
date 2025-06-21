@@ -3,7 +3,7 @@ description:
 globs: 
 alwaysApply: false
 ---
-# Systematic Architecture
+# Project Vision
 
 
 > This file serves as the foundational articulation for all project rules and patterns, it is a meta-monad. Every other rule file should serve this systemic unity.

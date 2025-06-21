@@ -148,7 +148,7 @@ Based on J.G. Bennett's systematic philosophy, this project makes ontological fr
 - ✅ **Database Centralization**: Moved to `/data/systematics.db`
 - ✅ **All Major Structures**: 9/12 systematic structures implemented
 - ✅ **Six Permutations**: Named pattern generation system
-- ✅ **Bennett Schema Integration**: Authentic term characters
+- ✅ **Bennett Definition Integration**: Authentic term characters
 - ✅ **JSON Export/Import**: Complete database export capability
 - ✅ **Search & Discovery**: Full-text search across all fields
 - ✅ **Relationship Analysis**: Graph-based connection exploration
