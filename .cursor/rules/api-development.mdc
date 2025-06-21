@@ -34,7 +34,7 @@ alwaysApply: false
 - Logic implemented in [api/src/permutations.rs](mdc:api/src/permutations.rs)
 
 ### Structure Definitions
-All systematic structures available in [api/src/structures/](mdc:api/src/structures):
+All systematic structures available in [api/src/definitions/](mdc:api/src/definitions):
 - Each structure type has its own module (monad through dodecad)
 - Consistent trait implementations with source attribution
 - Source attribution metadata from H3uni.org modules included

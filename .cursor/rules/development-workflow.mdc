@@ -52,7 +52,7 @@ cargo check --workspace
   - [ ] Standardize positional mapping comments
 
 - [ ] **API Structure Organization**
-  - [ ] Reorganize `api/src/structures/` for better maintainability
+  - [x] Reorganized `api/src/structures/` → `api/src/definitions/` for better terminology
   - [ ] Fix tetrad indexing inconsistencies
   - [ ] Reorder triad schema in `server.rs fn get_structure_schema`
   - [ ] Pentad.rs has a non-linear index of terms mapping index to geometry!!

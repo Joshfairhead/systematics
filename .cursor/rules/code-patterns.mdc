@@ -36,7 +36,7 @@ fn get_user_instance_at(&self, position: usize) -> Option<&str>
 - **Positional mapping**: Clear indication of user→canonical mapping
 
 ### API Structure Organization
-- Structure files in `api/src/structures/` should follow consistent patterns
+- Structure files in `api/src/definitions/` should follow consistent patterns
 - Each structure implements the same trait interface
 - Source attribution metadata included in all structures
 - Canonical terms fetched from library, not hardcoded

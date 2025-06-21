@@ -23,6 +23,8 @@ The backend has established proven terminology patterns that MUST be maintained 
 - `terms` - Ambiguous field name, unclear if user data or schema data
 - `connectives()` - Ambiguous method name, replaced by `connectives_traits()`
 - structures should be definitions
+- terms should be user instances
+- 
 
 ### Core Terminology Standards
 
