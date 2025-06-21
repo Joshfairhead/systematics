@@ -306,7 +306,7 @@ impl GeometryCalculator {
         }
     }
 
-    fn get_symbolic_triangle(system_type: &str, _center_x: f64, _center_y: f64, _size: f64) -> Option<SymbolicTriangle> {
+    fn get_symbolic_triangle(_system_type: &str, _center_x: f64, _center_y: f64, _size: f64) -> Option<SymbolicTriangle> {
         // Triad uses edges between nodes to form triangle, no separate symbolic triangle needed
         None
     }

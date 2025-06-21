@@ -1,7 +1,7 @@
 use yew::prelude::*;
 use yew::classes;
 use wasm_bindgen::prelude::*;
-use std::collections::HashMap;
+
 use web_sys::{HtmlInputElement, InputEvent, window};
 use crate::components::system_overlay::SystemOverlay;
 use crate::components::system_selector::SystemSelector;
@@ -12,9 +12,90 @@ mod services;   // Declare the services module
 mod core;       // Declare the core module (framework-agnostic)
 
 use components::geometric_renderer::GeometricRenderer;
-use services::api::{ApiClient, StoredUserDefinition, SystemDefinition, spawn_api_call, UserInstance, CoreGrammar, CommunityGrammar};
+use services::api::{ApiClient, spawn_api_call, UserInstance, CoreGrammar, CommunityGrammar, SystemDefinition};
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+/// Enhanced type safety for structure types
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum StructureType {
+    Monad = 1,
+    Dyad = 2,
+    Triad = 3,
+    Tetrad = 4,
+    Pentad = 5,
+    Hexad = 6,
+    Heptad = 7,
+    Octad = 8,
+    Ennead = 9,
+    Decad = 10,
+    Undecad = 11,
+    Dodecad = 12,
+}
+
+impl StructureType {
+    pub fn from_number(num: i32) -> Option<Self> {
+        match num {
+            1 => Some(Self::Monad),
+            2 => Some(Self::Dyad),
+            3 => Some(Self::Triad),
+            4 => Some(Self::Tetrad),
+            5 => Some(Self::Pentad),
+            6 => Some(Self::Hexad),
+            7 => Some(Self::Heptad),
+            8 => Some(Self::Octad),
+            9 => Some(Self::Ennead),
+            10 => Some(Self::Decad),
+            11 => Some(Self::Undecad),
+            12 => Some(Self::Dodecad),
+            _ => None,
+        }
+    }
+
+    pub fn to_number(self) -> i32 {
+        self as i32
+    }
+
+    pub fn to_string(self) -> &'static str {
+        match self {
+            Self::Monad => "monad",
+            Self::Dyad => "dyad",
+            Self::Triad => "triad",
+            Self::Tetrad => "tetrad",
+            Self::Pentad => "pentad",
+            Self::Hexad => "hexad",
+            Self::Heptad => "heptad",
+            Self::Octad => "octad",
+            Self::Ennead => "ennead",
+            Self::Decad => "decad",
+            Self::Undecad => "undecad",
+            Self::Dodecad => "dodecad",
+        }
+    }
+
+    pub fn from_string(s: &str) -> Option<Self> {
+        match s {
+            "monad" => Some(Self::Monad),
+            "dyad" => Some(Self::Dyad),
+            "triad" => Some(Self::Triad),
+            "tetrad" => Some(Self::Tetrad),
+            "pentad" => Some(Self::Pentad),
+            "hexad" => Some(Self::Hexad),
+            "heptad" => Some(Self::Heptad),
+            "octad" => Some(Self::Octad),
+            "ennead" => Some(Self::Ennead),
+            "decad" => Some(Self::Decad),
+            "undecad" => Some(Self::Undecad),
+            "dodecad" => Some(Self::Dodecad),
+            _ => None,
+        }
+    }
+
+    pub fn term_count(self) -> usize {
+        self.to_number() as usize
+    }
+}
+
+/// Content source enumeration for Language Tetrad navigation
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ContentSource {
     CoreGrammar,     // Directive: Bennett's canonical terms
     CommunityGrammar, // Instrumental: User-contributed mappings  
@@ -71,7 +152,7 @@ pub struct App {
     filtered_content: Vec<ContentItem>,         // Currently displayed content
     selected_item: Option<ContentItem>,         // Currently selected item
     current_definition: Option<SystemDefinition>, // Source: Mathematical structure
-    current_system_num: i32, // Track the currently selected system
+    current_structure_type: StructureType, // Track the currently selected structure type
     loading: bool,
     error: Option<String>,
     success_message: Option<String>,
@@ -137,7 +218,7 @@ impl Component for App {
             filtered_content: Vec::new(),
             selected_item: None,
             current_definition: None,
-            current_system_num: 1, // Default to monad
+            current_structure_type: StructureType::Monad, // Default to monad
             loading: false,
             error: None,
             success_message: None,
@@ -161,28 +242,18 @@ impl Component for App {
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             Msg::SystemSelected(system_num) => {
-                // Update current system selection
-                self.current_system_num = system_num;
+                // Update current system selection with enhanced type safety
+                if let Some(structure_type) = StructureType::from_number(system_num) {
+                    self.current_structure_type = structure_type;
+                } else {
+                    return false;
+                }
                 
-                let structure_type = match system_num {
-                    1 => "monad",
-                    2 => "dyad", 
-                    3 => "triad",
-                    4 => "tetrad",
-                    5 => "pentad",
-                    6 => "hexad",
-                    7 => "heptad",
-                    8 => "octad",
-                    9 => "ennead",
-                    10 => "decad",
-                    11 => "undecad",
-                    12 => "dodecad",
-                    _ => return false,
-                };
+                let structure_type_str = self.current_structure_type.to_string();
                 
                 // Find matching definition from loaded data (don't create placeholders)
                 if let Some(definition) = self.user_instances.iter()
-                    .find(|s| s.structure_type == structure_type && !s.id.as_str().map_or(false, |id| id.starts_with("placeholder-")))
+                    .find(|s| s.structure_type == structure_type_str && !s.id.as_str().map_or(false, |id| id.starts_with("placeholder-")))
                     .cloned() 
                 {
                     self.selected_item = Some(ContentItem::UserInstance(definition));
@@ -192,7 +263,7 @@ impl Component for App {
                 }
                 
                 // Always load definition for the selected structure type
-                self.load_definition_for_structure_type(ctx, structure_type);
+                self.load_definition_for_structure_type(ctx, structure_type_str);
                 true
             }
             Msg::DefinitionSelected(content_item) => {
@@ -202,7 +273,9 @@ impl Component for App {
                 
                 // Load definition for the selected structure type
                 self.load_definition_for_structure_type(ctx, &structure_type);
-                self.current_system_num = self.structure_type_to_number(&structure_type);
+                if let Some(struct_type) = StructureType::from_string(&structure_type) {
+                    self.current_structure_type = struct_type;
+                }
                 true
             }
             Msg::LoadUserInstances => {
@@ -360,7 +433,7 @@ impl Component for App {
                             self.creation_mode = true;
                             
                             // Initialize user_input with the right number of empty strings based on current system
-                            let term_count = self.current_system_num as usize;
+                            let term_count = self.current_structure_type.term_count();
                             self.user_input = vec![String::new(); term_count];
                             
                             return true;
@@ -383,7 +456,7 @@ impl Component for App {
             Msg::DefinitionSaved(result) => {
                 self.saving = false;
                 match result {
-                    Ok(definition_id) => {
+                    Ok(_definition_id) => {
                         self.error = None;
                         self.success_message = Some(format!("✅ Definition saved successfully!"));
                         // Exit creation mode after successful save
@@ -456,26 +529,14 @@ impl Component for App {
         
         // Determine the structure type and system number from selected definition or current selection
         let (structure_type, system_num) = if let Some(ref item) = self.selected_item {
-            let num = self.structure_type_to_number(item.structure_type());
-            (item.structure_type().to_string(), num)
+            if let Some(struct_type) = StructureType::from_string(item.structure_type()) {
+                (item.structure_type().to_string(), struct_type.to_number())
+            } else {
+                (self.current_structure_type.to_string().to_string(), self.current_structure_type.to_number())
+            }
         } else {
-            // Use current system selection instead of defaulting to monad
-            let structure_type = match self.current_system_num {
-                1 => "monad",
-                2 => "dyad",
-                3 => "triad",
-                4 => "tetrad",
-                5 => "pentad",
-                6 => "hexad",
-                7 => "heptad",
-                8 => "octad",
-                9 => "ennead",
-                10 => "decad",
-                11 => "undecad",
-                12 => "dodecad",
-                _ => "monad",
-            };
-            (structure_type.to_string(), self.current_system_num)
+            // Use current structure type selection
+            (self.current_structure_type.to_string().to_string(), self.current_structure_type.to_number())
         };
 
         // Create system-specific CSS class
@@ -511,7 +572,7 @@ impl Component for App {
 }
 
 impl App {
-    fn render_header(&self, ctx: &Context<Self>) -> Html {
+    fn render_header(&self, _ctx: &Context<Self>) -> Html {
         html! {
             <header class="app-header">
                 <div class="header-content">
@@ -656,7 +717,7 @@ impl App {
 
     fn render_structure_overlay(&self, ctx: &Context<Self>) -> Html {
         if let Some(ref item) = self.selected_item {
-            let system_num = self.structure_type_to_number(item.structure_type());
+            let system_num = StructureType::from_string(item.structure_type()).map(|s| s.to_number()).unwrap_or(1);
             html! {
                 <SystemOverlay 
                     system_num={system_num} 
@@ -670,7 +731,7 @@ impl App {
         } else {
             html! {
                 <SystemOverlay 
-                    system_num={self.current_system_num} 
+                    system_num={self.current_structure_type.to_number()} 
                     definition={None::<ContentItem>}
                     creation_mode={self.creation_mode}
                     structure_name={self.structure_name.clone()}
@@ -823,112 +884,7 @@ impl App {
         }
     }
 
-    fn structure_type_to_number(&self, structure_type: &str) -> i32 {
-        match structure_type {
-            "monad" => 1,
-            "dyad" => 2,
-            "triad" => 3,
-            "tetrad" => 4,
-            "pentad" => 5,
-            "hexad" => 6,
-            "heptad" => 7,
-            "octad" => 8,
-            "ennead" => 9,
-            "decad" => 10,
-            "undecad" => 11,
-            "dodecad" => 12,
-            _ => 1,
-        }
-    }
 
-    fn create_placeholder_definition(&self, structure_type: &str, system_num: i32) -> StoredUserDefinition {
-        let user_instance_index = match system_num {
-            1 => vec!["Unity".to_string()],
-            2 => vec!["Essence".to_string(), "Existence".to_string()],
-            3 => vec!["Active".to_string(), "Passive".to_string(), "Reconciling".to_string()],
-            4 => vec!["Ground".to_string(), "Ideal".to_string(), "Instrumental".to_string(), "Directive".to_string()],
-            5 => vec!["Purpose".to_string(), "Higher Potential".to_string(), "Quintessence".to_string(), "Lower Potential".to_string(), "Source".to_string()],
-            6 => vec!["Resources".to_string(), "Values".to_string(), "Options".to_string(), "Criteria".to_string(), "Facts".to_string(), "Priorities".to_string()],
-            7 => vec!["Insight".to_string(), "Research".to_string(), "Design".to_string(), "Synthesis".to_string(), "Application".to_string(), "Delivery".to_string(), "Value".to_string()],
-            8 => vec!["Element 1".to_string(), "Element 2".to_string(), "Element 3".to_string(), "Element 4".to_string(), "Element 5".to_string(), "Element 6".to_string(), "Element 7".to_string(), "Element 8".to_string()],
-            _ => (1..=system_num).map(|i| format!("Term {}", i)).collect(),
-        };
-
-        StoredUserDefinition {
-            id: serde_json::Value::String(format!("placeholder-{}", structure_type)),
-            name: format!("Default {}", structure_type.to_uppercase()),
-            structure_type: structure_type.to_string(),
-            grammar_id: "core".to_string(),
-            instances: user_instance_index,
-            connectives: HashMap::new(),
-            created_at: "placeholder".to_string(),
-            updated_at: "placeholder".to_string(),
-            description: Some(format!("Default {} definition", structure_type)),
-            metadata: HashMap::new(),
-        }
-    }
-
-    fn create_placeholder_definitions(&self) -> Vec<StoredUserDefinition> {
-        (1..=8).map(|i| {
-            let structure_type = match i {
-                1 => "monad",
-                2 => "dyad",
-                3 => "triad", 
-                4 => "tetrad",
-                5 => "pentad",
-                6 => "hexad",
-                7 => "heptad",
-                8 => "octad",
-                _ => "unknown",
-            };
-            self.create_placeholder_definition(structure_type, i)
-        }).collect()
-    }
-
-    // Static method for initial creation
-    fn create_initial_placeholder_definitions() -> Vec<StoredUserDefinition> {
-        (1..=8).map(|i| {
-            let structure_type = match i {
-                1 => "monad",
-                2 => "dyad",
-                3 => "triad", 
-                4 => "tetrad",
-                5 => "pentad",
-                6 => "hexad",
-                7 => "heptad",
-                8 => "octad",
-                _ => "unknown",
-            };
-            Self::create_static_placeholder_definition(structure_type, i)
-        }).collect()
-    }
-
-    fn create_static_placeholder_definition(structure_type: &str, system_num: i32) -> StoredUserDefinition {
-        let user_instance_index = match system_num {
-            1 => vec!["Unity".to_string()],
-            2 => vec!["Essence".to_string(), "Existence".to_string()],
-            3 => vec!["Active".to_string(), "Passive".to_string(), "Reconciling".to_string()],
-            4 => vec!["Ground".to_string(), "Ideal".to_string(), "Instrumental".to_string(), "Directive".to_string()],
-            5 => vec!["Purpose".to_string(), "Higher Potential".to_string(), "Quintessence".to_string(), "Lower Potential".to_string(), "Source".to_string()],
-            6 => vec!["Resources".to_string(), "Values".to_string(), "Options".to_string(), "Criteria".to_string(), "Facts".to_string(), "Priorities".to_string()],
-            7 => vec!["Insight".to_string(), "Research".to_string(), "Design".to_string(), "Synthesis".to_string(), "Application".to_string(), "Delivery".to_string(), "Value".to_string()],
-            8 => vec!["Element 1".to_string(), "Element 2".to_string(), "Element 3".to_string(), "Element 4".to_string(), "Element 5".to_string(), "Element 6".to_string(), "Element 7".to_string(), "Element 8".to_string()],
-            _ => (1..=system_num).map(|i| format!("Term {}", i)).collect(),
-        };
-
-        StoredUserDefinition {
-            id: serde_json::Value::String(format!("placeholder-{}", structure_type)),
-            name: format!("Default {}", structure_type.to_uppercase()),
-            structure_type: structure_type.to_string(),
-            grammar_id: "core".to_string(),
-            instances: user_instance_index,
-            connectives: HashMap::new(),
-            created_at: "placeholder".to_string(),
-            updated_at: "placeholder".to_string(),
-            description: Some(format!("Default {} definition", structure_type)),
-            metadata: HashMap::new(),
-        }
-    }
 
     fn load_definition_for_structure_type(&self, ctx: &Context<Self>, structure_type: &str) {
         let api_client = self.api_client.clone();
@@ -938,18 +894,6 @@ impl App {
         spawn_api_call(
             async move {
                 api_client.get_system_definition(&structure_type).await
-            },
-            callback,
-        );
-    }
-
-    fn load_definitions(&self, ctx: &Context<Self>) {
-        let api_client = self.api_client.clone();
-        let callback = ctx.link().callback(Msg::UserInstancesLoaded);
-        
-        spawn_api_call(
-            async move {
-                api_client.list_user_instances().await
             },
             callback,
         );
@@ -989,21 +933,7 @@ impl App {
     }
 
     fn save_definition(&self, ctx: &Context<Self>) {
-        let structure_type = match self.current_system_num {
-            1 => "monad",
-            2 => "dyad", 
-            3 => "triad",
-            4 => "tetrad",
-            5 => "pentad",
-            6 => "hexad",
-            7 => "heptad",
-            8 => "octad",
-            9 => "ennead",
-            10 => "decad",
-            11 => "undecad",
-            12 => "dodecad",
-            _ => "monad",
-        }.to_string();
+        let structure_type = self.current_structure_type.to_string().to_string();
         
         let definition_name = self.structure_name.clone().unwrap_or_else(|| "Unnamed Definition".to_string());
         

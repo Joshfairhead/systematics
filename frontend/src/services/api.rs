@@ -134,65 +134,9 @@ impl ApiClient {
         }
     }
 
-    pub fn with_base_url(base_url: String) -> Self {
-        Self { base_url }
-    }
 
-    pub async fn health_check(&self) -> Result<String, anyhow::Error> {
-        let url = format!("{}/health", self.base_url);
-        let response = Request::get(&url).send().await?;
-        
-        if response.ok() {
-            let api_response: ApiResponse<String> = response.json().await?;
-            api_response.data.ok_or_else(|| anyhow::anyhow!("No data in response"))
-        } else {
-            Err(anyhow::anyhow!("Health check failed: {}", response.status()))
-        }
-    }
 
-    pub async fn list_definitions(&self) -> Result<Vec<UserInstance>, anyhow::Error> {
-        let url = format!("{}/definitions", self.base_url);
-        let response = Request::get(&url).send().await?;
-        
-        if response.ok() {
-            let api_response: ApiResponse<Vec<UserInstance>> = response.json().await?;
-            api_response.data.ok_or_else(|| anyhow::anyhow!("No data in response"))
-        } else {
-            Err(anyhow::anyhow!("Failed to list definitions: {}", response.status()))
-        }
-    }
 
-    pub async fn get_definition(&self, id: &str) -> Result<UserInstance, anyhow::Error> {
-        let url = format!("{}/definitions/{}", self.base_url, id);
-        let response = Request::get(&url).send().await?;
-        
-        if response.ok() {
-            let api_response: ApiResponse<UserInstance> = response.json().await?;
-            api_response.data.ok_or_else(|| anyhow::anyhow!("No data in response"))
-        } else {
-            Err(anyhow::anyhow!("Failed to get definition: {}", response.status()))
-        }
-    }
-
-    pub async fn create_definition(&self, request: CreateStructureRequest) -> Result<String, anyhow::Error> {
-        let url = format!("{}/definitions", self.base_url);
-        let response = Request::post(&url)
-            .json(&request)?
-            .send()
-            .await?;
-        
-        if response.ok() {
-            let api_response: ApiResponse<String> = response.json().await?;
-            if api_response.success {
-                api_response.data.ok_or_else(|| anyhow::anyhow!("No data in response"))
-            } else {
-                Err(anyhow::anyhow!("API error: {}", api_response.error.unwrap_or_else(|| "Unknown error".to_string())))
-            }
-        } else {
-            let error_text = response.text().await.unwrap_or_else(|_| "Unknown error".to_string());
-            Err(anyhow::anyhow!("Failed to create definition: {}", error_text))
-        }
-    }
 
     pub async fn list_user_instances(&self) -> Result<Vec<UserInstance>, anyhow::Error> {
         let url = format!("{}/user-instances", self.base_url);
@@ -276,41 +220,7 @@ impl ApiClient {
         }
     }
 
-    pub async fn delete_definition(&self, id: &str) -> Result<bool, anyhow::Error> {
-        let url = format!("{}/definitions/{}", self.base_url, id);
-        let response = Request::delete(&url).send().await?;
-        
-        if response.ok() {
-            let api_response: ApiResponse<bool> = response.json().await?;
-            api_response.data.ok_or_else(|| anyhow::anyhow!("No data in response"))
-        } else {
-            Err(anyhow::anyhow!("Failed to delete definition: {}", response.status()))
-        }
-    }
 
-    pub async fn get_related_definitions(&self, id: &str) -> Result<Vec<UserInstance>, anyhow::Error> {
-        let url = format!("{}/definitions/{}/related", self.base_url, id);
-        let response = Request::get(&url).send().await?;
-        
-        if response.ok() {
-            let api_response: ApiResponse<Vec<UserInstance>> = response.json().await?;
-            api_response.data.ok_or_else(|| anyhow::anyhow!("No data in response"))
-        } else {
-            Err(anyhow::anyhow!("Failed to get related definitions: {}", response.status()))
-        }
-    }
-
-    pub async fn search_definitions(&self, query: &str) -> Result<Vec<UserInstance>, anyhow::Error> {
-        let url = format!("{}/definitions/search?q={}", self.base_url, query);
-        let response = Request::get(&url).send().await?;
-        
-        if response.ok() {
-            let api_response: ApiResponse<Vec<UserInstance>> = response.json().await?;
-            api_response.data.ok_or_else(|| anyhow::anyhow!("No data in response"))
-        } else {
-            Err(anyhow::anyhow!("Failed to search definitions: {}", response.status()))
-        }
-    }
 
     pub async fn search_user_instances(&self, query: &str) -> Result<Vec<UserInstance>, anyhow::Error> {
         let url = format!("{}/user-instances/search?q={}", self.base_url, query);
@@ -342,5 +252,4 @@ where
     });
 }
 
-// Backward compatibility type alias
-pub type StoredUserDefinition = UserInstance; 
+ 

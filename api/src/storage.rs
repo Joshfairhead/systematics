@@ -440,7 +440,7 @@ impl SurrealStorage {
 
     // CommunityGrammar storage methods
     pub async fn list_community_grammars(&self, structure_type: Option<&str>) -> Result<Vec<StoredCommunityGrammar>, SystematicsError> {
-        let sql = if let Some(st) = structure_type {
+        let sql = if let Some(_st) = structure_type {
             "SELECT * FROM community_grammars WHERE structure_type = $structure_type ORDER BY created_at DESC"
         } else {
             "SELECT * FROM community_grammars ORDER BY created_at DESC"

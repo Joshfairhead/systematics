@@ -13,7 +13,7 @@ use std::collections::HashMap;
 #[cfg(feature = "server")]
 use tower_http::cors::CorsLayer;
 
-use crate::{SurrealStorage, StoredUserInstance, StoredCommunityGrammar, SystematicsError};
+use crate::{SurrealStorage, StoredUserInstance, SystematicsError};
 
 #[cfg(feature = "server")]
 #[derive(Clone)]
@@ -307,11 +307,6 @@ async fn get_related_definitions(
             Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
-}
-
-#[cfg(feature = "server")]
-async fn test_simple_handler() -> Json<ApiResponse<String>> {
-    Json(ApiResponse::success("Simple test response".to_string()))
 }
 
 #[cfg(feature = "server")]
@@ -1031,4 +1026,23 @@ pub async fn start_server(storage: SurrealStorage, port: u16) -> Result<(), Syst
     
     println!("⚠️  Server has stopped");
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use axum::http::StatusCode;
+    use axum_test::TestServer;
+
+    #[tokio::test]
+    async fn test_health_endpoint() {
+        let app_state = AppState {
+            storage: Arc::new(SurrealStorage::new("memory").await.unwrap()),
+        };
+        let app = create_router(app_state);
+        let server = TestServer::new(app).unwrap();
+        
+        let response = server.get("/health").await;
+        assert_eq!(response.status_code(), StatusCode::OK);
+    }
 } 

@@ -10,7 +10,7 @@ use yew::{html, Component, Context, Html, Properties, TargetCast, Callback};
 use crate::services::api::{ApiClient, SystemDefinition, spawn_api_call};
 use crate::core::geometry::GeometryCalculator;
 use crate::ContentItem;
-use std::f64::consts::PI;
+
 use web_sys;
 
 #[derive(Properties, PartialEq)]
@@ -104,7 +104,7 @@ impl Component for SystemOverlay {
     fn view(&self, ctx: &Context<Self>) -> Html {
         let system_num = ctx.props().system_num;
         let definition = &ctx.props().definition;
-        let creation_mode = ctx.props().creation_mode;
+        let _creation_mode = ctx.props().creation_mode;
         
 
         
@@ -141,7 +141,7 @@ impl Component for SystemOverlay {
 }
 
 impl SystemOverlay {
-    fn render_control_buttons(&self, ctx: &Context<Self>) -> Html {
+    fn render_control_buttons(&self, _ctx: &Context<Self>) -> Html {
         // Controls are now handled by the parent App component
         html! {}
     }
@@ -410,21 +410,8 @@ impl SystemOverlay {
         layout.nodes.into_iter().map(|point| (point.x, point.y)).collect()
     }
 
-    fn regular_polygon_points(&self, n: usize, cx: f64, cy: f64, radius: f64, rotation: f64) -> Vec<(f64, f64)> {
-        (0..n).map(|i| {
-            let angle = 2.0 * PI * i as f64 / n as f64 + rotation;
-            let x = cx + radius * angle.cos();
-            let y = cy + radius * angle.sin();
-            (x, y)
-        }).collect()
-    }
-
     fn svg_to_css_percent(&self, coord: f64, svg_size: f64) -> String {
         format!("{}%", (coord / svg_size) * 100.0)
-    }
-
-    fn render_point(&self, ctx: &Context<Self>, term: &str, top: &str, left: &str, position_index: usize) -> Html {
-        self.render_point_with_positioning(ctx, term, top, left, false, position_index)
     }
     
     fn render_point_with_positioning(&self, ctx: &Context<Self>, display_text: &str, top: &str, left: &str, is_octad: bool, position_index: usize) -> Html {

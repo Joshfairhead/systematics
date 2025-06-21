@@ -318,7 +318,7 @@ impl DecadBuilder {
     }
     
     pub fn build(self) -> Result<Decad> {
-        let mut decad = Decad {
+        let decad = Decad {
             id: Uuid::new_v4().to_string(),
             name: self.name,
             instances: self.terms,

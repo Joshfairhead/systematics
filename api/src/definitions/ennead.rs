@@ -317,7 +317,7 @@ impl EnneadBuilder {
     }
     
     pub fn build(self) -> Result<Ennead> {
-        let mut ennead = Ennead {
+        let ennead = Ennead {
             id: Uuid::new_v4().to_string(),
             name: self.name,
             instances: self.terms,

@@ -318,7 +318,7 @@ impl UndecadBuilder {
     }
     
     pub fn build(self) -> Result<Undecad> {
-        let mut undecad = Undecad {
+        let undecad = Undecad {
             id: Uuid::new_v4().to_string(),
             name: self.name,
             instances: self.terms,
