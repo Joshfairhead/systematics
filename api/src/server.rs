@@ -18,7 +18,7 @@ use crate::{SurrealStorage, StoredUserExpression, SystematicsError, DatabaseEnvi
 #[cfg(feature = "server")]
 #[derive(Clone)]
 pub struct AppState {
-    pub storage: SurrealStorage,
+    pub storage: std::sync::Arc<tokio::sync::RwLock<SurrealStorage>>,
 }
 
 // Global state for environment switching
@@ -27,14 +27,8 @@ static CURRENT_ENVIRONMENT: std::sync::OnceLock<std::sync::Arc<tokio::sync::RwLo
 
 // Helper function to get storage for current environment
 #[cfg(feature = "server")]
-async fn get_current_storage() -> Result<SurrealStorage, SystematicsError> {
-    if let Some(env_lock) = CURRENT_ENVIRONMENT.get() {
-        let env = env_lock.read().await;
-        SurrealStorage::new_with_environment(env.clone()).await
-    } else {
-        // Fallback to development environment
-        SurrealStorage::new_with_environment(DatabaseEnvironment::Development).await
-    }
+async fn get_current_storage(state: &AppState) -> Result<tokio::sync::RwLockReadGuard<'_, SurrealStorage>, SystematicsError> {
+    Ok(state.storage.read().await)
 }
 
 #[cfg(feature = "server")]
@@ -163,7 +157,7 @@ pub fn create_router(storage: SurrealStorage) -> Router {
     let env = storage.environment().clone();
     CURRENT_ENVIRONMENT.get_or_init(|| std::sync::Arc::new(tokio::sync::RwLock::new(env)));
     
-    let state = AppState { storage };
+    let state = AppState { storage: std::sync::Arc::new(tokio::sync::RwLock::new(storage)) };
 
     Router::new()
         // Legacy endpoints for backward compatibility
@@ -204,10 +198,18 @@ async fn health_check() -> Json<ApiResponse<&'static str>> {
 async fn list_definitions(
     State(state): State<AppState>,
 ) -> Result<Json<ApiResponse<Vec<StoredUserExpression>>>, StatusCode> {
-    match state.storage.list_user_expressions().await {
-        Ok(user_instances) => Ok(Json(ApiResponse::success(user_instances))),
+    match get_current_storage(&state).await {
+        Ok(storage) => {
+            match storage.list_user_expressions().await {
+                Ok(user_instances) => Ok(Json(ApiResponse::success(user_instances))),
+                Err(e) => {
+                    eprintln!("Error listing user user_expressions: {}", e);
+                    Err(StatusCode::INTERNAL_SERVER_ERROR)
+                }
+            }
+        }
         Err(e) => {
-            eprintln!("Error listing user user_expressions: {}", e);
+            eprintln!("Error getting current storage: {}", e);
             Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
@@ -220,10 +222,18 @@ async fn search_definitions(
 ) -> Result<Json<ApiResponse<Vec<StoredUserExpression>>>, StatusCode> {
     let query = params.q.unwrap_or_default();
     
-    match state.storage.search_user_expressions(&query).await {
-        Ok(user_instances) => Ok(Json(ApiResponse::success(user_instances))),
+    match get_current_storage(&state).await {
+        Ok(storage) => {
+            match storage.search_user_expressions(&query).await {
+                Ok(user_instances) => Ok(Json(ApiResponse::success(user_instances))),
+                Err(e) => {
+                    eprintln!("Error searching user user_expressions: {}", e);
+                    Err(StatusCode::INTERNAL_SERVER_ERROR)
+                }
+            }
+        }
         Err(e) => {
-            eprintln!("Error searching user user_expressions: {}", e);
+            eprintln!("Error getting current storage: {}", e);
             Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
@@ -234,11 +244,19 @@ async fn get_definition(
     Path(id): Path<String>,
     State(state): State<AppState>,
 ) -> Result<Json<ApiResponse<StoredUserExpression>>, StatusCode> {
-    match state.storage.get_user_expression(&id).await {
-        Ok(Some(user_instance)) => Ok(Json(ApiResponse::success(user_instance))),
-        Ok(None) => Err(StatusCode::NOT_FOUND),
+    match get_current_storage(&state).await {
+        Ok(storage) => {
+            match storage.get_user_expression(&id).await {
+                Ok(Some(user_instance)) => Ok(Json(ApiResponse::success(user_instance))),
+                Ok(None) => Err(StatusCode::NOT_FOUND),
+                Err(e) => {
+                    eprintln!("Error getting user expression: {}", e);
+                    Err(StatusCode::INTERNAL_SERVER_ERROR)
+                }
+            }
+        }
         Err(e) => {
-            eprintln!("Error getting user expression: {}", e);
+            eprintln!("Error getting current storage: {}", e);
             Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
@@ -289,16 +307,24 @@ async fn create_definition(
         }
     }
 
-    match state.storage.save_user_expression(
-        &payload.name,
-        &payload.definition_type,
-        payload.user_expressions,
-        payload.connectives,
-        payload.description,
-    ).await {
-        Ok(id) => Ok(Json(ApiResponse::success(id))),
+    match get_current_storage(&state).await {
+        Ok(storage) => {
+            match storage.save_user_expression(
+                &payload.name,
+                &payload.definition_type,
+                payload.user_expressions,
+                payload.connectives,
+                payload.description,
+            ).await {
+                Ok(id) => Ok(Json(ApiResponse::success(id))),
+                Err(e) => {
+                    eprintln!("Error saving user expression: {}", e);
+                    Err(StatusCode::INTERNAL_SERVER_ERROR)
+                }
+            }
+        }
         Err(e) => {
-            eprintln!("Error saving user expression: {}", e);
+            eprintln!("Error getting current storage: {}", e);
             Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
@@ -309,10 +335,18 @@ async fn delete_definition(
     Path(id): Path<String>,
     State(state): State<AppState>,
 ) -> Result<Json<ApiResponse<bool>>, StatusCode> {
-    match state.storage.delete_user_expression(&id).await {
-        Ok(deleted) => Ok(Json(ApiResponse::success(deleted))),
+    match get_current_storage(&state).await {
+        Ok(storage) => {
+            match storage.delete_user_expression(&id).await {
+                Ok(deleted) => Ok(Json(ApiResponse::success(deleted))),
+                Err(e) => {
+                    eprintln!("Error deleting user expression: {}", e);
+                    Err(StatusCode::INTERNAL_SERVER_ERROR)
+                }
+            }
+        }
         Err(e) => {
-            eprintln!("Error deleting user expression: {}", e);
+            eprintln!("Error getting current storage: {}", e);
             Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
@@ -323,10 +357,18 @@ async fn get_related_definitions(
     Path(id): Path<String>,
     State(state): State<AppState>,
 ) -> Result<Json<ApiResponse<Vec<StoredUserExpression>>>, StatusCode> {
-    match state.storage.get_related_user_expressions(&id).await {
-        Ok(user_instances) => Ok(Json(ApiResponse::success(user_instances))),
+    match get_current_storage(&state).await {
+        Ok(storage) => {
+            match storage.get_related_user_expressions(&id).await {
+                Ok(user_instances) => Ok(Json(ApiResponse::success(user_instances))),
+                Err(e) => {
+                    eprintln!("Error getting related user user_expressions: {}", e);
+                    Err(StatusCode::INTERNAL_SERVER_ERROR)
+                }
+            }
+        }
         Err(e) => {
-            eprintln!("Error getting related user user_expressions: {}", e);
+            eprintln!("Error getting current storage: {}", e);
             Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
@@ -749,9 +791,9 @@ async fn get_core_grammar(
 
 #[cfg(feature = "server")]
 async fn list_user_expressions(
-    State(_state): State<AppState>,
+    State(state): State<AppState>,
 ) -> Result<Json<ApiResponse<Vec<StoredUserExpression>>>, StatusCode> {
-    match get_current_storage().await {
+    match get_current_storage(&state).await {
         Ok(storage) => {
             match storage.list_user_expressions().await {
                 Ok(user_instances) => Ok(Json(ApiResponse::success(user_instances))),
@@ -771,11 +813,11 @@ async fn list_user_expressions(
 #[cfg(feature = "server")]
 async fn search_user_expressions(
     Query(params): Query<SearchQuery>,
-    State(_state): State<AppState>,
+    State(state): State<AppState>,
 ) -> Result<Json<ApiResponse<Vec<StoredUserExpression>>>, StatusCode> {
     let query = params.q.unwrap_or_default();
     
-    match get_current_storage().await {
+    match get_current_storage(&state).await {
         Ok(storage) => {
             match storage.search_user_expressions(&query).await {
                 Ok(user_instances) => Ok(Json(ApiResponse::success(user_instances))),
@@ -794,7 +836,7 @@ async fn search_user_expressions(
 
 #[cfg(feature = "server")]
 async fn create_user_instance(
-    State(_state): State<AppState>,
+    State(state): State<AppState>,
     Json(payload): Json<CreateUserInstanceRequest>,
 ) -> Result<Json<ApiResponse<String>>, StatusCode> {
     // Validate structure type
@@ -807,44 +849,42 @@ async fn create_user_instance(
         ))));
     }
 
-    // Validate user expression count matches structure type
+    // Validate term characters count matches structure type
     let expected_term_count = match payload.definition_type.as_str() {
-        "monad" => 1,
-        "dyad" => 2,
-        "triad" => 3,
-        "tetrad" => 4,
-        "pentad" => 5,
-        "hexad" => 6,
-        "heptad" => 7,
-        "octad" => 8,
-        "ennead" => 9,
-        "decad" => 10,
-        "undecad" => 11,
-        "dodecad" => 12,
+        "monad" => 1, "dyad" => 2, "triad" => 3, "tetrad" => 4, "pentad" => 5, "hexad" => 6,
+        "heptad" => 7, "octad" => 8, "ennead" => 9, "decad" => 10, "undecad" => 11, "dodecad" => 12,
         _ => return Ok(Json(ApiResponse::error("Invalid structure type".to_string()))),
     };
 
     if payload.user_expressions.len() != expected_term_count {
         return Ok(Json(ApiResponse::error(format!(
-            "Structure type '{}' requires exactly {} instances, got {}",
+            "Structure type '{}' requires exactly {} user expressions, got {}",
             payload.definition_type,
             expected_term_count,
             payload.user_expressions.len()
         ))));
     }
 
-    // Validate instances are not empty
-    for (i, instance) in payload.user_expressions.iter().enumerate() {
-        if instance.trim().is_empty() {
+    // Validate user expressions are not empty
+    for (i, user_expression) in payload.user_expressions.iter().enumerate() {
+        if user_expression.trim().is_empty() {
             return Ok(Json(ApiResponse::error(format!(
-                "Instance at position {} cannot be empty",
+                "User expression at position {} cannot be empty",
                 i + 1
             ))));
         }
     }
 
-    // Store the user expression
-    match get_current_storage().await {
+    // Validate required fields
+    if payload.name.trim().is_empty() {
+        return Ok(Json(ApiResponse::error("Name cannot be empty".to_string())));
+    }
+    if payload.grammar_id.trim().is_empty() {
+        return Ok(Json(ApiResponse::error("Grammar ID cannot be empty".to_string())));
+    }
+
+    // Store the user instance
+    match get_current_storage(&state).await {
         Ok(storage) => {
             match storage.save_user_expression(
                 &payload.name,
@@ -855,7 +895,7 @@ async fn create_user_instance(
             ).await {
                 Ok(id) => Ok(Json(ApiResponse::success(id))),
                 Err(e) => {
-                    eprintln!("Error creating user expression: {}", e);
+                    eprintln!("Error creating user instance: {}", e);
                     Err(StatusCode::INTERNAL_SERVER_ERROR)
                 }
             }
@@ -871,11 +911,11 @@ async fn create_user_instance(
 #[cfg(feature = "server")]
 async fn list_community_grammars(
     Query(params): Query<HashMap<String, String>>,
-    State(_state): State<AppState>,
+    State(state): State<AppState>,
 ) -> Result<Json<ApiResponse<Vec<CommunityGrammar>>>, StatusCode> {
     let definition_type = params.get("definition_type").map(|s| s.as_str());
     
-    match get_current_storage().await {
+    match get_current_storage(&state).await {
         Ok(storage) => {
             match storage.list_community_grammars(definition_type).await {
                 Ok(stored_grammars) => {
@@ -914,24 +954,32 @@ async fn get_community_grammar(
     Path(id): Path<String>,
     State(state): State<AppState>,
 ) -> Result<Json<ApiResponse<CommunityGrammar>>, StatusCode> {
-    match state.storage.get_community_grammar(&id).await {
-        Ok(Some(stored)) => {
-            let community_grammar = CommunityGrammar {
-                id: serde_json::to_value(&stored.id).unwrap_or(serde_json::Value::Null),
-                definition_type: stored.definition_type,
-                name: stored.name,
-                term_characters: stored.term_characters,
-                author: stored.author,
-                mapping_notes: stored.mapping_notes,
-                created_at: stored.created_at.to_string(),
-                updated_at: stored.updated_at.to_string(),
-                description: stored.description,
-            };
-            Ok(Json(ApiResponse::success(community_grammar)))
-        },
-        Ok(None) => Err(StatusCode::NOT_FOUND),
+    match get_current_storage(&state).await {
+        Ok(storage) => {
+            match storage.get_community_grammar(&id).await {
+                Ok(Some(stored)) => {
+                    let community_grammar = CommunityGrammar {
+                        id: serde_json::to_value(&stored.id).unwrap_or(serde_json::Value::Null),
+                        definition_type: stored.definition_type,
+                        name: stored.name,
+                        term_characters: stored.term_characters,
+                        author: stored.author,
+                        mapping_notes: stored.mapping_notes,
+                        created_at: stored.created_at.to_string(),
+                        updated_at: stored.updated_at.to_string(),
+                        description: stored.description,
+                    };
+                    Ok(Json(ApiResponse::success(community_grammar)))
+                },
+                Ok(None) => Err(StatusCode::NOT_FOUND),
+                Err(e) => {
+                    eprintln!("Error getting community grammar: {}", e);
+                    Err(StatusCode::INTERNAL_SERVER_ERROR)
+                }
+            }
+        }
         Err(e) => {
-            eprintln!("Error getting community grammar: {}", e);
+            eprintln!("Error getting current storage: {}", e);
             Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
@@ -997,17 +1045,25 @@ async fn create_community_grammar(
     }
 
     // Store the community grammar
-    match state.storage.create_community_grammar(
-        &payload.definition_type,
-        &payload.name,
-        payload.term_characters,
-        &payload.author,
-        &payload.mapping_notes,
-        payload.description,
-    ).await {
-        Ok(id) => Ok(Json(ApiResponse::success(id))),
+    match get_current_storage(&state).await {
+        Ok(storage) => {
+            match storage.create_community_grammar(
+                &payload.definition_type,
+                &payload.name,
+                payload.term_characters,
+                &payload.author,
+                &payload.mapping_notes,
+                payload.description,
+            ).await {
+                Ok(id) => Ok(Json(ApiResponse::success(id))),
+                Err(e) => {
+                    eprintln!("Error creating community grammar: {}", e);
+                    Err(StatusCode::INTERNAL_SERVER_ERROR)
+                }
+            }
+        }
         Err(e) => {
-            eprintln!("Error creating community grammar: {}", e);
+            eprintln!("Error getting current storage: {}", e);
             Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
@@ -1020,27 +1076,35 @@ async fn search_community_grammars(
 ) -> Result<Json<ApiResponse<Vec<CommunityGrammar>>>, StatusCode> {
     let query = params.q.unwrap_or_default();
     
-    match state.storage.search_community_grammars(&query).await {
-        Ok(stored_grammars) => {
-            let community_grammars: Vec<CommunityGrammar> = stored_grammars
-                .into_iter()
-                .map(|stored| CommunityGrammar {
-                    id: serde_json::to_value(&stored.id).unwrap_or(serde_json::Value::Null),
-                    definition_type: stored.definition_type,
-                    name: stored.name,
-                    term_characters: stored.term_characters,
-                    author: stored.author,
-                    mapping_notes: stored.mapping_notes,
-                    created_at: stored.created_at.to_string(),
-                    updated_at: stored.updated_at.to_string(),
-                    description: stored.description,
-                })
-                .collect();
-            
-            Ok(Json(ApiResponse::success(community_grammars)))
-        },
+    match get_current_storage(&state).await {
+        Ok(storage) => {
+            match storage.search_community_grammars(&query).await {
+                Ok(stored_grammars) => {
+                    let community_grammars: Vec<CommunityGrammar> = stored_grammars
+                        .into_iter()
+                        .map(|stored| CommunityGrammar {
+                            id: serde_json::to_value(&stored.id).unwrap_or(serde_json::Value::Null),
+                            definition_type: stored.definition_type,
+                            name: stored.name,
+                            term_characters: stored.term_characters,
+                            author: stored.author,
+                            mapping_notes: stored.mapping_notes,
+                            created_at: stored.created_at.to_string(),
+                            updated_at: stored.updated_at.to_string(),
+                            description: stored.description,
+                        })
+                        .collect();
+                    
+                    Ok(Json(ApiResponse::success(community_grammars)))
+                },
+                Err(e) => {
+                    eprintln!("Error searching community grammars: {}", e);
+                    Err(StatusCode::INTERNAL_SERVER_ERROR)
+                }
+            }
+        }
         Err(e) => {
-            eprintln!("Error searching community grammars: {}", e);
+            eprintln!("Error getting current storage: {}", e);
             Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
@@ -1051,10 +1115,18 @@ async fn delete_community_grammar(
     Path(id): Path<String>,
     State(state): State<AppState>,
 ) -> Result<Json<ApiResponse<bool>>, StatusCode> {
-    match state.storage.delete_community_grammar(&id).await {
-        Ok(deleted) => Ok(Json(ApiResponse::success(deleted))),
+    match get_current_storage(&state).await {
+        Ok(storage) => {
+            match storage.delete_community_grammar(&id).await {
+                Ok(deleted) => Ok(Json(ApiResponse::success(deleted))),
+                Err(e) => {
+                    eprintln!("Error deleting community grammar: {}", e);
+                    Err(StatusCode::INTERNAL_SERVER_ERROR)
+                }
+            }
+        }
         Err(e) => {
-            eprintln!("Error deleting community grammar: {}", e);
+            eprintln!("Error getting current storage: {}", e);
             Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
@@ -1100,48 +1172,31 @@ async fn get_current_environment(
 
 #[cfg(feature = "server")]
 async fn switch_environment(
-    State(_state): State<AppState>,
+    State(state): State<AppState>,
     Json(payload): Json<SwitchEnvironmentRequest>,
 ) -> Result<Json<ApiResponse<String>>, StatusCode> {
-    println!("🔄 Environment switch request: {}", payload.environment);
-    
     let new_environment = match payload.environment.as_str() {
         "testing" => DatabaseEnvironment::Testing,
         "development" => DatabaseEnvironment::Development,
-        _ => {
-            println!("❌ Invalid environment requested: {}", payload.environment);
-            return Ok(Json(ApiResponse::error("Invalid environment. Use 'testing' or 'development'".to_string())));
-        }
+        _ => return Ok(Json(ApiResponse::error("Invalid environment. Use 'testing' or 'development'".to_string()))),
     };
+
+    eprintln!("🔄 Switching to {} environment...", payload.environment);
     
-    let db_path = new_environment.db_path();
-    println!("📁 Attempting to connect to: {}", db_path);
-    
-    // Test the new environment connection
-    match SurrealStorage::new_with_environment(new_environment.clone()).await {
-        Ok(_new_storage) => {
-            println!("✅ Successfully connected to new environment");
-            
+    // Get mutable access to storage and switch environment
+    match state.storage.write().await.switch_environment(new_environment.clone()).await {
+        Ok(()) => {
             // Update global environment state
             if let Some(env_lock) = CURRENT_ENVIRONMENT.get() {
                 let mut env = env_lock.write().await;
-                let old_env = env.clone();
                 *env = new_environment.clone();
-                println!("🔄 Environment updated: {:?} -> {:?}", old_env, new_environment);
-            } else {
-                println!("❌ Global environment not initialized");
-                return Ok(Json(ApiResponse::error("Global environment not initialized".to_string())));
             }
             
-            let env_name = match new_environment {
-                DatabaseEnvironment::Testing => "testing",
-                DatabaseEnvironment::Development => "development",
-            };
-            println!("✅ Successfully switched to {} environment", env_name);
-            Ok(Json(ApiResponse::success(format!("Switched to {} environment", env_name))))
+            eprintln!("✅ Successfully switched to {} environment", payload.environment);
+            Ok(Json(ApiResponse::success(format!("Switched to {} environment", payload.environment))))
         }
         Err(e) => {
-            println!("❌ Error switching environment: {}", e);
+            eprintln!("❌ Failed to switch environment: {}", e);
             Ok(Json(ApiResponse::error(format!("Failed to switch environment: {}", e))))
         }
     }

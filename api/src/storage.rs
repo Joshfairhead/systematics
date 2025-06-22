@@ -25,9 +25,15 @@ impl DatabaseEnvironment {
         let base_path = std::env::var("SYSTEMATICS_DATA_PATH")
             .unwrap_or_else(|_| "../data".to_string());
         
+        // Use single database file with different namespaces
+        format!("{}/systematics.db", base_path)
+    }
+    
+    /// Get the namespace for this environment
+    pub fn namespace(&self) -> &str {
         match self {
-            DatabaseEnvironment::Testing => format!("{}/testing_systematics.db", base_path),
-            DatabaseEnvironment::Development => format!("{}/development_systematics.db", base_path),
+            DatabaseEnvironment::Testing => "testing",
+            DatabaseEnvironment::Development => "development",
         }
     }
     
@@ -661,6 +667,20 @@ impl SurrealStorage {
         let community_grammars: Vec<StoredCommunityGrammar> = result.take(0)?;
         
         Ok(community_grammars)
+    }
+
+    /// Switch to a different environment namespace
+    pub async fn switch_environment(&mut self, new_environment: DatabaseEnvironment) -> Result<(), SystematicsError> {
+        // Switch to the new namespace
+        self.db.use_ns(new_environment.namespace()).use_db("user_expressions").await?;
+        
+        // Initialize schema for the new namespace
+        Self::init_schema(&self.db).await?;
+        
+        // Update the environment
+        self.environment = new_environment;
+        
+        Ok(())
     }
 }
 
