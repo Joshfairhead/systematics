@@ -1,4 +1,4 @@
-use systematics_api::{start_server, SurrealStorage, SystematicsError};
+use systematics_api::{start_server, SurrealStorage, SystematicsError, DatabaseEnvironment};
 use std::env;
 
 #[tokio::main]
@@ -9,16 +9,18 @@ async fn main() -> Result<(), SystematicsError> {
         .parse::<u16>()
         .unwrap_or(3001);
         
-    let db_path = env::var("SYSTEMATICS_DB_PATH")
-        .unwrap_or_else(|_| "../data/systematics.db".to_string());
+    // Start with development environment by default
+    let environment = DatabaseEnvironment::Development;
+    let db_path = environment.db_path();
     
     println!("🚀 Starting SysteMaster API Server");
     println!("   Port: {}", port);
+    println!("   Environment: {:?}", environment);
     println!("   Database: {}", db_path);
     
-    // Initialize storage with detailed logging
+    // Initialize storage with environment-based connection
     println!("📡 Initializing database connection...");
-    let storage = match SurrealStorage::new(&db_path).await {
+    let storage = match SurrealStorage::new_with_environment(environment).await {
         Ok(storage) => {
             println!("✅ Database connected successfully");
             storage

@@ -25,6 +25,18 @@ pub struct AppState {
 #[cfg(feature = "server")]
 static CURRENT_ENVIRONMENT: std::sync::OnceLock<std::sync::Arc<tokio::sync::RwLock<DatabaseEnvironment>>> = std::sync::OnceLock::new();
 
+// Helper function to get storage for current environment
+#[cfg(feature = "server")]
+async fn get_current_storage() -> Result<SurrealStorage, SystematicsError> {
+    if let Some(env_lock) = CURRENT_ENVIRONMENT.get() {
+        let env = env_lock.read().await;
+        SurrealStorage::new_with_environment(env.clone()).await
+    } else {
+        // Fallback to development environment
+        SurrealStorage::new_with_environment(DatabaseEnvironment::Development).await
+    }
+}
+
 #[cfg(feature = "server")]
 #[derive(Deserialize)]
 pub struct SwitchEnvironmentRequest {
@@ -737,12 +749,20 @@ async fn get_core_grammar(
 
 #[cfg(feature = "server")]
 async fn list_user_expressions(
-    State(state): State<AppState>,
+    State(_state): State<AppState>,
 ) -> Result<Json<ApiResponse<Vec<StoredUserExpression>>>, StatusCode> {
-    match state.storage.list_user_expressions().await {
-        Ok(user_instances) => Ok(Json(ApiResponse::success(user_instances))),
+    match get_current_storage().await {
+        Ok(storage) => {
+            match storage.list_user_expressions().await {
+                Ok(user_instances) => Ok(Json(ApiResponse::success(user_instances))),
+                Err(e) => {
+                    eprintln!("Error listing user user_expressions: {}", e);
+                    Err(StatusCode::INTERNAL_SERVER_ERROR)
+                }
+            }
+        }
         Err(e) => {
-            eprintln!("Error listing user user_expressions: {}", e);
+            eprintln!("Error getting current storage: {}", e);
             Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
@@ -766,7 +786,7 @@ async fn search_user_expressions(
 
 #[cfg(feature = "server")]
 async fn create_user_instance(
-    State(state): State<AppState>,
+    State(_state): State<AppState>,
     Json(payload): Json<CreateUserInstanceRequest>,
 ) -> Result<Json<ApiResponse<String>>, StatusCode> {
     // Validate structure type
@@ -816,16 +836,24 @@ async fn create_user_instance(
     }
 
     // Store the user expression
-    match state.storage.save_user_expression(
-        &payload.name,
-        &payload.definition_type,
-        payload.user_expressions,
-        payload.connectives,
-        payload.description,
-    ).await {
-        Ok(id) => Ok(Json(ApiResponse::success(id))),
+    match get_current_storage().await {
+        Ok(storage) => {
+            match storage.save_user_expression(
+                &payload.name,
+                &payload.definition_type,
+                payload.user_expressions,
+                payload.connectives,
+                payload.description,
+            ).await {
+                Ok(id) => Ok(Json(ApiResponse::success(id))),
+                Err(e) => {
+                    eprintln!("Error creating user expression: {}", e);
+                    Err(StatusCode::INTERNAL_SERVER_ERROR)
+                }
+            }
+        }
         Err(e) => {
-            eprintln!("Error creating user expression: {}", e);
+            eprintln!("Error getting current storage: {}", e);
             Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
