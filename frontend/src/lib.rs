@@ -5,6 +5,8 @@ use wasm_bindgen::prelude::*;
 use web_sys::{HtmlInputElement, InputEvent, window};
 use crate::components::system_overlay::SystemOverlay;
 use crate::components::system_selector::SystemSelector;
+use crate::components::header::AppHeader;
+use crate::components::controls::SearchControls;
 use gloo_timers;
 
 mod components; // Declare the components module
@@ -515,9 +517,9 @@ impl Component for App {
                                 // Core grammars don't need reloading as they're read-only
                             }
                         }
-                        // Auto-dismiss notification after 3 seconds
+                        // Auto-dismiss notification after 1.5 seconds
                         let link = ctx.link().clone();
-                        gloo_timers::callback::Timeout::new(3000, move || {
+                        gloo_timers::callback::Timeout::new(1500, move || {
                             link.send_message(Msg::ClearNotifications);
                         }).forget();
                     }
@@ -615,6 +617,12 @@ impl Component for App {
                         self.success_message = Some(message);
                         self.error = None;
                         
+                        // Auto-dismiss notification after 1.5 seconds
+                        let link = ctx.link().clone();
+                        gloo_timers::callback::Timeout::new(1500, move || {
+                            link.send_message(Msg::ClearNotifications);
+                        }).forget();
+                        
                         // Reload all data since we switched databases
                         ctx.link().send_message(Msg::LoadCoreGrammars);
                         ctx.link().send_message(Msg::LoadUserExpressions);
@@ -649,12 +657,28 @@ impl Component for App {
 
         html! {
             <div class="app-container">
-                {self.render_header(ctx)}
-                {self.render_search_controls(ctx)}
+                <AppHeader
+                    current_environment={self.current_environment.clone()}
+                    switching_environment={self.switching_environment}
+                    on_switch_testing={ctx.link().callback(|_| Msg::SwitchEnvironment("testing".to_string()))}
+                    on_switch_development={ctx.link().callback(|_| Msg::SwitchEnvironment("development".to_string()))}
+                />
+                <SearchControls
+                    content_source={self.content_source}
+                    creation_mode={self.creation_mode}
+                    saving={self.saving}
+                    on_core_selected={ctx.link().callback(|_| Msg::ContentSourceChanged(ContentSource::CoreGrammar))}
+                    on_community_selected={ctx.link().callback(|_| Msg::ContentSourceChanged(ContentSource::CommunityGrammar))}
+                    on_user_selected={ctx.link().callback(|_| Msg::ContentSourceChanged(ContentSource::UserExpressions))}
+                    on_load={ctx.link().callback(|_| Msg::ToggleStructureBrowser)}
+                    on_create={ctx.link().callback(|_| Msg::CreateDefinition)}
+                    on_save={ctx.link().callback(|_| Msg::SaveDefinition)}
+                    on_cancel={ctx.link().callback(|_| Msg::CancelCreate)}
+                />
                 <div class="system-selector-container">
                     <SystemSelector 
-                        {on_system_selected} 
-                        selected_system={system_num}
+                        on_system_selected={ctx.link().callback(Msg::SystemSelected)} 
+                        selected_system={self.current_definition_type.to_number()}
                         disabled={self.creation_mode}
                     />
                 </div>
@@ -677,141 +701,6 @@ impl Component for App {
 }
 
 impl App {
-    fn render_header(&self, ctx: &Context<Self>) -> Html {
-        let is_autopoietic = self.current_environment == "development";
-        let header_class = if is_autopoietic { "app-header autopoietic" } else { "app-header" };
-        
-        let switch_to_testing = ctx.link().callback(|_| Msg::SwitchEnvironment("testing".to_string()));
-        let switch_to_development = ctx.link().callback(|_| Msg::SwitchEnvironment("development".to_string()));
-        
-        html! {
-            <header class={header_class}>
-                <div class="header-content">
-                    <div class="header-title">
-                        <h1>{"SysteMaster"}</h1>
-                        <p>{"Systematic Learning Interface"}</p>
-                    </div>
-                    <div class="environment-controls">
-                        <div class="environment-indicator">
-                            <span class="environment-label">{"Environment:"}</span>
-                            <span class={if is_autopoietic { "environment-value autopoietic" } else { "environment-value" }}>
-                                {if is_autopoietic { "Autopoietic Mode" } else { "Testing Mode" }}
-                            </span>
-                        </div>
-                        <div class="environment-switch">
-                            <button 
-                                class={if self.current_environment == "testing" { "env-button active" } else { "env-button" }}
-                                onclick={switch_to_testing}
-                                disabled={self.switching_environment}
-                            >
-                                {"Testing"}
-                            </button>
-                            <button 
-                                class={if self.current_environment == "development" { "env-button active autopoietic" } else { "env-button" }}
-                                onclick={switch_to_development}
-                                disabled={self.switching_environment}
-                            >
-                                {"Autopoietic"}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </header>
-        }
-    }
-    
-    fn render_search_controls(&self, ctx: &Context<Self>) -> Html {
-        let search_input = ctx.link().callback(|e: InputEvent| {
-            let input: HtmlInputElement = e.target_unchecked_into();
-            Msg::SearchQueryChanged(input.value())
-        });
-        
-        let search_submit = ctx.link().callback(|_| Msg::SearchDefinitions);
-        let create_callback = ctx.link().callback(|_| Msg::CreateDefinition);
-        let cancel_callback = ctx.link().callback(|_| Msg::CancelCreate);
-        
-        // Content source callbacks
-        let core_callback = ctx.link().callback(|_| Msg::ContentSourceChanged(ContentSource::CoreGrammar));
-        let community_callback = ctx.link().callback(|_| Msg::ContentSourceChanged(ContentSource::CommunityGrammar));
-        let user_expressions_callback = ctx.link().callback(|_| Msg::ContentSourceChanged(ContentSource::UserExpressions));
-        
-        html! {
-            <div class="search-controls">
-                <div class="search-bar">
-                    <div class="content-source-tabs">
-                        <button 
-                            class={classes!("tab-button", if self.content_source == ContentSource::CoreGrammar { "active" } else { "" })}
-                            onclick={core_callback}
-                            disabled={self.creation_mode}
-                        >
-                            {"Core Grammar"}
-                        </button>
-                        <button 
-                            class={classes!("tab-button", if self.content_source == ContentSource::CommunityGrammar { "active" } else { "" })}
-                            onclick={community_callback}
-                            disabled={self.creation_mode}
-                        >
-                            {"Community Grammar"}
-                        </button>
-                        <button 
-                            class={classes!("tab-button", if self.content_source == ContentSource::UserExpressions { "active" } else { "" })}
-                            onclick={user_expressions_callback}
-                            disabled={self.creation_mode}
-                        >
-                            {"User Expressions"}
-                        </button>
-                    </div>
-                    <div class="action-buttons">
-                        <button 
-                            class="load-button" 
-                            onclick={ctx.link().callback(|_| Msg::ToggleStructureBrowser)}
-                            disabled={self.creation_mode}
-                        >
-                            {"Load"}
-                        </button>
-                        {if !self.creation_mode {
-                            html! {
-                                <button class="create-button" onclick={create_callback}>
-                                    {"Create"}
-                                </button>
-                            }
-                        } else {
-                            html! {
-                                <>
-                                    <button class="save-button" onclick={ctx.link().callback(|_| Msg::SaveDefinition)} disabled={self.saving}>
-                                        {if self.saving { "Saving..." } else { "Save" }}
-                                    </button>
-                                    <button class="cancel-button" onclick={cancel_callback}>
-                                        {"Cancel"}
-                                    </button>
-                                </>
-                            }
-                        }}
-                    </div>
-                    <input 
-                        type="text" 
-                        placeholder={match self.content_source {
-                            ContentSource::CoreGrammar => "Search core grammar definitions...",
-                            ContentSource::CommunityGrammar => "Search community grammar definitions...",
-                            ContentSource::UserExpressions => "Search user expressions...",
-                        }}
-                        value={self.search_query.clone()}
-                        oninput={search_input}
-                        class="search-input"
-                        disabled={self.creation_mode}
-                    />
-                    <button 
-                        onclick={search_submit} 
-                        class="search-button"
-                        disabled={self.creation_mode}
-                    >
-                        {"Search"}
-                    </button>
-                </div>
-            </div>
-        }
-    }
-    
     fn render_loading_or_error(&self) -> Html {
         if self.loading {
             html! {
@@ -910,9 +799,9 @@ impl App {
                             <h3>{browser_title}</h3>
                             <span class="content-source-badge">
                                 {match self.content_source {
-                                    ContentSource::CoreGrammar => "🎯 Curated",
-                                    ContentSource::CommunityGrammar => "👥 Community",
-                                    ContentSource::UserExpressions => "👤 User",
+                                    ContentSource::CoreGrammar => "Core",
+                                    ContentSource::CommunityGrammar => "Community",
+                                    ContentSource::UserExpressions => "User",
                                 }}
                             </span>
                         </div>
@@ -934,9 +823,9 @@ impl App {
                                 <div class="content-item" onclick={select_item}>
                                     <div class="content-item-header">
                                         <h4>{&item.name()}</h4>
-                                        <span class="structure-type">{&item.definition_type()}</span>
+                                        <span class="content-type-badge">{&item.definition_type()}</span>
                                     </div>
-                                    <div class="content-item-terms">
+                                    <div class="content-item-instances">
                                         {item.instances().join(", ")}
                                     </div>
                                     {if let Some(ref desc) = item.description() {
