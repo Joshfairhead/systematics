@@ -9,8 +9,8 @@ async fn main() -> Result<(), SystematicsError> {
         .parse::<u16>()
         .unwrap_or(3001);
         
-    // Start with development environment by default
-    let environment = DatabaseEnvironment::Development;
+    // Start with testing environment by default (safer for UI development)
+    let environment = DatabaseEnvironment::Testing;
     let db_path = environment.db_path();
     
     println!("🚀 Starting SysteMaster API Server");

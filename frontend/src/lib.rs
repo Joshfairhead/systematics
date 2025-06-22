@@ -438,7 +438,31 @@ impl Component for App {
             }
             Msg::CreateDefinition => {
                 if let Some(window) = window() {
-                    if let Ok(Some(name)) = window.prompt_with_message("Enter a name for your definition:") {
+                    // Determine what type of content is being created
+                    let content_type = match self.content_source {
+                        ContentSource::CoreGrammar => "Core Grammar (read-only)",
+                        ContentSource::CommunityGrammar => "Community Grammar",
+                        ContentSource::UserExpressions => "User Expression",
+                    };
+                    
+                    // Don't allow creating core grammars
+                    if self.content_source == ContentSource::CoreGrammar {
+                        if let Ok(_) = window.alert_with_message("Core Grammar definitions are read-only and cannot be created. Switch to 'Community Grammar' or 'User Expressions' to create new content.") {
+                            // Do nothing, just show the alert
+                        }
+                        return false;
+                    }
+                    
+                    let prompt_message = format!("Creating new {}\n\nEnter a name for your {}:", 
+                        content_type,
+                        match self.content_source {
+                            ContentSource::CommunityGrammar => "community grammar",
+                            ContentSource::UserExpressions => "user expression",
+                            _ => "definition",
+                        }
+                    );
+                    
+                    if let Ok(Some(name)) = window.prompt_with_message(&prompt_message) {
                         if !name.trim().is_empty() {
                             self.structure_name = Some(name.trim().to_string());
                             self.creation_mode = true;
@@ -469,13 +493,28 @@ impl Component for App {
                 match result {
                     Ok(_definition_id) => {
                         self.error = None;
-                        self.success_message = Some(format!("✅ Definition saved successfully!"));
+                        let content_type = match self.content_source {
+                            ContentSource::UserExpressions => "User Expression",
+                            ContentSource::CommunityGrammar => "Community Grammar",
+                            ContentSource::CoreGrammar => "Core Grammar",
+                        };
+                        self.success_message = Some(format!("✅ {} saved successfully!", content_type));
                         // Exit creation mode after successful save
                         self.creation_mode = false;
                         self.structure_name = None;
                         self.user_input.clear();
-                        // Reload user expressions to show the new one
-                        ctx.link().send_message(Msg::LoadUserExpressions);
+                        // Reload appropriate data based on content source
+                        match self.content_source {
+                            ContentSource::UserExpressions => {
+                                ctx.link().send_message(Msg::LoadUserExpressions);
+                            }
+                            ContentSource::CommunityGrammar => {
+                                ctx.link().send_message(Msg::LoadCommunityGrammars);
+                            }
+                            ContentSource::CoreGrammar => {
+                                // Core grammars don't need reloading as they're read-only
+                            }
+                        }
                         // Auto-dismiss notification after 3 seconds
                         let link = ctx.link().clone();
                         gloo_timers::callback::Timeout::new(3000, move || {
@@ -822,6 +861,7 @@ impl App {
                     structure_name={self.structure_name.clone()}
                     user_expressions={self.user_input.clone()}
                     on_instance_change={ctx.link().callback(|(index, expression)| Msg::UserExpressionChanged(index, expression))}
+                    content_source={self.content_source}
                 />
             }
         } else {
@@ -833,6 +873,7 @@ impl App {
                     structure_name={self.structure_name.clone()}
                     user_expressions={self.user_input.clone()}
                     on_instance_change={ctx.link().callback(|(index, expression)| Msg::UserExpressionChanged(index, expression))}
+                    content_source={self.content_source}
                 />
             }
         }
@@ -1028,19 +1069,40 @@ impl App {
 
     fn save_definition(&self, ctx: &Context<Self>) {
         let definition_type = self.current_definition_type.to_string().to_string();
-        
         let definition_name = self.structure_name.clone().unwrap_or_else(|| "Unnamed Definition".to_string());
-        
         let api_client = self.api_client.clone();
-        let user_expressions = self.user_input.clone();
+        let user_input = self.user_input.clone();
+        let content_source = self.content_source;
         let callback = ctx.link().callback(Msg::DefinitionSaved);
         
-        spawn_api_call(
-            async move {
-                api_client.save_user_instance(&definition_name, &definition_type, &user_expressions).await
-            },
-            callback,
-        );
+        match content_source {
+            ContentSource::UserExpressions => {
+                spawn_api_call(
+                    async move {
+                        api_client.save_user_instance(&definition_name, &definition_type, &user_input).await
+                    },
+                    callback,
+                );
+            }
+            ContentSource::CommunityGrammar => {
+                spawn_api_call(
+                    async move {
+                        // For community grammars, we need author and mapping notes
+                        // For now, use placeholder values - in a real app, these would come from a form
+                        let author = "Community User".to_string(); // TODO: Get from user profile
+                        let mapping_notes = format!("Community mapping for {} structure", definition_type);
+                        
+                        api_client.create_community_grammar(&definition_name, &definition_type, &user_input, &author, &mapping_notes).await
+                    },
+                    callback,
+                );
+            }
+            ContentSource::CoreGrammar => {
+                // This should never happen due to the validation in CreateDefinition
+                // But add a fallback just in case
+                callback.emit(Err(anyhow::anyhow!("Cannot create core grammar definitions - they are read-only")));
+            }
+        }
     }
 }
 

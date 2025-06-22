@@ -134,10 +134,6 @@ impl ApiClient {
         }
     }
 
-
-
-
-
     pub async fn list_user_expressions(&self) -> Result<Vec<UserExpression>, anyhow::Error> {
         let url = format!("{}/user-instances", self.base_url);
         let response = Request::get(&url).send().await?;
@@ -208,6 +204,35 @@ impl ApiClient {
         }
     }
 
+    pub async fn create_community_grammar(&self, name: &str, definition_type: &str, term_characters: &[String], author: &str, mapping_notes: &str) -> Result<String, anyhow::Error> {
+        let request = CreateCommunityGrammarRequest {
+            definition_type: definition_type.to_string(),
+            name: name.to_string(),
+            term_characters: term_characters.to_vec(),
+            author: author.to_string(),
+            mapping_notes: mapping_notes.to_string(),
+            description: Some(format!("Community-created {} grammar by {}", definition_type, author)),
+        };
+        
+        let url = format!("{}/community-grammar", self.base_url);
+        let response = Request::post(&url)
+            .json(&request)?
+            .send()
+            .await?;
+        
+        if response.ok() {
+            let api_response: ApiResponse<String> = response.json().await?;
+            if api_response.success {
+                api_response.data.ok_or_else(|| anyhow::anyhow!("No data in response"))
+            } else {
+                Err(anyhow::anyhow!("API error: {}", api_response.error.unwrap_or_else(|| "Unknown error".to_string())))
+            }
+        } else {
+            let error_text = response.text().await.unwrap_or_else(|_| "Unknown error".to_string());
+            Err(anyhow::anyhow!("Failed to create community grammar: {}", error_text))
+        }
+    }
+
     pub async fn get_system_definition(&self, definition_type: &str) -> Result<SystemDefinition, anyhow::Error> {
         let url = format!("{}/definition/{}", self.base_url, definition_type);
         let response = Request::get(&url).send().await?;
@@ -219,8 +244,6 @@ impl ApiClient {
             Err(anyhow::anyhow!("Failed to get system definition: {}", response.status()))
         }
     }
-
-
 
     pub async fn search_user_instances(&self, query: &str) -> Result<Vec<UserExpression>, anyhow::Error> {
         let url = format!("{}/user-instances/search?q={}", self.base_url, query);

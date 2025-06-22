@@ -10,6 +10,7 @@ use yew::{html, Component, Context, Html, Properties, TargetCast, Callback};
 use crate::services::api::{ApiClient, SystemDefinition, spawn_api_call};
 use crate::core::geometry::GeometryCalculator;
 use crate::ContentItem;
+use crate::ContentSource;
 
 use web_sys;
 
@@ -21,6 +22,7 @@ pub struct SystemOverlayProps {
     pub structure_name: Option<String>,
     pub user_expressions: Vec<String>,
     pub on_instance_change: Callback<(usize, String)>,
+    pub content_source: ContentSource,
 }
 
 pub enum SystemOverlayMsg {
