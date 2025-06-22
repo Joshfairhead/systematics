@@ -166,6 +166,9 @@ pub struct App {
     saving: bool,
     // Content source toggle (Tetrad navigation)
     content_source: ContentSource,
+    // Database environment state
+    current_environment: String, // "testing" or "development"
+    switching_environment: bool,
 }
 
 pub enum Msg {
@@ -204,6 +207,11 @@ pub enum Msg {
     ClearNotifications,
     // Content source toggle
     ContentSourceChanged(ContentSource),
+    // Database environment switching
+    LoadCurrentEnvironment,
+    EnvironmentLoaded(Result<String, anyhow::Error>),
+    SwitchEnvironment(String),
+    EnvironmentSwitched(Result<String, anyhow::Error>),
 }
 
 impl Component for App {
@@ -230,9 +238,12 @@ impl Component for App {
             user_input: Vec::new(),
             saving: false,
             content_source: ContentSource::CoreGrammar,
+            current_environment: "development".to_string(), // Default to development
+            switching_environment: false,
         };
 
-        // Load core definitions by default and definition for monad
+        // Load current environment and core definitions by default
+        ctx.link().send_message(Msg::LoadCurrentEnvironment);
         ctx.link().send_message(Msg::LoadCoreGrammars);
         ctx.link().send_message(Msg::SystemSelected(1)); // Load monad by default
         
@@ -521,6 +532,61 @@ impl Component for App {
                 }
                 true
             }
+            Msg::LoadCurrentEnvironment => {
+                let api_client = self.api_client.clone();
+                let callback = ctx.link().callback(Msg::EnvironmentLoaded);
+                
+                spawn_api_call(
+                    async move { api_client.get_current_environment().await },
+                    callback
+                );
+                true
+            }
+            Msg::EnvironmentLoaded(result) => {
+                match result {
+                    Ok(environment) => {
+                        self.current_environment = environment;
+                        self.error = None;
+                    }
+                    Err(e) => {
+                        self.error = Some(format!("Failed to load environment: {}", e));
+                        // Default to development on error
+                        self.current_environment = "development".to_string();
+                    }
+                }
+                true
+            }
+            Msg::SwitchEnvironment(new_environment) => {
+                self.switching_environment = true;
+                let api_client = self.api_client.clone();
+                let callback = ctx.link().callback(Msg::EnvironmentSwitched);
+                
+                spawn_api_call(
+                    async move { api_client.switch_environment(&new_environment).await },
+                    callback
+                );
+                true
+            }
+            Msg::EnvironmentSwitched(result) => {
+                self.switching_environment = false;
+                match result {
+                    Ok(message) => {
+                        // Reload current environment to confirm switch
+                        ctx.link().send_message(Msg::LoadCurrentEnvironment);
+                        self.success_message = Some(message);
+                        self.error = None;
+                        
+                        // Reload all data since we switched databases
+                        ctx.link().send_message(Msg::LoadCoreGrammars);
+                        ctx.link().send_message(Msg::LoadUserExpressions);
+                        ctx.link().send_message(Msg::LoadCommunityGrammars);
+                    }
+                    Err(e) => {
+                        self.error = Some(format!("Failed to switch environment: {}", e));
+                    }
+                }
+                true
+            }
         }
     }
 
@@ -572,13 +638,43 @@ impl Component for App {
 }
 
 impl App {
-    fn render_header(&self, _ctx: &Context<Self>) -> Html {
+    fn render_header(&self, ctx: &Context<Self>) -> Html {
+        let is_autopoietic = self.current_environment == "development";
+        let header_class = if is_autopoietic { "app-header autopoietic" } else { "app-header" };
+        
+        let switch_to_testing = ctx.link().callback(|_| Msg::SwitchEnvironment("testing".to_string()));
+        let switch_to_development = ctx.link().callback(|_| Msg::SwitchEnvironment("development".to_string()));
+        
         html! {
-            <header class="app-header">
+            <header class={header_class}>
                 <div class="header-content">
                     <div class="header-title">
                         <h1>{"SysteMaster"}</h1>
                         <p>{"Systematic Learning Interface"}</p>
+                    </div>
+                    <div class="environment-controls">
+                        <div class="environment-indicator">
+                            <span class="environment-label">{"Environment:"}</span>
+                            <span class={if is_autopoietic { "environment-value autopoietic" } else { "environment-value" }}>
+                                {if is_autopoietic { "Autopoietic Mode" } else { "Testing Mode" }}
+                            </span>
+                        </div>
+                        <div class="environment-switch">
+                            <button 
+                                class={if self.current_environment == "testing" { "env-button active" } else { "env-button" }}
+                                onclick={switch_to_testing}
+                                disabled={self.switching_environment}
+                            >
+                                {"Testing"}
+                            </button>
+                            <button 
+                                class={if self.current_environment == "development" { "env-button active autopoietic" } else { "env-button" }}
+                                onclick={switch_to_development}
+                                disabled={self.switching_environment}
+                            >
+                                {"Autopoietic"}
+                            </button>
+                        </div>
                     </div>
                 </div>
             </header>

@@ -43,7 +43,7 @@ pub use error::{SystematicsError, Result};
 pub use definitions::*;
 pub use systematics_library::{System, LibraryProvider, BennettLibrary};
 pub use permutations::{Permutation, PermutationSet};
-pub use storage::{SurrealStorage, StoredUserExpression, StoredCommunityGrammar, GraphNode, GraphEdge};
+pub use storage::{SurrealStorage, StoredUserExpression, StoredCommunityGrammar, GraphNode, GraphEdge, DatabaseEnvironment};
 
 #[cfg(feature = "server")]
 pub use server::{start_server, create_router, AppState, ApiResponse};

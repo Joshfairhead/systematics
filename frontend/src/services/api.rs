@@ -238,6 +238,48 @@ impl ApiClient {
         let grammar_id = "core".to_string(); // Default to core grammar
         self.create_user_instance(name, definition_type, &grammar_id, user_expressions).await
     }
+
+    // Database environment management
+    pub async fn get_current_environment(&self) -> Result<String, anyhow::Error> {
+        let url = format!("{}/environment", self.base_url);
+        let response = Request::get(&url).send().await?;
+        
+        if response.ok() {
+            let api_response: ApiResponse<String> = response.json().await?;
+            api_response.data.ok_or_else(|| anyhow::anyhow!("No data in response"))
+        } else {
+            Err(anyhow::anyhow!("Failed to get current environment: {}", response.status()))
+        }
+    }
+
+    pub async fn switch_environment(&self, environment: &str) -> Result<String, anyhow::Error> {
+        #[derive(Serialize)]
+        struct SwitchRequest {
+            environment: String,
+        }
+        
+        let request = SwitchRequest {
+            environment: environment.to_string(),
+        };
+        
+        let url = format!("{}/environment/switch", self.base_url);
+        let response = Request::post(&url)
+            .json(&request)?
+            .send()
+            .await?;
+        
+        if response.ok() {
+            let api_response: ApiResponse<String> = response.json().await?;
+            if api_response.success {
+                api_response.data.ok_or_else(|| anyhow::anyhow!("No data in response"))
+            } else {
+                Err(anyhow::anyhow!("API error: {}", api_response.error.unwrap_or_else(|| "Unknown error".to_string())))
+            }
+        } else {
+            let error_text = response.text().await.unwrap_or_else(|_| "Unknown error".to_string());
+            Err(anyhow::anyhow!("Failed to switch environment: {}", error_text))
+        }
+    }
 }
 
 // Helper function for spawning async tasks in Yew components

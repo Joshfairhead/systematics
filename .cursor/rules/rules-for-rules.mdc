@@ -1,0 +1,15 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+## Rules for Rules Folder Purpose
+
+This vision file provides the systematic foundation. All other rule files should serve this unity:
+- **Architecture**: How components systematically relate
+- **Terminology**: How naming serves systematic understanding
+- **Development**: How process serves systematic coherence  
+- **Structures**: How code organization reflects systematic principles
+- **Research**: How source work grounds systematic implementation
+
+**Systematic Coherence**: Every rule should serve the systematic understanding that SysteMaster exists to demonstrate.

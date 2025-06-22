@@ -10,6 +10,36 @@ use uuid::Uuid;
 use surrealdb::sql::{Datetime, Thing};
 use serde_json;
 
+/// Database environment types for systematic separation
+#[derive(Debug, Clone, PartialEq)]
+pub enum DatabaseEnvironment {
+    /// Wipeable/expendable testing database
+    Testing,
+    /// Protected persistent development database (includes systematic grammars)
+    Development,
+}
+
+impl DatabaseEnvironment {
+    /// Get the database file path for this environment
+    pub fn db_path(&self) -> String {
+        let base_path = std::env::var("SYSTEMATICS_DATA_PATH")
+            .unwrap_or_else(|_| "../data".to_string());
+        
+        match self {
+            DatabaseEnvironment::Testing => format!("{}/testing_systematics.db", base_path),
+            DatabaseEnvironment::Development => format!("{}/development_systematics.db", base_path),
+        }
+    }
+    
+    /// Check if this environment is protected against destructive operations
+    pub fn is_protected(&self) -> bool {
+        match self {
+            DatabaseEnvironment::Testing => false,
+            DatabaseEnvironment::Development => true,
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct StoredUserExpression {
@@ -63,10 +93,33 @@ pub struct GraphEdge {
 #[derive(Clone)]
 pub struct SurrealStorage {
     db: Surreal<Db>,
+    environment: DatabaseEnvironment,
 }
 
 impl SurrealStorage {
+    pub async fn new_with_environment(environment: DatabaseEnvironment) -> Result<Self, SystematicsError> {
+        let db_path = environment.db_path();
+        
+        // Use file-based storage for persistence
+        let db = Surreal::new::<RocksDb>(&db_path).await?;
+        
+        // Use a namespace and database
+        db.use_ns("systematics").use_db("user_expressions").await?;
+        
+        // Initialize schema
+        Self::init_schema(&db).await?;
+        
+        Ok(Self { db, environment })
+    }
+
     pub async fn new(db_path: &str) -> Result<Self, SystematicsError> {
+        // Legacy method - determine environment from path
+        let environment = if db_path.contains("testing") {
+            DatabaseEnvironment::Testing
+        } else {
+            DatabaseEnvironment::Development
+        };
+        
         // Use file-based storage for persistence
         let db = Surreal::new::<RocksDb>(db_path).await?;
         
@@ -76,14 +129,17 @@ impl SurrealStorage {
         // Initialize schema
         Self::init_schema(&db).await?;
         
-        Ok(Self { db })
+        Ok(Self { db, environment })
     }
 
-    /// Create a new SurrealStorage with default project data path
+    /// Create a new SurrealStorage with default development database
     pub async fn new_default() -> Result<Self, SystematicsError> {
-        let default_path = std::env::var("SYSTEMATICS_DB_PATH")
-            .unwrap_or_else(|_| "../data/systematics.db".to_string());
-        Self::new(&default_path).await
+        Self::new_with_environment(DatabaseEnvironment::Development).await
+    }
+    
+    /// Get the current database environment
+    pub fn environment(&self) -> &DatabaseEnvironment {
+        &self.environment
     }
 
     async fn init_schema(db: &Surreal<Db>) -> Result<(), SystematicsError> {

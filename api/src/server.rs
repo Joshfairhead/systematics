@@ -13,12 +13,22 @@ use std::collections::HashMap;
 #[cfg(feature = "server")]
 use tower_http::cors::CorsLayer;
 
-use crate::{SurrealStorage, StoredUserExpression, SystematicsError};
+use crate::{SurrealStorage, StoredUserExpression, SystematicsError, DatabaseEnvironment};
 
 #[cfg(feature = "server")]
 #[derive(Clone)]
 pub struct AppState {
     pub storage: SurrealStorage,
+}
+
+// Global state for environment switching
+#[cfg(feature = "server")]
+static CURRENT_ENVIRONMENT: std::sync::OnceLock<std::sync::Arc<tokio::sync::RwLock<DatabaseEnvironment>>> = std::sync::OnceLock::new();
+
+#[cfg(feature = "server")]
+#[derive(Deserialize)]
+pub struct SwitchEnvironmentRequest {
+    pub environment: String, // "testing" or "development"
 }
 
 #[cfg(feature = "server")]
@@ -137,6 +147,10 @@ impl<T> ApiResponse<T> {
 
 #[cfg(feature = "server")]
 pub fn create_router(storage: SurrealStorage) -> Router {
+    // Initialize global environment state
+    let env = storage.environment().clone();
+    CURRENT_ENVIRONMENT.get_or_init(|| std::sync::Arc::new(tokio::sync::RwLock::new(env)));
+    
     let state = AppState { storage };
 
     Router::new()
@@ -159,6 +173,10 @@ pub fn create_router(storage: SurrealStorage) -> Router {
         .route("/user-instances", get(list_user_expressions))
         .route("/user-instances", post(create_user_instance))
         .route("/user-instances/search", get(search_user_expressions))
+        
+        // Database environment management
+        .route("/environment", get(get_current_environment))
+        .route("/environment/switch", post(switch_environment))
         
         .route("/health", get(health_check))
         .layer(CorsLayer::permissive())
@@ -1018,6 +1036,55 @@ pub async fn start_server(storage: SurrealStorage, port: u16) -> Result<(), Syst
     
     println!("⚠️  Server has stopped");
     Ok(())
+}
+
+#[cfg(feature = "server")]
+async fn get_current_environment(
+    State(_state): State<AppState>,
+) -> Json<ApiResponse<String>> {
+    if let Some(env_lock) = CURRENT_ENVIRONMENT.get() {
+        let env = env_lock.read().await;
+        let environment = match *env {
+            DatabaseEnvironment::Testing => "testing",
+            DatabaseEnvironment::Development => "development",
+        };
+        Json(ApiResponse::success(environment.to_string()))
+    } else {
+        Json(ApiResponse::error("Environment not initialized".to_string()))
+    }
+}
+
+#[cfg(feature = "server")]
+async fn switch_environment(
+    State(_state): State<AppState>,
+    Json(payload): Json<SwitchEnvironmentRequest>,
+) -> Result<Json<ApiResponse<String>>, StatusCode> {
+    let new_environment = match payload.environment.as_str() {
+        "testing" => DatabaseEnvironment::Testing,
+        "development" => DatabaseEnvironment::Development,
+        _ => return Ok(Json(ApiResponse::error("Invalid environment. Use 'testing' or 'development'".to_string()))),
+    };
+    
+    // Test the new environment connection
+    match SurrealStorage::new_with_environment(new_environment.clone()).await {
+        Ok(_new_storage) => {
+            // Update global environment state
+            if let Some(env_lock) = CURRENT_ENVIRONMENT.get() {
+                let mut env = env_lock.write().await;
+                *env = new_environment.clone();
+            }
+            
+            let env_name = match new_environment {
+                DatabaseEnvironment::Testing => "testing",
+                DatabaseEnvironment::Development => "development",
+            };
+            Ok(Json(ApiResponse::success(format!("Switched to {} environment", env_name))))
+        }
+        Err(e) => {
+            eprintln!("Error switching environment: {}", e);
+            Ok(Json(ApiResponse::error(format!("Failed to switch environment: {}", e))))
+        }
+    }
 }
 
 #[cfg(test)]

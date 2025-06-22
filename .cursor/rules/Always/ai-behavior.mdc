@@ -9,7 +9,29 @@ This file defines behavioral rules and guidelines for AI assistants working on t
 
 ## 🚨 CRITICAL RULES
 
-### 1. Language and Terminology Changes
+### 1. Terminal Management and Workspace Cleanliness
+**RULE**: The AI assistant must **ALWAYS** maintain a clean workspace by following strict terminal management practices.
+
+**Requirements:**
+- Run all terminal commands in the background (lower terminal pane)
+- Close any unused terminals immediately after task completion or failure
+- Maintain only one terminal for user input when possible
+- Clean up any temporary files, scripts, or artifacts created during tasks
+- Minimize workspace clutter and maintain organized development environment
+
+**Process:**
+1. **Execute** all terminal commands with `is_background: true`
+2. **Monitor** active terminals and close unused ones
+3. **Clean up** temporary files after task completion
+4. **Preserve** only essential terminals for ongoing user interaction
+
+**Example**: When running build commands, tests, or file operations, always use background execution to keep terminals organized.
+
+**Rationale**: A clean workspace improves developer productivity, reduces confusion, and maintains professional development practices. This is especially important for complex projects like SysteMaster with multiple components.
+
+## 📋 ADDITIONAL BEHAVIORAL GUIDELINES
+
+### 2. Language and Terminology Changes
 **RULE**: The AI assistant must **ALWAYS** ask for explicit user approval before making any language changes, terminology additions, or conceptual modifications to the SysteMaster codebase.
 
 **Applies to:**
@@ -31,12 +53,37 @@ This file defines behavioral rules and guidelines for AI assistants working on t
 
 **Rationale**: Terminology consistency is critical for the SysteMaster project's academic integrity and long-term maintainability. The Language Tetrad architecture requires precise terminology alignment.
 
-## 📋 ADDITIONAL BEHAVIORAL GUIDELINES
+### 3. Database Safety and Environment Separation
+**RULE**: The AI assistant must **NEVER** delete, wipe, or destructively modify development or meta databases without explicit multi-step confirmation.
 
-### 2. [To be added by user]
-*Space reserved for additional behavioral rules*
+**Database Environment Types:**
+- **`testing_systematics.db`**: Wipeable/expendable testing database
+- **`development_systematics.db`**: Protected persistent development database (includes systematic grammars and meta-knowledge)
 
-### 3. [To be added by user] 
+**Prohibited Actions Without Explicit Confirmation:**
+- `rm -rf data/development_systematics.db`
+- Any destructive database operations on development database
+- Mass deletion commands in data directory
+- Database migration commands that could lose data
+
+**Required Process for Protected Database Operations:**
+1. **Identify** which database environment is affected
+2. **Confirm** operation type (testing=safe, development=requires confirmation)
+3. **Request explicit approval** with clear impact statement
+4. **Wait for user confirmation** before proceeding
+5. **Suggest backup** if operation is potentially destructive
+
+**Safe Operations (No Confirmation Required):**
+- Normal CRUD operations through application APIs
+- Reading/querying any database
+- Operations on `testing_systematics.db`
+- Non-destructive migrations
+
+**Example**: "This operation would modify development_systematics.db. Should I proceed? (Recommend backup first)"
+
+**Rationale**: Autopoietic systems must protect their own developmental knowledge. The development and meta databases contain irreplaceable systematic knowledge that enables the system's self-evolution capabilities.
+
+### 4. [To be added by user] 
 *Space reserved for additional behavioral rules*
 
 ## 🔄 Rule Updates
