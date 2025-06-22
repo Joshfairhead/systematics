@@ -771,14 +771,22 @@ async fn list_user_expressions(
 #[cfg(feature = "server")]
 async fn search_user_expressions(
     Query(params): Query<SearchQuery>,
-    State(state): State<AppState>,
+    State(_state): State<AppState>,
 ) -> Result<Json<ApiResponse<Vec<StoredUserExpression>>>, StatusCode> {
     let query = params.q.unwrap_or_default();
     
-    match state.storage.search_user_expressions(&query).await {
-        Ok(user_instances) => Ok(Json(ApiResponse::success(user_instances))),
+    match get_current_storage().await {
+        Ok(storage) => {
+            match storage.search_user_expressions(&query).await {
+                Ok(user_instances) => Ok(Json(ApiResponse::success(user_instances))),
+                Err(e) => {
+                    eprintln!("Error searching user user_expressions: {}", e);
+                    Err(StatusCode::INTERNAL_SERVER_ERROR)
+                }
+            }
+        }
         Err(e) => {
-            eprintln!("Error searching user user_expressions: {}", e);
+            eprintln!("Error getting current storage: {}", e);
             Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
@@ -863,31 +871,39 @@ async fn create_user_instance(
 #[cfg(feature = "server")]
 async fn list_community_grammars(
     Query(params): Query<HashMap<String, String>>,
-    State(state): State<AppState>,
+    State(_state): State<AppState>,
 ) -> Result<Json<ApiResponse<Vec<CommunityGrammar>>>, StatusCode> {
     let definition_type = params.get("definition_type").map(|s| s.as_str());
     
-    match state.storage.list_community_grammars(definition_type).await {
-        Ok(stored_grammars) => {
-            let community_grammars: Vec<CommunityGrammar> = stored_grammars
-                .into_iter()
-                .map(|stored| CommunityGrammar {
-                    id: serde_json::to_value(&stored.id).unwrap_or(serde_json::Value::Null),
-                    definition_type: stored.definition_type,
-                    name: stored.name,
-                    term_characters: stored.term_characters,
-                    author: stored.author,
-                    mapping_notes: stored.mapping_notes,
-                    created_at: stored.created_at.to_string(),
-                    updated_at: stored.updated_at.to_string(),
-                    description: stored.description,
-                })
-                .collect();
-            
-            Ok(Json(ApiResponse::success(community_grammars)))
-        },
+    match get_current_storage().await {
+        Ok(storage) => {
+            match storage.list_community_grammars(definition_type).await {
+                Ok(stored_grammars) => {
+                    let community_grammars: Vec<CommunityGrammar> = stored_grammars
+                        .into_iter()
+                        .map(|stored| CommunityGrammar {
+                            id: serde_json::to_value(&stored.id).unwrap_or(serde_json::Value::Null),
+                            definition_type: stored.definition_type,
+                            name: stored.name,
+                            term_characters: stored.term_characters,
+                            author: stored.author,
+                            mapping_notes: stored.mapping_notes,
+                            created_at: stored.created_at.to_string(),
+                            updated_at: stored.updated_at.to_string(),
+                            description: stored.description,
+                        })
+                        .collect();
+                    
+                    Ok(Json(ApiResponse::success(community_grammars)))
+                },
+                Err(e) => {
+                    eprintln!("Error listing community grammars: {}", e);
+                    Err(StatusCode::INTERNAL_SERVER_ERROR)
+                }
+            }
+        }
         Err(e) => {
-            eprintln!("Error listing community grammars: {}", e);
+            eprintln!("Error getting current storage: {}", e);
             Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
@@ -1087,29 +1103,45 @@ async fn switch_environment(
     State(_state): State<AppState>,
     Json(payload): Json<SwitchEnvironmentRequest>,
 ) -> Result<Json<ApiResponse<String>>, StatusCode> {
+    println!("🔄 Environment switch request: {}", payload.environment);
+    
     let new_environment = match payload.environment.as_str() {
         "testing" => DatabaseEnvironment::Testing,
         "development" => DatabaseEnvironment::Development,
-        _ => return Ok(Json(ApiResponse::error("Invalid environment. Use 'testing' or 'development'".to_string()))),
+        _ => {
+            println!("❌ Invalid environment requested: {}", payload.environment);
+            return Ok(Json(ApiResponse::error("Invalid environment. Use 'testing' or 'development'".to_string())));
+        }
     };
+    
+    let db_path = new_environment.db_path();
+    println!("📁 Attempting to connect to: {}", db_path);
     
     // Test the new environment connection
     match SurrealStorage::new_with_environment(new_environment.clone()).await {
         Ok(_new_storage) => {
+            println!("✅ Successfully connected to new environment");
+            
             // Update global environment state
             if let Some(env_lock) = CURRENT_ENVIRONMENT.get() {
                 let mut env = env_lock.write().await;
+                let old_env = env.clone();
                 *env = new_environment.clone();
+                println!("🔄 Environment updated: {:?} -> {:?}", old_env, new_environment);
+            } else {
+                println!("❌ Global environment not initialized");
+                return Ok(Json(ApiResponse::error("Global environment not initialized".to_string())));
             }
             
             let env_name = match new_environment {
                 DatabaseEnvironment::Testing => "testing",
                 DatabaseEnvironment::Development => "development",
             };
+            println!("✅ Successfully switched to {} environment", env_name);
             Ok(Json(ApiResponse::success(format!("Switched to {} environment", env_name))))
         }
         Err(e) => {
-            eprintln!("Error switching environment: {}", e);
+            println!("❌ Error switching environment: {}", e);
             Ok(Json(ApiResponse::error(format!("Failed to switch environment: {}", e))))
         }
     }
