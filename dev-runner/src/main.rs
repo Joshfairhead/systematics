@@ -22,8 +22,10 @@ fn main() {
     start_api_server();
 
     println!("⏳ Waiting for API server to be ready...");
-    if !wait_for_api_server(30) {
-        println!("❌ API server failed to start within 30 seconds");
+    println!("   (Note: First compilation can take 2-3 minutes due to SurrealDB dependencies)");
+    if !wait_for_api_server(180) { // Increased timeout to 3 minutes
+        println!("❌ API server failed to start within 3 minutes");
+        println!("   Try running 'cd api && cargo run --bin server --features server' manually to see detailed errors");
         return;
     }
     println!("✅ API Server is ready!");
@@ -70,29 +72,31 @@ fn main() {
 }
 
 fn start_api_server() {
+    println!("   Compiling API server (this may take a while on first run)...");
     Command::new("cargo")
         .args(&["run", "--bin", "server", "--features", "server"])
         .current_dir("api")
-        .stdout(Stdio::null())
-        .stderr(Stdio::null())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
         .spawn()
         .expect("Failed to start API server");
 }
 
 fn start_frontend_server() {
+    println!("   Starting frontend development server...");
     Command::new("trunk")
         .args(&["serve", "--port", "8081"])
         .current_dir("frontend")
-        .stdout(Stdio::null())
-        .stderr(Stdio::null())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
         .spawn()
         .expect("Failed to start frontend server");
 }
 
 fn wait_for_api_server(timeout_seconds: u64) -> bool {
     for i in 0..timeout_seconds {
-        if i > 0 && i % 5 == 0 {
-            println!("   Still waiting for API server... ({}/{}s)", i, timeout_seconds);
+        if i > 0 && i % 15 == 0 { // Show progress every 15 seconds instead of 5
+            println!("   Still compiling/starting API server... ({}/{}s)", i, timeout_seconds);
         }
         
         if check_api_health() {
