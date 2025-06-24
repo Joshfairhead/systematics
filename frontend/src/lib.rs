@@ -1,115 +1,103 @@
 use yew::prelude::*;
-use yew::classes;
 use wasm_bindgen::prelude::*;
+use wasm_bindgen_futures::spawn_local;
 
-use web_sys::{HtmlInputElement, InputEvent, window};
-use crate::components::system_overlay::SystemOverlay;
-use crate::components::system_selector::SystemSelector;
-use crate::components::header::AppHeader;
-use crate::components::controls::SearchControls;
-use gloo_timers;
+mod state;
+mod services;
+mod components;
+mod core;
+mod workflows;
 
-mod components; // Declare the components module
-mod services;   // Declare the services module
-mod core;       // Declare the core module (framework-agnostic)
+use workflows::creation_workflow::CreationWorkflow;
 
+use state::app_state::*;
+use services::api::*;
+use components::system_overlay::SystemOverlay;
 use components::geometric_renderer::GeometricRenderer;
-use services::api::{ApiClient, spawn_api_call, UserExpression, CoreGrammar, CommunityGrammar, SystemDefinition};
+use components::system_selector::SystemSelector;
+use components::creation_dialogue::CreationDialogue;
 
-/// Enhanced type safety for structure types
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum StructureType {
-    Monad = 1,
-    Dyad = 2,
-    Triad = 3,
-    Tetrad = 4,
-    Pentad = 5,
-    Hexad = 6,
-    Heptad = 7,
-    Octad = 8,
-    Ennead = 9,
-    Decad = 10,
-    Undecad = 11,
-    Dodecad = 12,
-}
-
-impl StructureType {
-    pub fn from_number(num: i32) -> Option<Self> {
-        match num {
-            1 => Some(Self::Monad),
-            2 => Some(Self::Dyad),
-            3 => Some(Self::Triad),
-            4 => Some(Self::Tetrad),
-            5 => Some(Self::Pentad),
-            6 => Some(Self::Hexad),
-            7 => Some(Self::Heptad),
-            8 => Some(Self::Octad),
-            9 => Some(Self::Ennead),
-            10 => Some(Self::Decad),
-            11 => Some(Self::Undecad),
-            12 => Some(Self::Dodecad),
-            _ => None,
-        }
-    }
-
-    pub fn to_number(self) -> i32 {
-        self as i32
-    }
-
-    pub fn to_string(self) -> &'static str {
-        match self {
-            Self::Monad => "monad",
-            Self::Dyad => "dyad",
-            Self::Triad => "triad",
-            Self::Tetrad => "tetrad",
-            Self::Pentad => "pentad",
-            Self::Hexad => "hexad",
-            Self::Heptad => "heptad",
-            Self::Octad => "octad",
-            Self::Ennead => "ennead",
-            Self::Decad => "decad",
-            Self::Undecad => "undecad",
-            Self::Dodecad => "dodecad",
-        }
-    }
-
-    pub fn from_string(s: &str) -> Option<Self> {
-        match s {
-            "monad" => Some(Self::Monad),
-            "dyad" => Some(Self::Dyad),
-            "triad" => Some(Self::Triad),
-            "tetrad" => Some(Self::Tetrad),
-            "pentad" => Some(Self::Pentad),
-            "hexad" => Some(Self::Hexad),
-            "heptad" => Some(Self::Heptad),
-            "octad" => Some(Self::Octad),
-            "ennead" => Some(Self::Ennead),
-            "decad" => Some(Self::Decad),
-            "undecad" => Some(Self::Undecad),
-            "dodecad" => Some(Self::Dodecad),
-            _ => None,
-        }
-    }
-
-    pub fn term_count(self) -> usize {
-        self.to_number() as usize
-    }
-}
-
-/// Content source enumeration for Language Tetrad navigation
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+/// Content Sources - The three layers of the Language Tetrad
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum ContentSource {
-    CoreGrammar,     // Directive: Bennett's canonical terms
-    CommunityGrammar, // Instrumental: User-contributed mappings  
-    UserExpressions,   // Ground: Concrete personal applications
+    CoreGrammar,        // Bennett's canonical terms
+    CommunityGrammar,   // Community mappings  
+    UserExpressions,    // User applications
 }
 
-// Unified content item for browser display
+/// Content Items - unified representation
 #[derive(Debug, Clone, PartialEq)]
 pub enum ContentItem {
     CoreGrammar(CoreGrammar),
     CommunityGrammar(CommunityGrammar), 
     UserExpression(UserExpression),
+}
+
+/// Add Content Types for creation workflow (Phase 2)
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum AddContentType {
+    Definition,
+    Collection,
+    System,
+    Paper,
+    SystemCollection,
+    Module,
+    Book,
+}
+
+/// Structure Types for systematic structures
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum StructureType {
+    Monad,
+    Dyad,
+    Triad,
+    Tetrad,
+    Pentad,
+    Hexad,
+    Heptad,
+    Octad,
+    Ennead,
+    Decad,
+    Undecad,
+    Dodecad,
+}
+
+impl std::fmt::Display for StructureType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            StructureType::Monad => write!(f, "Monad"),
+            StructureType::Dyad => write!(f, "Dyad"),
+            StructureType::Triad => write!(f, "Triad"),
+            StructureType::Tetrad => write!(f, "Tetrad"),
+            StructureType::Pentad => write!(f, "Pentad"),
+            StructureType::Hexad => write!(f, "Hexad"),
+            StructureType::Heptad => write!(f, "Heptad"),
+            StructureType::Octad => write!(f, "Octad"),
+            StructureType::Ennead => write!(f, "Ennead"),
+            StructureType::Decad => write!(f, "Decad"),
+            StructureType::Undecad => write!(f, "Undecad"),
+            StructureType::Dodecad => write!(f, "Dodecad"),
+        }
+    }
+}
+
+impl StructureType {
+    pub fn term_count(&self) -> usize {
+        match self {
+            StructureType::Monad => 1,
+            StructureType::Dyad => 2,
+            StructureType::Triad => 3,
+            StructureType::Tetrad => 4,
+            StructureType::Pentad => 5,
+            StructureType::Hexad => 6,
+            StructureType::Heptad => 7,
+            StructureType::Octad => 8,
+            StructureType::Ennead => 9,
+            StructureType::Decad => 10,
+            StructureType::Undecad => 11,
+            StructureType::Dodecad => 12,
+        }
+    }
 }
 
 impl ContentItem {
@@ -128,92 +116,47 @@ impl ContentItem {
             ContentItem::UserExpression(i) => &i.definition_type,
         }
     }
-    
-    pub fn description(&self) -> Option<&str> {
-        match self {
-            ContentItem::CoreGrammar(_) => None, // Core grammars don't have descriptions in this context
-            ContentItem::CommunityGrammar(g) => g.description.as_deref(),
-            ContentItem::UserExpression(i) => i.description.as_deref(),
-        }
-    }
-    
-    pub fn instances(&self) -> Vec<String> {
-        match self {
-            ContentItem::CoreGrammar(g) => g.term_characters.clone(),
-            ContentItem::CommunityGrammar(g) => g.term_characters.clone(),
-            ContentItem::UserExpression(i) => i.user_expressions.clone(),
-        }
-    }
 }
 
-pub struct App {
-    // Language Tetrad Data Structure
-    user_expressions: Vec<UserExpression>,          // Ground: User Expressions (concrete personal applications)
-    core_grammars: Vec<CoreGrammar>,            // Directive: Bennett's canonical terms
-    community_grammars: Vec<CommunityGrammar>,  // Instrumental: Community mappings
-    filtered_content: Vec<ContentItem>,         // Currently displayed content
-    selected_item: Option<ContentItem>,         // Currently selected item
-    current_definition: Option<SystemDefinition>, // Source: Mathematical structure
-    current_definition_type: StructureType, // Track the currently selected structure type
-    loading: bool,
-    error: Option<String>,
-    success_message: Option<String>,
-    api_client: ApiClient,
-    search_query: String,
-    show_content_browser: bool,
-    // Creation state
-    creation_mode: bool,
-    structure_name: Option<String>,
-    user_input: Vec<String>, // User input during creation
-    saving: bool,
-    // Content source toggle (Tetrad navigation)
-    content_source: ContentSource,
-    // Database environment state
-    current_environment: String, // "testing" or "development"
-    switching_environment: bool,
-}
-
+/// Application Messages - Clean State Machine Events
+#[derive(Debug, Clone)]
 pub enum Msg {
-    // Keep the old message for backward compatibility during transition
-    SystemSelected(i32),
-    // New messages for API integration - Language Tetrad Architecture
-    DefinitionSelected(ContentItem),
-    
-    // Ground: User Expressions (concrete personal applications)
-    LoadUserExpressions,
-    UserExpressionsLoaded(Result<Vec<UserExpression>, anyhow::Error>),
-    
-    // Directive: Core Grammar (Bennett's canonical terms)
-    LoadCoreGrammars,
-    CoreGrammarsLoaded(Result<Vec<CoreGrammar>, anyhow::Error>),
-    
-    // Instrumental: Community Grammar (user-contributed mappings)
-    LoadCommunityGrammars,
-    CommunityGrammarsLoaded(Result<Vec<CommunityGrammar>, anyhow::Error>),
-    
-    // Source: System Definitions (pure mathematical structures)
-    SystemDefinitionLoaded(Result<SystemDefinition, anyhow::Error>),
-    
-    ApiError(String),
-    // Search and browse functionality
-    SearchQueryChanged(String),
-    ToggleStructureBrowser,
-    SearchDefinitions,
-    SearchResultsLoaded(Result<Vec<UserExpression>, anyhow::Error>),
-    // Creation functionality
-    CreateDefinition,
-    CancelCreate,
-    SaveDefinition,
-    DefinitionSaved(Result<String, anyhow::Error>),
-    UserExpressionChanged(usize, String),
-    ClearNotifications,
-    // Content source toggle
+    // === CORE STATE TRANSITIONS ===
     ContentSourceChanged(ContentSource),
-    // Database environment switching
-    LoadCurrentEnvironment,
-    EnvironmentLoaded(Result<String, anyhow::Error>),
-    SwitchEnvironment(String),
-    EnvironmentSwitched(Result<String, anyhow::Error>),
+    ItemSelected(ContentItem),
+    ClearSelection,
+    
+    // === SYSTEM SELECTION ===
+    SystemSelected(i32),
+    
+    // === DATA LOADING ===
+    LoadData,
+    LoadDataSilent, // For background loading without notifications
+    DataLoaded(Result<Vec<ContentItem>, String>),
+    DataLoadedSilent(Result<Vec<ContentItem>, String>), // For silent loading
+    
+    // === SEARCH ===
+    SearchChanged(String),
+    ToggleBrowser,
+    
+    // === NOTIFICATIONS ===
+    ClearNotifications,
+    
+    // === CREATION WORKFLOW ===
+    CreateNewItem, // Start creation workflow - now opens dialogue
+    CreateWithDialogue((AddContentType, String)), // Create with selected type and name from dialogue
+    CancelCreationDialogue, // Cancel the creation dialogue
+    UpdateCreationField((usize, String)), // Update user input field during creation
+    ConfirmCreation, // Confirm and save the creation
+    CancelCreation, // Cancel the creation and return to browsing
+}
+
+/// Minimal State Machine Application
+pub struct App {
+    state: AppState,
+    api_client: services::api::ApiClient,
+    show_creation_dialogue: bool,
+    creation_user_inputs: Vec<String>, // Track user inputs during creation
 }
 
 impl Component for App {
@@ -221,515 +164,929 @@ impl Component for App {
     type Properties = ();
 
     fn create(ctx: &Context<Self>) -> Self {
-        let app = Self {
-            user_expressions: Vec::new(),
-            core_grammars: Vec::new(),
-            community_grammars: Vec::new(),
-            filtered_content: Vec::new(),
-            selected_item: None,
-            current_definition: None,
-            current_definition_type: StructureType::Monad, // Default to monad
-            loading: false,
-            error: None,
-            success_message: None,
-            api_client: ApiClient::new(),
-            search_query: String::new(),
-            show_content_browser: false,
-            creation_mode: false,
-            structure_name: None,
-            user_input: Vec::new(),
-            saving: false,
-            content_source: ContentSource::CoreGrammar,
-            current_environment: "development".to_string(), // Default to development
-            switching_environment: false,
-        };
-
-        // Load current environment and core definitions by default
-        ctx.link().send_message(Msg::LoadCurrentEnvironment);
-        ctx.link().send_message(Msg::LoadCoreGrammars);
-        ctx.link().send_message(Msg::SystemSelected(1)); // Load monad by default
+        let api_client = services::api::ApiClient::new();
+        let mut state = AppState::default();
         
-        app
+        // Start with Core Grammar - the fundamental systematic structures
+        state.mode = AppMode::Browsing { 
+            source: ContentSource::CoreGrammar,
+            selected_item: None,
+            selected_system: 1, // Start with Monad
+        };
+        
+        // Trigger initial data load
+        ctx.link().send_message(Msg::LoadDataSilent);
+        
+        Self { 
+            state, 
+            api_client,
+            show_creation_dialogue: false,
+            creation_user_inputs: Vec::new(),
+        }
     }
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+        web_sys::console::log_1(&format!("Update: {:?}", msg).into());
+        
         match msg {
-            Msg::SystemSelected(system_num) => {
-                // Update current system selection with enhanced type safety
-                if let Some(definition_type) = StructureType::from_number(system_num) {
-                    self.current_definition_type = definition_type;
-                } else {
-                    return false;
-                }
+            // === CORE STATE TRANSITIONS ===
+            Msg::ContentSourceChanged(source) => {
+                web_sys::console::log_1(&format!("Changing content source to: {:?}", source).into());
+                self.state.browse_content_source(source);
+                self.update_filtered_content();
                 
-                let definition_type_str = self.current_definition_type.to_string();
-                
-                // Find matching definition from loaded data (don't create placeholders)
-                if let Some(definition) = self.user_expressions.iter()
-                    .find(|s| s.definition_type == definition_type_str && !s.id.as_str().map_or(false, |id| id.starts_with("placeholder-")))
-                    .cloned() 
-                {
-                    self.selected_item = Some(ContentItem::UserExpression(definition));
-                } else {
-                    // No real definition found - clear selection to show definition data
-                    self.selected_item = None;
-                }
-                
-                // Always load definition for the selected structure type
-                self.load_definition_for_definition_type(ctx, definition_type_str);
+                // Load data for the new source
+                ctx.link().send_message(Msg::LoadData);
                 true
             }
-            Msg::DefinitionSelected(content_item) => {
-                let definition_type = content_item.definition_type().to_string();
-                self.selected_item = Some(content_item);
-                self.show_content_browser = false; // Close browser after selection
+            
+            Msg::ItemSelected(item) => {
+                web_sys::console::log_1(&format!("Item selected: {:?}", item.name()).into());
                 
-                // Load definition for the selected structure type
-                self.load_definition_for_definition_type(ctx, &definition_type);
-                if let Some(struct_type) = StructureType::from_string(&definition_type) {
-                    self.current_definition_type = struct_type;
-                }
+                // Synchronize system selection with the selected item
+                let system_num = match item.definition_type() {
+                    "monad" => 1,
+                    "dyad" => 2, 
+                    "triad" => 3,
+                    "tetrad" => 4,
+                    "pentad" => 5,
+                    "hexad" => 6,
+                    "heptad" => 7,
+                    "octad" => 8,
+                    "ennead" => 9,
+                    "decad" => 10,
+                    "undecad" => 11,
+                    "dodecad" => 12,
+                    _ => 1, // Default to monad
+                };
+                
+                // Update both selected item and system selection
+                self.state.select_item(Some(item));
+                self.state.select_system(system_num);
                 true
             }
-            Msg::LoadUserExpressions => {
-                self.loading = true;
-                self.error = None;
+            
+            Msg::ClearSelection => {
+                self.state.select_item(None);
+                true
+            }
+            
+            // === SYSTEM SELECTION ===
+            Msg::SystemSelected(system) => {
+                web_sys::console::log_1(&format!("System selected: {}", system).into());
+                self.state.select_system(system);
+                
+                // Auto-select corresponding item from available content if in Core Grammar
+                if self.state.current_content_source() == ContentSource::CoreGrammar {
+                    let system_type = match system {
+                        1 => "monad",
+                        2 => "dyad", 
+                        3 => "triad",
+                        4 => "tetrad",
+                        5 => "pentad",
+                        6 => "hexad",
+                        7 => "heptad",
+                        8 => "octad",
+                        9 => "ennead",
+                        10 => "decad",
+                        11 => "undecad",
+                        12 => "dodecad",
+                        _ => "monad", // Default
+                    };
+                    
+                    // Find matching item in current content
+                    if let Some(matching_item) = self.state.filtered_content.iter()
+                        .find(|item| item.definition_type() == system_type) {
+                        self.state.select_item(Some(matching_item.clone()));
+                    } else {
+                        // If no matching item found, clear selection
+                        self.state.select_item(None);
+                    }
+                }
+                
+                true
+            }
+            
+            // === DATA LOADING ===
+            Msg::LoadData => {
+                self.state.enter_loading();
+                
                 let api_client = self.api_client.clone();
-                let callback = ctx.link().callback(Msg::UserExpressionsLoaded);
+                let source = self.state.current_content_source();
                 
-                spawn_api_call(
-                    async move { api_client.list_user_expressions().await },
-                    callback
-                );
+                ctx.link().send_future(async move {
+                    let result = match source {
+                        ContentSource::CoreGrammar => {
+                            // Load all systematic structures from API
+                            let structure_types = vec![
+                                "monad", "dyad", "triad", "tetrad", "pentad", "hexad",
+                                "heptad", "octad", "ennead", "decad", "undecad", "dodecad"
+                            ];
+                            
+                            let mut grammars = Vec::new();
+                            for structure_type in structure_types {
+                                match api_client.get_core_grammar(structure_type).await {
+                                    Ok(grammar) => grammars.push(ContentItem::CoreGrammar(grammar)),
+                                    Err(e) => {
+                                        web_sys::console::log_1(&format!("Failed to load {}: {}", structure_type, e).into());
+                                        continue;
+                                    }
+                                }
+                            }
+                            
+                            if grammars.is_empty() {
+                                Err("Failed to load any core grammars from API".to_string())
+                            } else {
+                                Ok(grammars)
+                            }
+                        }
+                        ContentSource::CommunityGrammar => {
+                            match api_client.list_community_grammars(None).await {
+                                Ok(grammars) => {
+                                    let items: Vec<ContentItem> = grammars.into_iter()
+                                        .map(ContentItem::CommunityGrammar)
+                                        .collect();
+                                    Ok(items)
+                                }
+                                Err(e) => Err(format!("Failed to load community grammars: {}", e))
+                            }
+                        }
+                        ContentSource::UserExpressions => {
+                            match api_client.list_user_expressions().await {
+                                Ok(expressions) => {
+                                    let items: Vec<ContentItem> = expressions.into_iter()
+                                        .map(ContentItem::UserExpression)
+                                        .collect();
+                                    Ok(items)
+                                }
+                                Err(e) => Err(format!("Failed to load user expressions: {}", e))
+                            }
+                        }
+                    };
+                    
+                    Msg::DataLoaded(result)
+                });
+                
                 true
             }
-            Msg::LoadCoreGrammars => {
-                self.loading = true;
-                self.error = None;
-                self.load_core_definitions(ctx);
+            
+            Msg::LoadDataSilent => {
+                self.state.enter_loading();
+                
+                let api_client = self.api_client.clone();
+                let source = self.state.current_content_source();
+                
+                ctx.link().send_future(async move {
+                    let result = match source {
+                        ContentSource::CoreGrammar => {
+                            // Load all systematic structures from API
+                            let structure_types = vec![
+                                "monad", "dyad", "triad", "tetrad", "pentad", "hexad",
+                                "heptad", "octad", "ennead", "decad", "undecad", "dodecad"
+                            ];
+                            
+                            let mut grammars = Vec::new();
+                            for structure_type in structure_types {
+                                match api_client.get_core_grammar(structure_type).await {
+                                    Ok(grammar) => grammars.push(ContentItem::CoreGrammar(grammar)),
+                                    Err(e) => {
+                                        web_sys::console::log_1(&format!("Failed to load {}: {}", structure_type, e).into());
+                                        continue;
+                                    }
+                                }
+                            }
+                            
+                            if grammars.is_empty() {
+                                Err("Failed to load any core grammars from API".to_string())
+                            } else {
+                                Ok(grammars)
+                            }
+                        }
+                        ContentSource::CommunityGrammar => {
+                            match api_client.list_community_grammars(None).await {
+                                Ok(grammars) => {
+                                    let items: Vec<ContentItem> = grammars.into_iter()
+                                        .map(ContentItem::CommunityGrammar)
+                                        .collect();
+                                    Ok(items)
+                                }
+                                Err(e) => Err(format!("Failed to load community grammars: {}", e))
+                            }
+                        }
+                        ContentSource::UserExpressions => {
+                            match api_client.list_user_expressions().await {
+                                Ok(expressions) => {
+                                    let items: Vec<ContentItem> = expressions.into_iter()
+                                        .map(ContentItem::UserExpression)
+                                        .collect();
+                                    Ok(items)
+                                }
+                                Err(e) => Err(format!("Failed to load user expressions: {}", e))
+                            }
+                        }
+                    };
+                    
+                    Msg::DataLoadedSilent(result)
+                });
+                
                 true
             }
-            Msg::LoadCommunityGrammars => {
-                self.loading = true;
-                self.error = None;
-                self.load_community_definitions(ctx);
-                true
-            }
-            Msg::UserExpressionsLoaded(result) => {
-                self.loading = false;
+            
+            Msg::DataLoaded(result) => {
+                let source = self.state.current_content_source();
+                self.state.exit_loading(source);
+                
                 match result {
-                    Ok(definitions) => {
-                        self.user_expressions = definitions;
+                    Ok(items) => {
+                        match source {
+                            ContentSource::CoreGrammar => {
+                                let grammars: Vec<CoreGrammar> = items.into_iter()
+                                    .filter_map(|item| match item {
+                                        ContentItem::CoreGrammar(g) => Some(g),
+                                        _ => None,
+                                    })
+                                    .collect();
+                                self.state.core_grammars = grammars;
+                            }
+                            ContentSource::CommunityGrammar => {
+                                let grammars: Vec<CommunityGrammar> = items.into_iter()
+                                    .filter_map(|item| match item {
+                                        ContentItem::CommunityGrammar(g) => Some(g),
+                                        _ => None,
+                                    })
+                                    .collect();
+                                self.state.community_grammars = grammars;
+                            }
+                            ContentSource::UserExpressions => {
+                                let expressions: Vec<UserExpression> = items.into_iter()
+                                    .filter_map(|item| match item {
+                                        ContentItem::UserExpression(e) => Some(e),
+                                        _ => None,
+                                    })
+                                    .collect();
+                                self.state.user_expressions = expressions;
+                            }
+                        }
                         
-                        // Update filtered content if we're currently showing user expressions
-                        if self.content_source == ContentSource::UserExpressions {
-                            self.filtered_content = self.user_expressions.iter().map(|item| ContentItem::UserExpression(item.clone())).collect();
-                        }
-                        self.error = None;
-                    }
-                    Err(e) => {
-                        self.error = Some(format!("Failed to load user user_expressions: {}", e));
-                        self.user_expressions = Vec::new();
-                        if self.content_source == ContentSource::UserExpressions {
-                            self.filtered_content = Vec::new();
-                        }
-                    }
-                }
-                true
-            }
-                         Msg::CoreGrammarsLoaded(result) => {
-                 self.loading = false;
-                 match result {
-                     Ok(core_grammars) => {
-                         self.core_grammars = core_grammars;
-                         
-                         // Update filtered content if we're currently showing core grammars
-                         if self.content_source == ContentSource::CoreGrammar {
-                             self.filtered_content = self.core_grammars.iter().map(|item| ContentItem::CoreGrammar(item.clone())).collect();
-                         }
-                         self.error = None;
-                     }
-                     Err(e) => {
-                         self.error = Some(format!("Failed to load core grammars: {}", e));
-                         self.core_grammars = Vec::new();
-                         if self.content_source == ContentSource::CoreGrammar {
-                             self.filtered_content = Vec::new();
-                         }
-                     }
-                 }
-                 true
-             }
-            Msg::CommunityGrammarsLoaded(result) => {
-                self.loading = false;
-                match result {
-                    Ok(community_grammars) => {
-                        self.community_grammars = community_grammars;
+                        self.update_filtered_content();
                         
-                        // Update filtered content if we're currently showing community grammars
-                        if self.content_source == ContentSource::CommunityGrammar {
-                            self.filtered_content = self.community_grammars.iter().map(|item| ContentItem::CommunityGrammar(item.clone())).collect();
-                        }
-                        self.error = None;
+                        let count = self.state.filtered_content.len();
+                        let source_name = match source {
+                            ContentSource::CoreGrammar => "Core Grammar",
+                            ContentSource::CommunityGrammar => "Community Grammar",
+                            ContentSource::UserExpressions => "User Expressions",
+                        };
+                        
+                        self.state.set_success(format!("Loaded {} {} items", count, source_name));
+                        
+                        // Auto-dismiss success notification after 1.5 seconds
+                        let link = ctx.link().clone();
+                        wasm_bindgen_futures::spawn_local(async move {
+                            gloo_timers::future::TimeoutFuture::new(1500).await;
+                            link.send_message(Msg::ClearNotifications);
+                        });
                     }
                     Err(e) => {
-                        self.error = Some(format!("Failed to load community grammars: {}", e));
-                        self.community_grammars = Vec::new();
-                        if self.content_source == ContentSource::CommunityGrammar {
-                            self.filtered_content = Vec::new();
-                        }
+                        self.state.set_error(e);
+                        
+                        // Auto-dismiss error notification after 1.5 seconds
+                        let link = ctx.link().clone();
+                        wasm_bindgen_futures::spawn_local(async move {
+                            gloo_timers::future::TimeoutFuture::new(1500).await;
+                            link.send_message(Msg::ClearNotifications);
+                        });
                     }
                 }
+                
                 true
             }
-            Msg::SystemDefinitionLoaded(result) => {
-                self.loading = false;
+            
+            Msg::DataLoadedSilent(result) => {
+                let source = self.state.current_content_source();
+                self.state.exit_loading(source);
+                
                 match result {
-                    Ok(definition) => {
-                        self.current_definition = Some(definition);
-                        self.error = None;
+                    Ok(items) => {
+                        match source {
+                            ContentSource::CoreGrammar => {
+                                let grammars: Vec<CoreGrammar> = items.into_iter()
+                                    .filter_map(|item| match item {
+                                        ContentItem::CoreGrammar(g) => Some(g),
+                                        _ => None,
+                                    })
+                                    .collect();
+                                self.state.core_grammars = grammars;
+                            }
+                            ContentSource::CommunityGrammar => {
+                                let grammars: Vec<CommunityGrammar> = items.into_iter()
+                                    .filter_map(|item| match item {
+                                        ContentItem::CommunityGrammar(g) => Some(g),
+                                        _ => None,
+                                    })
+                                    .collect();
+                                self.state.community_grammars = grammars;
+                            }
+                            ContentSource::UserExpressions => {
+                                let expressions: Vec<UserExpression> = items.into_iter()
+                                    .filter_map(|item| match item {
+                                        ContentItem::UserExpression(e) => Some(e),
+                                        _ => None,
+                                    })
+                                    .collect();
+                                self.state.user_expressions = expressions;
+                            }
+                        }
+                        
+                        self.update_filtered_content();
+                        
+                        // Try to restore system selection if matching item becomes available
+                        if source == ContentSource::CoreGrammar {
+                            let current_system = self.state.selected_system();
+                            let system_type = match current_system {
+                                1 => "monad", 2 => "dyad", 3 => "triad", 4 => "tetrad",
+                                5 => "pentad", 6 => "hexad", 7 => "heptad", 8 => "octad",
+                                9 => "ennead", 10 => "decad", 11 => "undecad", 12 => "dodecad",
+                                _ => "monad",
+                            };
+                            
+                            // If we have a system selected but no item, try to find matching item
+                            if self.state.selected_item().is_none() {
+                                if let Some(matching_item) = self.state.filtered_content.iter()
+                                    .find(|item| item.definition_type() == system_type) {
+                                    self.state.select_item(Some(matching_item.clone()));
+                                }
+                            }
+                        }
+                        
+                        // Silent success - no notification for background loading
+                        web_sys::console::log_1(&format!("Successfully loaded {} items for {:?}", 
+                            self.state.filtered_content.len(), source).into());
                     }
                     Err(e) => {
-                        self.error = Some(format!("Failed to load system definition: {}", e));
+                        self.state.set_error(e);
+                        
+                        // Auto-dismiss error notification after 1.5 seconds
+                        let link = ctx.link().clone();
+                        wasm_bindgen_futures::spawn_local(async move {
+                            gloo_timers::future::TimeoutFuture::new(1500).await;
+                            link.send_message(Msg::ClearNotifications);
+                        });
                     }
                 }
+                
                 true
             }
-            Msg::SearchQueryChanged(query) => {
-                self.search_query = query;
-                self.filter_definitions();
+            
+            // === SEARCH ===
+            Msg::SearchChanged(query) => {
+                self.state.set_search_query(query);
+                self.update_filtered_content();
                 true
             }
-            Msg::ToggleStructureBrowser => {
-                self.show_content_browser = !self.show_content_browser;
+            
+            Msg::ToggleBrowser => {
+                self.state.toggle_content_browser();
                 true
             }
-            Msg::SearchDefinitions => {
-                if self.search_query.trim().is_empty() {
-                    self.filtered_content = self.user_expressions.iter().map(|item| ContentItem::UserExpression(item.clone())).collect();
+            
+            // === NOTIFICATIONS ===
+            Msg::ClearNotifications => {
+                self.state.clear_notifications();
+                true
+            }
+            
+            // === CREATION WORKFLOW ===
+            Msg::CreateNewItem => {
+                let current_source = self.state.current_content_source();
+                
+                // Systematic validation: Check if creation is allowed in this source
+                if !CreationWorkflow::can_create_in_source(current_source) {
+                    self.state.set_error("⚠️ Core Grammar is read-only. Switch to Community Grammar or User Expressions to create content.".to_string());
                     return true;
                 }
                 
-                self.loading = true;
-                let api_client = self.api_client.clone();
-                let query = self.search_query.clone();
-                let callback = ctx.link().callback(Msg::SearchResultsLoaded);
+                // Open the creation dialogue instead of using browser prompt
+                self.show_creation_dialogue = true;
+                true
+            }
+            
+            Msg::CreateWithDialogue((add_type, name)) => {
+                let current_source = self.state.current_content_source();
                 
-                spawn_api_call(
-                    async move { api_client.search_user_instances(&query).await },
-                    callback
-                );
-                true
-            }
-            Msg::SearchResultsLoaded(result) => {
-                self.loading = false;
-                match result {
-                    Ok(definitions) => {
-                        self.filtered_content = definitions.iter().map(|item| ContentItem::UserExpression(item.clone())).collect();
-                        self.error = None;
-                    }
-                    Err(e) => {
-                        self.error = Some(format!("Search failed: {}", e));
-                        self.filter_definitions(); // Fallback to local filtering
-                    }
-                }
-                true
-            }
-            Msg::ApiError(error) => {
-                self.error = Some(error);
-                true
-            }
-            Msg::CreateDefinition => {
-                if let Some(window) = window() {
-                    // Determine what type of content is being created
-                    let content_type = match self.content_source {
-                        ContentSource::CoreGrammar => "Core Grammar (read-only)",
-                        ContentSource::CommunityGrammar => "Community Grammar",
-                        ContentSource::UserExpressions => "User Expression",
-                    };
-                    
-                    // Don't allow creating core grammars
-                    if self.content_source == ContentSource::CoreGrammar {
-                        if let Ok(_) = window.alert_with_message("Core Grammar definitions are read-only and cannot be created. Switch to 'Community Grammar' or 'User Expressions' to create new content.") {
-                            // Do nothing, just show the alert
-                        }
-                        return false;
-                    }
-                    
-                    let prompt_message = format!("Creating new {}\n\nEnter a name for your {}:", 
-                        content_type,
-                        match self.content_source {
-                            ContentSource::CommunityGrammar => "community grammar",
-                            ContentSource::UserExpressions => "user expression",
-                            _ => "definition",
-                        }
-                    );
-                    
-                    if let Ok(Some(name)) = window.prompt_with_message(&prompt_message) {
-                        if !name.trim().is_empty() {
-                            self.structure_name = Some(name.trim().to_string());
-                            self.creation_mode = true;
-                            
-                            // Initialize user_input with the right number of empty strings based on current system
-                            let term_count = self.current_definition_type.term_count();
-                            self.user_input = vec![String::new(); term_count];
-                            
-                            return true;
-                        }
-                    }
-                }
-                false
-            }
-            Msg::CancelCreate => {
-                self.creation_mode = false;
-                self.structure_name = None;
-                self.user_input.clear();
-                true
-            }
-            Msg::SaveDefinition => {
-                self.saving = true;
-                self.save_definition(ctx);
-                true
-            }
-            Msg::DefinitionSaved(result) => {
-                self.saving = false;
-                match result {
-                    Ok(_definition_id) => {
-                        self.error = None;
-                        let content_type = match self.content_source {
-                            ContentSource::UserExpressions => "User Expression",
-                            ContentSource::CommunityGrammar => "Community Grammar",
-                            ContentSource::CoreGrammar => "Core Grammar",
+                // Validate creation readiness
+                match CreationWorkflow::validate_creation_readiness(
+                    current_source,
+                    Some(add_type),
+                    Some(&name)
+                ) {
+                    Ok(()) => {
+                        // Enter creation mode with valid parameters
+                        self.state.start_creation(add_type);
+                        self.state.update_creation_name(name);
+                        self.show_creation_dialogue = false;
+                        
+                        // Initialize user inputs based on selected system
+                        let term_count = match self.state.selected_system() {
+                            1 => 1, 2 => 2, 3 => 3, 4 => 4, 5 => 5, 6 => 6,
+                            7 => 7, 8 => 8, 9 => 9, 10 => 10, 11 => 11, 12 => 12,
+                            _ => 1,
                         };
-                        self.success_message = Some(format!("✅ {} saved successfully!", content_type));
-                        // Exit creation mode after successful save
-                        self.creation_mode = false;
-                        self.structure_name = None;
-                        self.user_input.clear();
-                        // Reload appropriate data based on content source
-                        match self.content_source {
-                            ContentSource::UserExpressions => {
-                                ctx.link().send_message(Msg::LoadUserExpressions);
-                            }
-                            ContentSource::CommunityGrammar => {
-                                ctx.link().send_message(Msg::LoadCommunityGrammars);
-                            }
-                            ContentSource::CoreGrammar => {
-                                // Core grammars don't need reloading as they're read-only
-                            }
-                        }
-                        // Auto-dismiss notification after 1.5 seconds
-                        let link = ctx.link().clone();
-                        gloo_timers::callback::Timeout::new(1500, move || {
-                            link.send_message(Msg::ClearNotifications);
-                        }).forget();
-                    }
-                    Err(e) => {
-                        self.success_message = None;
-                        self.error = Some(format!("Failed to save definition: {}", e));
-                        // Auto-dismiss error notification after 5 seconds
-                        let link = ctx.link().clone();
-                        gloo_timers::callback::Timeout::new(5000, move || {
-                            link.send_message(Msg::ClearNotifications);
-                        }).forget();
-                    }
-                }
-                true
-            }
-            Msg::UserExpressionChanged(index, expression) => {
-                self.user_input[index] = expression;
-                true
-            }
-            Msg::ClearNotifications => {
-                self.success_message = None;
-                self.error = None;
-                true
-            }
-            Msg::ContentSourceChanged(source) => {
-                self.content_source = source;
-                
-                // Switch data source and reload
-                match source {
-                    ContentSource::CoreGrammar => {
-                        if self.core_grammars.is_empty() {
-                            ctx.link().send_message(Msg::LoadCoreGrammars);
-                        } else {
-                            self.filtered_content = self.core_grammars.iter().map(|item| ContentItem::CoreGrammar(item.clone())).collect();
-                        }
-                    }
-                    ContentSource::CommunityGrammar => {
-                        if self.community_grammars.is_empty() {
-                            ctx.link().send_message(Msg::LoadCommunityGrammars);
-                        } else {
-                            self.filtered_content = self.community_grammars.iter().map(|item| ContentItem::CommunityGrammar(item.clone())).collect();
-                        }
-                    }
-                    ContentSource::UserExpressions => {
-                        if self.user_expressions.is_empty() {
-                            ctx.link().send_message(Msg::LoadUserExpressions);
-                        } else {
-                            self.filtered_content = self.user_expressions.iter().map(|item| ContentItem::UserExpression(item.clone())).collect();
-                        }
-                    }
-                }
-                true
-            }
-            Msg::LoadCurrentEnvironment => {
-                let api_client = self.api_client.clone();
-                let callback = ctx.link().callback(Msg::EnvironmentLoaded);
-                
-                spawn_api_call(
-                    async move { api_client.get_current_environment().await },
-                    callback
-                );
-                true
-            }
-            Msg::EnvironmentLoaded(result) => {
-                match result {
-                    Ok(environment) => {
-                        self.current_environment = environment;
-                        self.error = None;
-                    }
-                    Err(e) => {
-                        self.error = Some(format!("Failed to load environment: {}", e));
-                        // Default to development on error
-                        self.current_environment = "development".to_string();
-                    }
-                }
-                true
-            }
-            Msg::SwitchEnvironment(new_environment) => {
-                self.switching_environment = true;
-                let api_client = self.api_client.clone();
-                let callback = ctx.link().callback(Msg::EnvironmentSwitched);
-                
-                spawn_api_call(
-                    async move { api_client.switch_environment(&new_environment).await },
-                    callback
-                );
-                true
-            }
-            Msg::EnvironmentSwitched(result) => {
-                self.switching_environment = false;
-                match result {
-                    Ok(message) => {
-                        // Reload current environment to confirm switch
-                        ctx.link().send_message(Msg::LoadCurrentEnvironment);
-                        self.success_message = Some(message);
-                        self.error = None;
+                        self.creation_user_inputs = vec![String::new(); term_count];
                         
-                        // Auto-dismiss notification after 1.5 seconds
-                        let link = ctx.link().clone();
-                        gloo_timers::callback::Timeout::new(1500, move || {
-                            link.send_message(Msg::ClearNotifications);
-                        }).forget();
+                        self.state.set_success("✅ Creation started! Fill in your systematic structure below.".to_string());
                         
-                        // Reload all data since we switched databases
-                        ctx.link().send_message(Msg::LoadCoreGrammars);
-                        ctx.link().send_message(Msg::LoadUserExpressions);
-                        ctx.link().send_message(Msg::LoadCommunityGrammars);
-                    }
-                    Err(e) => {
-                        self.error = Some(format!("Failed to switch environment: {}", e));
+                        // Auto-dismiss success after 2 seconds
+                        let link = ctx.link().clone();
+                        wasm_bindgen_futures::spawn_local(async move {
+                            gloo_timers::future::TimeoutFuture::new(2000).await;
+                            link.send_message(Msg::ClearNotifications);
+                        });
+                    },
+                    Err(error) => {
+                        self.state.set_error(format!("❌ Creation failed: {}", error));
+                        self.show_creation_dialogue = false;
                     }
                 }
+                
+                true
+            }
+            
+            Msg::CancelCreationDialogue => {
+                self.show_creation_dialogue = false;
+                true
+            }
+            
+            Msg::UpdateCreationField((index, value)) => {
+                // Update the user input at the specified index
+                if index < self.creation_user_inputs.len() {
+                    self.creation_user_inputs[index] = value;
+                    true
+                } else {
+                    false
+                }
+            }
+            
+            Msg::ConfirmCreation => {
+                // Implement actual creation logic here
+                if let Some((add_type, name)) = self.state.creation_details() {
+                    // TODO: Implement actual API call to create the content
+                    self.state.set_success(format!("✅ Successfully created {} '{}'!", 
+                        match add_type {
+                            AddContentType::System => "System",
+                            AddContentType::Paper => "Paper",
+                            AddContentType::SystemCollection => "System Collection",
+                            AddContentType::Module => "Module",
+                            AddContentType::Book => "Book",
+                            AddContentType::Definition => "Definition",
+                            AddContentType::Collection => "Collection",
+                        }, 
+                        name
+                    ));
+                    self.state.complete_creation();
+                    self.creation_user_inputs.clear();
+                    
+                    // Auto-dismiss after 3 seconds
+                    let link = ctx.link().clone();
+                    wasm_bindgen_futures::spawn_local(async move {
+                        gloo_timers::future::TimeoutFuture::new(3000).await;
+                        link.send_message(Msg::ClearNotifications);
+                    });
+                }
+                true
+            }
+            
+            Msg::CancelCreation => {
+                self.state.cancel_creation();
+                self.creation_user_inputs.clear();
+                self.state.set_success("ℹ️ Creation cancelled.".to_string());
+                
+                // Auto-dismiss after 1 second
+                let link = ctx.link().clone();
+                wasm_bindgen_futures::spawn_local(async move {
+                    gloo_timers::future::TimeoutFuture::new(1000).await;
+                    link.send_message(Msg::ClearNotifications);
+                });
+                
                 true
             }
         }
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
-        let on_system_selected = ctx.link().callback(Msg::SystemSelected);
-        
-        // Determine the structure type and system number from selected definition or current selection
-        let (definition_type, system_num) = if let Some(ref item) = self.selected_item {
-            if let Some(struct_type) = StructureType::from_string(item.definition_type()) {
-                (item.definition_type().to_string(), struct_type.to_number())
-            } else {
-                (self.current_definition_type.to_string().to_string(), self.current_definition_type.to_number())
-            }
-        } else {
-            // Use current structure type selection
-            (self.current_definition_type.to_string().to_string(), self.current_definition_type.to_number())
-        };
-
-        // Create system-specific CSS class
-        let system_class = format!("system-{}", system_num);
-
         html! {
             <div class="app-container">
-                <AppHeader
-                    current_environment={self.current_environment.clone()}
-                    switching_environment={self.switching_environment}
-                    on_switch_testing={ctx.link().callback(|_| Msg::SwitchEnvironment("testing".to_string()))}
-                    on_switch_development={ctx.link().callback(|_| Msg::SwitchEnvironment("development".to_string()))}
-                />
-                <SearchControls
-                    content_source={self.content_source}
-                    creation_mode={self.creation_mode}
-                    saving={self.saving}
-                    on_core_selected={ctx.link().callback(|_| Msg::ContentSourceChanged(ContentSource::CoreGrammar))}
-                    on_community_selected={ctx.link().callback(|_| Msg::ContentSourceChanged(ContentSource::CommunityGrammar))}
-                    on_user_selected={ctx.link().callback(|_| Msg::ContentSourceChanged(ContentSource::UserExpressions))}
-                    on_load={ctx.link().callback(|_| Msg::ToggleStructureBrowser)}
-                    on_create={ctx.link().callback(|_| Msg::CreateDefinition)}
-                    on_save={ctx.link().callback(|_| Msg::SaveDefinition)}
-                    on_cancel={ctx.link().callback(|_| Msg::CancelCreate)}
-                />
-                <div class="system-selector-container">
-                    <SystemSelector 
-                        on_system_selected={ctx.link().callback(Msg::SystemSelected)} 
-                        selected_system={self.current_definition_type.to_number()}
-                        disabled={self.creation_mode}
-                    />
-                </div>
-                <div class={format!("main-content {}", system_class)}>
-                    {self.render_loading_or_error()}
-                    <div class="geometric-container">
-                        <GeometricRenderer 
-                            system_type={definition_type} 
-                            size={400.0}
-                            connectives={self.current_definition.as_ref().map(|s| s.connectives.clone())}
-                        />
-                        {self.render_structure_overlay(ctx)}
-                    </div>
-                </div>
-                {self.render_content_browser(ctx)}
+                {self.render_header(ctx)}
+                {self.render_search_controls(ctx)}
+                {self.render_system_selector(ctx)}
+                {self.render_main_content(ctx)}
                 {self.render_notifications()}
+                
+                // Creation Dialogue
+                <CreationDialogue 
+                    show={self.show_creation_dialogue}
+                    content_source={self.state.current_content_source()}
+                    on_create={ctx.link().callback(Msg::CreateWithDialogue)}
+                    on_cancel={ctx.link().callback(|_| Msg::CancelCreationDialogue)}
+                />
             </div>
         }
     }
 }
 
 impl App {
-    fn render_loading_or_error(&self) -> Html {
-        if self.loading {
-            html! {
-                <div class="loading">
-                    {"Loading definitions..."}
+    fn render_header(&self, ctx: &Context<Self>) -> Html {
+        html! {
+            <header class="app-header">
+                <div class="header-content">
+                    <div class="header-title">
+                        <h1>{"SysteMaster"}</h1>
+                        <p>{"Systematic Knowledge Organization"}</p>
+                    </div>
+                    <div class="environment-controls">
+                        <div class="environment-switch">
+                            <button class="env-button active">{"Development"}</button>
+                        </div>
+                    </div>
                 </div>
-            }
-        } else {
-            html! {}
+            </header>
         }
     }
-
+    
+    fn render_search_controls(&self, ctx: &Context<Self>) -> Html {
+        html! {
+            <div class="search-controls">
+                <div class="search-bar">
+                    <div class="content-source-tabs">
+                        {self.render_content_source_tab(ctx, ContentSource::CoreGrammar, "Core Grammar")}
+                        {self.render_content_source_tab(ctx, ContentSource::CommunityGrammar, "Community Grammar")}
+                        {self.render_content_source_tab(ctx, ContentSource::UserExpressions, "User Expressions")}
+                    </div>
+                    <div class="action-buttons">
+                        <input 
+                            type="text"
+                            class="search-input"
+                            placeholder="Search content..."
+                            value={self.state.ui.search_query.clone()}
+                            oninput={ctx.link().callback(|e: InputEvent| {
+                                let input = e.target_unchecked_into::<web_sys::HtmlInputElement>();
+                                Msg::SearchChanged(input.value())
+                            })}
+                        />
+                        <button 
+                            onclick={ctx.link().callback(|_| Msg::ToggleBrowser)}
+                            class="search-button"
+                        >
+                            {"Browse"}
+                        </button>
+                        <button 
+                            onclick={ctx.link().callback(|_| Msg::CreateNewItem)}
+                            class={if self.state.current_content_source() == ContentSource::CoreGrammar { 
+                                "load-button disabled" 
+                            } else { 
+                                "load-button" 
+                            }}
+                            disabled={self.state.current_content_source() == ContentSource::CoreGrammar}
+                            title={if self.state.current_content_source() == ContentSource::CoreGrammar {
+                                "Core Grammar is read-only - switch to Community Grammar or User Expressions to create content"
+                            } else {
+                                "Create new systematic structure"
+                            }}
+                        >
+                            {"+ Add"}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+    
+    fn render_system_selector(&self, ctx: &Context<Self>) -> Html {
+        html! {
+            <div class="system-selector-container">
+                <SystemSelector 
+                    selected_system={self.state.selected_system()}
+                    on_system_selected={ctx.link().callback(Msg::SystemSelected)}
+                    disabled={self.state.is_loading()}
+                />
+            </div>
+        }
+    }
+    
+    fn render_content_source_tab(&self, ctx: &Context<Self>, source: ContentSource, label: &str) -> Html {
+        let current_source = self.state.current_content_source();
+        let is_active = current_source == source;
+        let class = if is_active { "system-tab-button active" } else { "system-tab-button" };
+        
+        html! {
+            <button 
+                class={class}
+                onclick={ctx.link().callback(move |_| Msg::ContentSourceChanged(source))}
+            >
+                {label}
+            </button>
+        }
+    }
+    
+    fn render_main_content(&self, ctx: &Context<Self>) -> Html {
+        if self.state.is_loading() {
+            return html! {
+                <div class="loading">
+                    <p>{"Loading..."}</p>
+                </div>
+            };
+        }
+        
+        html! {
+            <main class="main-content">
+                {self.render_system_overlay(ctx)}
+                {self.render_structure_info(ctx)}
+                {self.render_content_browser(ctx)}
+            </main>
+        }
+    }
+    
+    fn render_system_overlay(&self, ctx: &Context<Self>) -> Html {
+        let system_num = self.state.selected_system();
+        let current_source = self.state.current_content_source();
+        
+        // Always show SystemOverlay - get the appropriate data for the current system
+        let system_data = if current_source == ContentSource::CoreGrammar {
+            // For core grammar, find the matching system
+            self.state.core_grammars.iter()
+                .find(|g| {
+                    let system_type = match system_num {
+                        1 => "monad", 2 => "dyad", 3 => "triad", 4 => "tetrad",
+                        5 => "pentad", 6 => "hexad", 7 => "heptad", 8 => "octad",
+                        9 => "ennead", 10 => "decad", 11 => "undecad", 12 => "dodecad",
+                        _ => "monad",
+                    };
+                    g.definition_type == system_type
+                })
+                .map(|g| ContentItem::CoreGrammar(g.clone()))
+        } else {
+            // For other sources, use selected item if available
+            self.state.selected_item().cloned()
+        };
+        
+        let system_name = match system_num {
+            1 => "Monad", 2 => "Dyad", 3 => "Triad", 4 => "Tetrad",
+            5 => "Pentad", 6 => "Hexad", 7 => "Heptad", 8 => "Octad",
+            9 => "Ennead", 10 => "Decad", 11 => "Undecad", 12 => "Dodecad",
+            _ => "Unknown",
+        };
+        
+        html! {
+            <SystemOverlay 
+                system_num={system_num}
+                definition={system_data.clone()}
+                creation_mode={self.state.is_creating()}
+                structure_name={Some(system_name.to_string())}
+                user_expressions={
+                    if self.state.is_creating() {
+                        // Use creation inputs when in creation mode
+                        self.creation_user_inputs.clone()
+                    } else if let Some(ref item) = system_data {
+                        self.get_user_expressions_for_item(item)
+                    } else {
+                        vec![] // Empty for now, will be filled when data loads
+                    }
+                }
+                on_instance_change={
+                    if self.state.is_creating() {
+                        ctx.link().callback(Msg::UpdateCreationField)
+                    } else {
+                        ctx.link().callback(|_| Msg::ClearSelection)
+                    }
+                }
+                content_source={current_source}
+                selected_add_type={
+                    if let Some((add_type, _)) = self.state.creation_details() {
+                        Some(add_type)
+                    } else {
+                        None
+                    }
+                }
+            />
+        }
+    }
+    
+    fn render_structure_info(&self, ctx: &Context<Self>) -> Html {
+        let system_num = self.state.selected_system();
+        let current_source = self.state.current_content_source();
+        
+        // Get the same system data as in render_system_overlay
+        let system_data = if current_source == ContentSource::CoreGrammar {
+            self.state.core_grammars.iter()
+                .find(|g| {
+                    let system_type = match system_num {
+                        1 => "monad", 2 => "dyad", 3 => "triad", 4 => "tetrad",
+                        5 => "pentad", 6 => "hexad", 7 => "heptad", 8 => "octad",
+                        9 => "ennead", 10 => "decad", 11 => "undecad", 12 => "dodecad",
+                        _ => "monad",
+                    };
+                    g.definition_type == system_type
+                })
+                .map(|g| ContentItem::CoreGrammar(g.clone()))
+        } else {
+            self.state.selected_item().cloned()
+        };
+        
+        let system_name = match system_num {
+            1 => "Monad", 2 => "Dyad", 3 => "Triad", 4 => "Tetrad",
+            5 => "Pentad", 6 => "Hexad", 7 => "Heptad", 8 => "Octad",
+            9 => "Ennead", 10 => "Decad", 11 => "Undecad", 12 => "Dodecad",
+            _ => "Unknown",
+        };
+        
+        html! {
+            <div class="structure-display">
+                // Show contextual information
+                <div class="structure-info">
+                    {if self.state.is_creating() {
+                        // Show creation controls
+                        if let Some((add_type, name)) = self.state.creation_details() {
+                            html! {
+                                <div class="creation-controls">
+                                    <h3>{"Creating New "}{match add_type {
+                                        AddContentType::System => "System",
+                                        AddContentType::SystemCollection => "System Collection",
+                                        AddContentType::Paper => "Paper",
+                                        AddContentType::Module => "Module",
+                                        AddContentType::Book => "Book",
+                                        AddContentType::Definition => "Definition",
+                                        AddContentType::Collection => "Collection",
+                                    }}</h3>
+                                    <p><strong>{"Name: "}</strong>{name}</p>
+                                    <p><strong>{"Structure Type: "}</strong>{system_name}</p>
+                                    <p><strong>{"Content Source: "}</strong>{match current_source {
+                                        ContentSource::CommunityGrammar => "Community Grammar",
+                                        ContentSource::UserExpressions => "User Expressions",
+                                        ContentSource::CoreGrammar => "Core Grammar",
+                                    }}</p>
+                                    <div class="creation-actions">
+                                        <button 
+                                            class="confirm-button"
+                                            onclick={ctx.link().callback(|_| Msg::ConfirmCreation)}
+                                        >
+                                            {"✅ Confirm Creation"}
+                                        </button>
+                                        <button 
+                                            class="cancel-button"
+                                            onclick={ctx.link().callback(|_| Msg::CancelCreation)}
+                                        >
+                                            {"❌ Cancel"}
+                                        </button>
+                                    </div>
+                                    <p class="creation-instructions">
+                                        {"Fill in the systematic structure above, then confirm to save."}
+                                    </p>
+                                </div>
+                            }
+                        } else {
+                            html! { <div>{"Creating..."}</div> }
+                        }
+                    } else if let Some(ref item) = system_data {
+                        // Show detailed item information
+                        html! {
+                            <>
+                                <h3>{item.name()}{" System"}</h3>
+                                <p><strong>{"Type: "}</strong>{item.definition_type()}</p>
+                                {self.render_item_details(item)}
+                                {if current_source != ContentSource::CoreGrammar {
+                                    html! {
+                                        <button 
+                                            onclick={ctx.link().callback(|_| Msg::ClearSelection)}
+                                            class="search-button"
+                                        >
+                                            {"Clear Selection"}
+                                        </button>
+                                    }
+                                } else {
+                                    html! {}
+                                }}
+                            </>
+                        }
+                    } else {
+                        // Show system information and guidance
+                        html! {
+                            <>
+                                <h3>{format!("{} System", system_name)}</h3>
+                                <p><strong>{"Current Source: "}</strong>
+                                    {match current_source {
+                                        ContentSource::CoreGrammar => "Core Grammar - Bennett's systematic structures",
+                                        ContentSource::CommunityGrammar => "Community Grammar - Community mappings", 
+                                        ContentSource::UserExpressions => "User Expressions - Your applications",
+                                    }}
+                                </p>
+                                {if self.state.is_loading() {
+                                    html! {
+                                        <p><em>{"Loading data..."}</em></p>
+                                    }
+                                } else if self.state.filtered_content.is_empty() {
+                                    html! {
+                                        <>
+                                            <p><em>{"No content available in this source for the selected system."}</em></p>
+                                            <p>{"💡 Try switching to Core Grammar to see all systematic structures, or use Browse to explore available content."}</p>
+                                        </>
+                                    }
+                                } else {
+                                    html! {
+                                        <p>{"Use the Browse button to select specific content, or choose a different system using the tabs above."}</p>
+                                    }
+                                }}
+                            </>
+                        }
+                    }}
+                </div>
+            </div>
+        }
+    }
+    
+    fn render_content_browser(&self, ctx: &Context<Self>) -> Html {
+        if !self.state.ui.show_content_browser {
+            return html! {};
+        }
+        
+        html! {
+            <div class="content-browser-overlay">
+                <div class="content-browser">
+                    <div class="browser-header">
+                        <div class="browser-title-section">
+                            <h3>{"Available Content"}</h3>
+                            <div class="content-source-badge">
+                                {match self.state.current_content_source() {
+                                    ContentSource::CoreGrammar => "Core Grammar",
+                                    ContentSource::CommunityGrammar => "Community Grammar", 
+                                    ContentSource::UserExpressions => "User Expressions",
+                                }}
+                            </div>
+                        </div>
+                        <button 
+                            onclick={ctx.link().callback(|_| Msg::ToggleBrowser)}
+                            class="close-browser"
+                        >
+                            {"×"}
+                        </button>
+                    </div>
+                    
+                    <div class="content-list">
+                        {if self.state.filtered_content.is_empty() {
+                            html! {
+                                <div class="no-results">
+                                    <h4>{"No content available"}</h4>
+                                    <p>{"Try switching to a different content source or adjusting your search."}</p>
+                                </div>
+                            }
+                        } else {
+                            html! {
+                                <>
+                                    {for self.state.filtered_content.iter().map(|item| {
+                                        let item_clone = item.clone();
+                                        html! {
+                                            <div 
+                                                class="content-item"
+                                                onclick={ctx.link().callback(move |_| Msg::ItemSelected(item_clone.clone()))}
+                                            >
+                                                <div class="content-item-header">
+                                                    <h4>{item.name()}</h4>
+                                                    <div class="content-type-badge">
+                                                        {item.definition_type()}
+                                                    </div>
+                                                </div>
+                                                <div class="content-item-description">
+                                                    {"Click to select this "}{item.definition_type().to_lowercase()}
+                                                </div>
+                                            </div>
+                                        }
+                                    })}
+                                </>
+                            }
+                        }}
+                    </div>
+                </div>
+            </div>
+        }
+    }
+    
     fn render_notifications(&self) -> Html {
         html! {
             <>
-                {if let Some(ref success) = self.success_message {
+                {if let Some(ref success) = self.state.ui.success_message {
                     html! {
                         <div class="notification success">
                             <p>{success}</p>
+                            <small>{"Success"}</small>
                         </div>
                     }
                 } else {
                     html! {}
                 }}
-                {if let Some(ref error) = self.error {
+                
+                {if let Some(ref error) = self.state.ui.error {
                     html! {
                         <div class="notification error">
-                            <p>{"⚠️ "}{error}</p>
-                            <small>{"Using fallback data"}</small>
+                            <p>{error}</p>
+                            <small>{"Error"}</small>
                         </div>
                     }
                 } else {
@@ -738,258 +1095,107 @@ impl App {
             </>
         }
     }
-
-    fn render_structure_overlay(&self, ctx: &Context<Self>) -> Html {
-        if let Some(ref item) = self.selected_item {
-            let system_num = StructureType::from_string(item.definition_type()).map(|s| s.to_number()).unwrap_or(1);
-            html! {
-                <SystemOverlay 
-                    system_num={system_num} 
-                    definition={Some(item.clone())} 
-                    creation_mode={self.creation_mode}
-                    structure_name={self.structure_name.clone()}
-                    user_expressions={self.user_input.clone()}
-                    on_instance_change={ctx.link().callback(|(index, expression)| Msg::UserExpressionChanged(index, expression))}
-                    content_source={self.content_source}
-                />
+    
+    fn update_filtered_content(&mut self) {
+        let source = self.state.current_content_source();
+        let query = &self.state.ui.search_query;
+        
+        let all_items: Vec<ContentItem> = match source {
+            ContentSource::CoreGrammar => {
+                self.state.core_grammars.iter()
+                    .map(|g| ContentItem::CoreGrammar(g.clone()))
+                    .collect()
             }
-        } else {
-            html! {
-                <SystemOverlay 
-                    system_num={self.current_definition_type.to_number()} 
-                    definition={None::<ContentItem>}
-                    creation_mode={self.creation_mode}
-                    structure_name={self.structure_name.clone()}
-                    user_expressions={self.user_input.clone()}
-                    on_instance_change={ctx.link().callback(|(index, expression)| Msg::UserExpressionChanged(index, expression))}
-                    content_source={self.content_source}
-                />
+            ContentSource::CommunityGrammar => {
+                self.state.community_grammars.iter()
+                    .map(|g| ContentItem::CommunityGrammar(g.clone()))
+                    .collect()
             }
-        }
-    }
-
-    fn render_content_browser(&self, ctx: &Context<Self>) -> Html {
-        if !self.show_content_browser {
-            return html! {};
-        }
+            ContentSource::UserExpressions => {
+                self.state.user_expressions.iter()
+                    .map(|e| ContentItem::UserExpression(e.clone()))
+                    .collect()
+            }
+        };
         
-        let definitions_to_show = if self.search_query.trim().is_empty() {
-            &self.filtered_content
+        // Apply search filter
+        if query.is_empty() {
+            self.state.filtered_content = all_items;
         } else {
-            &self.filtered_content
-        };
-        
-        let browser_title = match self.content_source {
-            ContentSource::CoreGrammar => "Core Grammar Definitions",
-            ContentSource::CommunityGrammar => "Community Grammar Definitions",
-            ContentSource::UserExpressions => "User Expressions",
-        };
-        
-        let empty_message = match self.content_source {
-            ContentSource::CoreGrammar => "No core grammar definitions available",
-            ContentSource::CommunityGrammar => "No community grammar definitions found",
-            ContentSource::UserExpressions => "No user expressions found",
-        };
-        
-        html! {
-            <div class="content-browser-overlay">
-                <div class="content-browser">
-                    <div class="browser-header">
-                        <div class="browser-title-section">
-                            <h3>{browser_title}</h3>
-                            <span class="content-source-badge">
-                                {match self.content_source {
-                                    ContentSource::CoreGrammar => "Core",
-                                    ContentSource::CommunityGrammar => "Community",
-                                    ContentSource::UserExpressions => "User",
-                                }}
-                            </span>
-                        </div>
-                        <button 
-                            class="close-browser" 
-                            onclick={ctx.link().callback(|_| Msg::ToggleStructureBrowser)}
-                        >
-                            {"×"}
-                        </button>
-                    </div>
-                    <div class="content-list">
-                        {for definitions_to_show.iter().map(|item| {
-                            let item_clone = item.clone();
-                            let select_item = ctx.link().callback(move |_| {
-                                Msg::DefinitionSelected(item_clone.clone())
-                            });
-                            
-                            html! {
-                                <div class="content-item" onclick={select_item}>
-                                    <div class="content-item-header">
-                                        <h4>{&item.name()}</h4>
-                                        <span class="content-type-badge">{&item.definition_type()}</span>
-                                    </div>
-                                    <div class="content-item-instances">
-                                        {item.instances().join(", ")}
-                                    </div>
-                                    {if let Some(ref desc) = item.description() {
-                                        html! { 
-                                            <div class="content-item-description">
-                                                {desc}
-                                            </div> 
-                                        }
-                                    } else {
-                                        html! {}
-                                    }}
-                                </div>
-                            }
-                        })}
-                    </div>
-                    {if definitions_to_show.is_empty() {
-                        html! {
-                            <div class="no-results">
-                                {empty_message}
-                            </div>
-                        }
-                    } else {
-                        html! {}
-                    }}
-                </div>
-            </div>
+            self.state.filtered_content = all_items.into_iter()
+                .filter(|item| {
+                    item.name().to_lowercase().contains(&query.to_lowercase()) ||
+                    item.definition_type().to_lowercase().contains(&query.to_lowercase())
+                })
+                .collect();
         }
     }
     
-    fn filter_definitions(&mut self) {
-        if self.search_query.trim().is_empty() {
-            self.filtered_content = match self.content_source {
-                ContentSource::CoreGrammar => {
-                    self.core_grammars.iter().map(|item| ContentItem::CoreGrammar(item.clone())).collect()
-                }
-                ContentSource::CommunityGrammar => {
-                    self.community_grammars.iter().map(|item| ContentItem::CommunityGrammar(item.clone())).collect()
-                }
-                ContentSource::UserExpressions => {
-                    self.user_expressions.iter().map(|item| ContentItem::UserExpression(item.clone())).collect()
-                }
-            };
-        } else {
-            let query = self.search_query.to_lowercase();
-            self.filtered_content = match self.content_source {
-                ContentSource::CoreGrammar => {
-                    self.core_grammars
-                        .iter()
-                        .filter(|item| {
-                            item.name.to_lowercase().contains(&query) ||
-                            item.definition_type.to_lowercase().contains(&query) ||
-                            item.term_characters.iter().any(|instance| instance.to_lowercase().contains(&query))
-                        })
-                        .map(|item| ContentItem::CoreGrammar(item.clone()))
-                        .collect()
-                }
-                ContentSource::CommunityGrammar => {
-                    self.community_grammars
-                        .iter()
-                        .filter(|item| {
-                            item.name.to_lowercase().contains(&query) ||
-                            item.definition_type.to_lowercase().contains(&query) ||
-                            item.term_characters.iter().any(|instance| instance.to_lowercase().contains(&query)) ||
-                            item.description.as_ref().map_or(false, |desc| desc.to_lowercase().contains(&query))
-                        })
-                        .map(|item| ContentItem::CommunityGrammar(item.clone()))
-                        .collect()
-                }
-                ContentSource::UserExpressions => {
-                    self.user_expressions
-                        .iter()
-                        .filter(|item| {
-                            item.name.to_lowercase().contains(&query) ||
-                            item.definition_type.to_lowercase().contains(&query) ||
-                            item.user_expressions.iter().any(|instance| instance.to_lowercase().contains(&query)) ||
-                            item.description.as_ref().map_or(false, |desc| desc.to_lowercase().contains(&query))
-                        })
-                        .map(|item| ContentItem::UserExpression(item.clone()))
-                        .collect()
-                }
-            };
+    fn get_user_expressions_for_item(&self, item: &ContentItem) -> Vec<String> {
+        match item {
+            ContentItem::CoreGrammar(grammar) => grammar.term_characters.clone(),
+            ContentItem::CommunityGrammar(grammar) => grammar.term_characters.clone(),
+            ContentItem::UserExpression(expression) => expression.user_expressions.clone(),
         }
     }
-
-    fn load_definition_for_definition_type(&self, ctx: &Context<Self>, definition_type: &str) {
-        let api_client = self.api_client.clone();
-        let definition_type = definition_type.to_string();
-        let callback = ctx.link().callback(Msg::SystemDefinitionLoaded);
-        
-        spawn_api_call(
-            async move {
-                api_client.get_system_definition(&definition_type).await
-            },
-            callback,
-        );
-    }
-
-    fn load_core_definitions(&self, ctx: &Context<Self>) {
-        let api_client = self.api_client.clone();
-        let callback = ctx.link().callback(Msg::CoreGrammarsLoaded);
-        
-        spawn_api_call(
-            async move {
-                let mut core_grammars = Vec::new();
-                let definition_types = ["monad", "dyad", "triad", "tetrad", "pentad", "hexad", "heptad", "octad", "ennead", "decad", "undecad", "dodecad"];
-                
-                for definition_type in definition_types {
-                    if let Ok(core_grammar) = api_client.get_core_grammar(definition_type).await {
-                        core_grammars.push(core_grammar);
-                    }
+    
+    fn render_item_details(&self, item: &ContentItem) -> Html {
+        match item {
+            ContentItem::CoreGrammar(grammar) => {
+                html! {
+                    <>
+                        <p><strong>{"Author: "}</strong>{&grammar.source}</p>
+                        <p><strong>{"Description: "}</strong>{&grammar.coherence_attribute}</p>
+                        <div class="term-characters">
+                            <strong>{"Term Characters:"}</strong>
+                            <ul>
+                                {for grammar.term_characters.iter().enumerate().map(|(i, term)| {
+                                    html! {
+                                        <li>{format!("{}. {}", i + 1, term)}</li>
+                                    }
+                                })}
+                            </ul>
+                        </div>
+                    </>
                 }
-                
-                Ok(core_grammars)
-            },
-            callback,
-        );
-    }
-
-    fn load_community_definitions(&self, ctx: &Context<Self>) {
-        let api_client = self.api_client.clone();
-        let callback = ctx.link().callback(Msg::CommunityGrammarsLoaded);
-        
-        spawn_api_call(
-            async move {
-                api_client.list_community_grammars(None).await
-            },
-            callback,
-        );
-    }
-
-    fn save_definition(&self, ctx: &Context<Self>) {
-        let definition_type = self.current_definition_type.to_string().to_string();
-        let definition_name = self.structure_name.clone().unwrap_or_else(|| "Unnamed Definition".to_string());
-        let api_client = self.api_client.clone();
-        let user_input = self.user_input.clone();
-        let content_source = self.content_source;
-        let callback = ctx.link().callback(Msg::DefinitionSaved);
-        
-        match content_source {
-            ContentSource::UserExpressions => {
-                spawn_api_call(
-                    async move {
-                        api_client.save_user_instance(&definition_name, &definition_type, &user_input).await
-                    },
-                    callback,
-                );
             }
-            ContentSource::CommunityGrammar => {
-                spawn_api_call(
-                    async move {
-                        // For community grammars, we need author and mapping notes
-                        // For now, use placeholder values - in a real app, these would come from a form
-                        let author = "Community User".to_string(); // TODO: Get from user profile
-                        let mapping_notes = format!("Community mapping for {} structure", definition_type);
-                        
-                        api_client.create_community_grammar(&definition_name, &definition_type, &user_input, &author, &mapping_notes).await
-                    },
-                    callback,
-                );
+            ContentItem::CommunityGrammar(grammar) => {
+                html! {
+                    <>
+                        <p><strong>{"Author: "}</strong>{&grammar.author}</p>
+                        <p><strong>{"Description: "}</strong>
+                            {if let Some(ref desc) = grammar.description {
+                                desc.clone()
+                            } else {
+                                "No description available".to_string()
+                            }}
+                        </p>
+                        <div class="term-characters">
+                            <strong>{"Term Characters:"}</strong>
+                            <ul>
+                                {for grammar.term_characters.iter().enumerate().map(|(i, term)| {
+                                    html! {
+                                        <li>{format!("{}. {}", i + 1, term)}</li>
+                                    }
+                                })}
+                            </ul>
+                        </div>
+                    </>
+                }
             }
-            ContentSource::CoreGrammar => {
-                // This should never happen due to the validation in CreateDefinition
-                // But add a fallback just in case
-                callback.emit(Err(anyhow::anyhow!("Cannot create core grammar definitions - they are read-only")));
+            ContentItem::UserExpression(expression) => {
+                html! {
+                    <div class="user-expressions">
+                        <strong>{"User Expressions:"}</strong>
+                        <ul>
+                            {for expression.user_expressions.iter().enumerate().map(|(i, expr)| {
+                                html! {
+                                    <li>{format!("{}. {}", i + 1, expr)}</li>
+                                }
+                            })}
+                        </ul>
+                    </div>
+                }
             }
         }
     }

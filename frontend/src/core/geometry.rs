@@ -87,11 +87,11 @@ impl GeometryCalculator {
         match node_count {
             1 => vec![Point { x: cx, y: cy }],
             2 => {
-                let radius = size * 0.3;     // Reduced from 0.4 to prevent truncation
-                let offset = radius / 2.0;   // Match symbolic circle offset
+                let scale = Self::get_system_scale_factor("dyad");
+                let spacing = size * scale;
                 vec![
-                    Point { x: cx - offset, y: cy },
-                    Point { x: cx + offset, y: cy },
+                    Point { x: cx - spacing, y: cy },
+                    Point { x: cx + spacing, y: cy },
                 ]
             }
             3 => {
@@ -101,7 +101,7 @@ impl GeometryCalculator {
                 // API Index 0 (Will) → Top-left
                 // API Index 1 (Being) → Right
                 // API Index 2 (Function) → Bottom-left
-                let side_length = size * 0.65;  // Slightly bigger triangle
+                let side_length = size * 0.70;  // Use consistent scaling for simple systems
                 let height = side_length * (3.0_f64.sqrt() / 2.0);  // Height of equilateral triangle
                 let half_side = side_length / 2.0;
                 let right_offset = height / 2.0 + size * 0.05;  // Move Being further right
@@ -123,7 +123,7 @@ impl GeometryCalculator {
                 // API Index 1 (Directive) → Right
                 // API Index 2 (Instrumental) → Left
                 // API Index 3 (Ground) → Bottom
-                let diamond_size = size * 0.35;  // Larger diamond for better visibility
+                let diamond_size = size * 0.40;  // Use consistent scaling for medium systems
                 
                 vec![
                     // Index 0: Ideal → Top
@@ -142,9 +142,9 @@ impl GeometryCalculator {
                 // Layout: Quintessence(left) | Higher/Lower Potential(middle) | Purpose/Source(right)
                 // The potential axis (middle) acts as a fold line with equidistant left/right columns
                 
-                let col_spacing = size * 0.45;     // Increased from 0.35 - even more horizontal spacing
-                let middle_v_spacing = size * 0.25; // Increased from 0.20 - more vertical spacing for middle column
-                let right_v_spacing = size * 0.30;  // Increased from 0.25 - more vertical spacing for right column
+                let col_spacing = size * 0.45;     // Use consistent scaling for medium systems
+                let middle_v_spacing = size * 0.35; // Proportional vertical spacing
+                let right_v_spacing = size * 0.40;  // Proportional vertical spacing
                 
                 vec![
                     // Index 0: Purpose → Top-right (equidistant from center as Quintessence)
@@ -167,7 +167,7 @@ impl GeometryCalculator {
                 // Position 3: bottom-right → API Term 3 (Criteria)
                 // Position 4: bottom → API Term 4 (Facts)
                 // Position 5: bottom-left → API Term 5 (Priorities)
-                let radius = size * 0.35;  // Increased from 0.15 to make hexagon bigger
+                let radius = size * 0.40;  // Use consistent scaling for medium systems
                 let rotation = -PI / 2.0 - PI / 3.0;  // Rotate so position 1 (Values) is at top
                 
                 (0..6)
@@ -184,7 +184,7 @@ impl GeometryCalculator {
                 // Heptad: Regular heptagon positioned so geometry matches desired API mapping
                 // Position 0: top → API Term 0 (Insight)
                 // Positions 1-6: clockwise from top → API Terms 1-6
-                let radius = size * 0.35;  // Same size as hexad
+                let radius = size * 0.45;  // Use consistent scaling for complex systems
                 let rotation = -PI / 2.0;  // Position 0 at top
                 
                 (0..7)
@@ -201,7 +201,7 @@ impl GeometryCalculator {
                 // Octad: Regular octagon positioned so geometry matches desired API mapping
                 // Position 0: right → API Term 0 (Smallest Significant Holon)
                 // Position 2: bottom → API Term 2 (Supportive Platform)
-                let radius = size * 0.35;  // Same size as hexad and heptad
+                let radius = size * 0.50;  // Use consistent scaling for complex systems
                 let rotation = 0.0;  // Position 0 at right (3 o'clock position)
                 
                 (0..8)
@@ -231,13 +231,34 @@ impl GeometryCalculator {
         }
     }
 
+    fn get_system_scale_factor(system_type: &str) -> f64 {
+        // Individual scaling factors for each system - easy to tweak!
+        match system_type {
+            "monad" => 0.45,    // Large single circle
+            "dyad" => 0.18,     // Compact pair
+            "triad" => 0.25,    // Medium triangle
+            "tetrad" => 0.40,   // Cross formation
+            "pentad" => 0.40,   // Hierarchical layout
+            "hexad" => 0.50,    // Regular hexagon
+            "heptad" => 0.45,   // Regular heptagon
+            "octad" => 0.50,    // Regular octagon
+            "ennead" => 0.35,   // 3x3 grid
+            "decad" => 0.38,    // 10-point structure
+            "undecad" => 0.38,  // 11-point structure
+            "dodecad" => 0.38,  // 12-point structure
+            _ => 0.30,          // Default
+        }
+    }
+
     fn get_radius_for_system(node_count: usize, size: f64) -> f64 {
+        // Scale structure size based on complexity within fixed canvas
+        // More complex systems get more space to avoid crowding
         match node_count {
-            3..=6 => size * 0.35,  // Increased from 0.15 to match custom implementations
-            7..=8 => size * 0.30,  // Slightly smaller for more nodes
-            9..=10 => size * 0.28,
-            11..=12 => size * 0.26,
-            _ => size * 0.35,
+            1..=3 => size * 0.25,   // Simple systems: smaller within canvas
+            4..=6 => size * 0.30,   // Medium systems: moderate size
+            7..=9 => size * 0.35,   // Complex systems: larger within canvas
+            10..=12 => size * 0.38, // Most complex: maximum space
+            _ => size * 0.30,
         }
     }
 
@@ -264,24 +285,21 @@ impl GeometryCalculator {
         edges
     }
 
-    fn get_node_radius(node_count: usize) -> f64 {
-        match node_count {
-            1 => 12.0,      // Monad
-            2 => 12.0,      // Dyad: same size as monad
-            3 => 12.0,      // Triad: same size as monad
-            4..=6 => 12.0,  // Tetrad-Hexad: same size as monad
-            7..=9 => 12.0,  // Heptad-Ennead: same size as monad
-            10..=12 => 12.0, // Decad-Dodecad: same size as monad
-            _ => 12.0,
-        }
+    fn get_node_radius(_node_count: usize) -> f64 {
+        // Fixed node radius for consistent appearance across all systems
+        // Now that canvas size is consistent, nodes can be uniform
+        12.0
     }
 
     fn get_symbolic_circle(system_type: &str, center_x: f64, center_y: f64, size: f64) -> Option<SymbolicCircle> {
         match system_type {
-            "monad" => Some(SymbolicCircle {
-                center: Point { x: center_x, y: center_y },
-                radius: size * 0.45,  // Large circle for user attributes
-            }),
+            "monad" => {
+                let scale = Self::get_system_scale_factor("monad");
+                Some(SymbolicCircle {
+                    center: Point { x: center_x, y: center_y },
+                    radius: size * scale,
+                })
+            },
             _ => None,
         }
     }
@@ -289,15 +307,16 @@ impl GeometryCalculator {
     fn get_symbolic_circles(system_type: &str, center_x: f64, center_y: f64, size: f64) -> Vec<SymbolicCircle> {
         match system_type {
             "dyad" => {
-                let radius = size * 0.3;     // Reduced to match node positioning
-                let offset = radius / 2.0;   // Distance = half radius so circles pass through centers
+                let scale = Self::get_system_scale_factor("dyad");
+                let spacing = size * scale;   // Match node positioning exactly
+                let radius = size * (scale * 2.0);    // Circle radius proportional to spacing
                 vec![
                     SymbolicCircle {
-                        center: Point { x: center_x - offset, y: center_y },
+                        center: Point { x: center_x - spacing, y: center_y },
                         radius,
                     },
                     SymbolicCircle {
-                        center: Point { x: center_x + offset, y: center_y },
+                        center: Point { x: center_x + spacing, y: center_y },
                         radius,
                     },
                 ]

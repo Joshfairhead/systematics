@@ -8,6 +8,11 @@ default = ["serde"]
 serde = ["dep:serde", "dep:serde_json"]
 server = ["dep:axum", "dep:tower", "dep:tower-http"]
 
+[[bin]]
+name = "server"
+path = "src/bin/server.rs"
+required-features = ["server"]
+
 [dependencies]
 systematics-library = { path = "../library" }
 thiserror = "2.0"
