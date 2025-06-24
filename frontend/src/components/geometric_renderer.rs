@@ -34,10 +34,12 @@ impl Component for GeometricRenderer {
         let size = props.size;
         let system_type = &props.system_type;
         
-        // Reasonable padding that fits in viewport without scaling
-        let padding = 60.0; // Enough for labels but not excessive
-        let total_size = size + 2.0 * padding;
-        let viewbox = format!("{} {} {} {}", -padding, -padding, total_size, total_size);
+        // Extended padding to accommodate wide label positioning (especially octad)
+        let padding_x = 200.0; // Wide horizontal padding for extended labels
+        let padding_y = 80.0;  // Standard vertical padding
+        let total_width = size + 2.0 * padding_x;
+        let total_height = size + 2.0 * padding_y;
+        let viewbox = format!("{} {} {} {}", -padding_x, -padding_y, total_width, total_height);
         let center_x = size / 2.0;
         let center_y = size / 2.0;
         
@@ -66,7 +68,7 @@ impl Component for GeometricRenderer {
                 
                 // Render input fields as HTML overlays positioned to align with SVG labels
                 {if props.creation_mode {
-                    self.render_overlay_input_fields(ctx, &layout.nodes, &props.labels, &props.user_inputs, size, padding)
+                    self.render_overlay_input_fields(ctx, &layout.nodes, &props.labels, &props.user_inputs, size, padding_x)
                 } else {
                     html! {}
                 }}
@@ -113,11 +115,11 @@ impl GeometricRenderer {
                 }
             },
             "triad" => {
-                // Triad: triangle formation - position labels outside triangle
+                // Triad: center labels on nodes initially
                 match node_index {
-                    0 => (node.x - 40.0, node.y - 15.0), // Will (top-left): move left-up
-                    1 => (node.x + 40.0, node.y),        // Being (right): move right
-                    2 => (node.x - 40.0, node.y + 15.0), // Function (bottom-left): move left-down
+                    0 => (node.x, node.y - 40.0), // Will (top-left): centered
+                    1 => (node.x +70.0, node.y), // Being (right): centered
+                    2 => (node.x, node.y +40.0), // Function (bottom-left): centered
                     _ => (node.x, node.y)
                 }
             },
@@ -136,48 +138,48 @@ impl GeometricRenderer {
                 match node_index {
                     0 => (node.x + 0.0, node.y - 35.0), // Purpose: move right and up
                     1 => (node.x, node.y - 40.0), // Higher Potential: move left and up  
-                    2 => (node.x - 85.0, node.y),        // Quintessence: move left
+                    2 => (node.x - 100.0, node.y),        // Quintessence: move left
                     3 => (node.x, node.y + 40.0), // Lower Potential: move left and down
                     4 => (node.x + 0.0, node.y + 35.0), // Source: move right and down
                     _ => (node.x, node.y)
                 }
             },
             "hexad" => {
-                // Hexad: regular hexagon - position labels radially outward
+                // Hexad: center labels on nodes initially
                 match node_index {
-                    0 => (node.x - 45.0, node.y - 20.0), // Resources (top-left): left-up
-                    1 => (node.x, node.y - 35.0),        // Values (top): up
-                    2 => (node.x + 45.0, node.y - 20.0), // Options (top-right): right-up
-                    3 => (node.x + 45.0, node.y + 20.0), // Criteria (bottom-right): right-down
-                    4 => (node.x, node.y + 35.0),        // Facts (bottom): down
-                    5 => (node.x - 45.0, node.y + 20.0), // Priorities (bottom-left): left-down
+                    0 => (node.x - 70.0, node.y - 35.0), // Resources (top-left): centered
+                    1 => (node.x, node.y - 35.0), // Values (top): centered
+                    2 => (node.x +70.0, node.y - 35.0), // Options (top-right): centered
+                    3 => (node.x +70.0, node.y + 35.0), // Criteria (bottom-right): centered
+                    4 => (node.x, node.y + 35.0), // Facts (bottom): centered
+                    5 => (node.x - 70.0, node.y + 35.0), // Priorities (bottom-left): centered
                     _ => (node.x, node.y)
                 }
             },
             "heptad" => {
-                // Heptad: regular heptagon - position labels radially outward
+                // Heptad: center labels on nodes initially
                 match node_index {
-                    0 => (node.x, node.y - 40.0),        // Insight (top): up
-                    1 => (node.x + 35.0, node.y - 25.0), // Research (top-right): right-up
-                    2 => (node.x + 45.0, node.y + 10.0), // Design (right): right
-                    3 => (node.x + 25.0, node.y + 35.0), // Synthesis (bottom-right): right-down
-                    4 => (node.x - 25.0, node.y + 35.0), // Application (bottom-left): left-down
-                    5 => (node.x - 45.0, node.y + 10.0), // Delivery (left): left
-                    6 => (node.x - 35.0, node.y - 25.0), // Value (top-left): left-up
+                    0 => (node.x, node.y -35.0), // Insight (top): 
+                    1 => (node.x + 70.0, node.y - 35.0), // Research (top-right): 
+                    2 => (node.x + 70.0, node.y), // Design (right): 
+                    3 => (node.x + 30.0, node.y + 35.0), // Synthesis (bottom-right): 
+                    4 => (node.x - 30.0, node.y + 35.0), // Application (bottom-left): 
+                    5 => (node.x - 80.0, node.y), // Delivery (left): 
+                    6 => (node.x - 50.0, node.y - 35.0), // Value (top-left): 
                     _ => (node.x, node.y)
                 }
             },
             "octad" => {
-                // Octad: regular octagon - position labels radially outward
+                // Octad: center labels on nodes initially
                 match node_index {
-                    0 => (node.x, node.y - 40.0),        // Essential Functions (top): up
-                    1 => (node.x + 30.0, node.y - 30.0), // Critical Functions (top-right): right-up
-                    2 => (node.x + 40.0, node.y),        // Supportive Platform (right): right
-                    3 => (node.x + 30.0, node.y + 30.0), // Necessary Resourcing (bottom-right): right-down
-                    4 => (node.x, node.y + 40.0),        // Integrative Totality (bottom): down
-                    5 => (node.x - 30.0, node.y + 30.0), // Inherent Values (bottom-left): left-down
-                    6 => (node.x - 40.0, node.y),        // Intrinsic Nature (left): left
-                    7 => (node.x - 30.0, node.y - 30.0), // Organisational Modes (top-left): left-up
+                    0 => (node.x + 170.0, node.y), // Smallest Holon (top): 
+                    1 => (node.x + 120.0, node.y + 30.0), // Critical Functions (top-right): 
+                    2 => (node.x, node.y + 40.0), // Supportive Platform (right): 
+                    3 => (node.x -130.0, node.y + 30.0), // Necessary Resourcing (bottom-right):
+                    4 => (node.x - 140.0, node.y), // Integrative Totality (bottom): 
+                    5 => (node.x - 100.0, node.y - 30.0), // Inherent Values (bottom-left): 
+                    6 => (node.x, node.y - 40.0), // Intrinsic Nature (left):
+                    7 => (node.x + 130.0, node.y - 30.0), // Organisational Modes (top-left): 
                     _ => (node.x, node.y)
                 }
             },
